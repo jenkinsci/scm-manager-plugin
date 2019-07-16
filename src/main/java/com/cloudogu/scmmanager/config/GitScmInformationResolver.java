@@ -9,9 +9,6 @@ import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
 import hudson.scm.SCM;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +21,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "git";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ? > run, SCM scm) throws IOException {
+  public Collection<ScmInformation> resolve(Run<?, ? > run, SCM scm) {
     if (!(scm instanceof GitSCM)) {
       return Collections.emptyList();
     }
@@ -39,7 +36,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     }
   }
 
-  private List<ScmInformation> createInformation(GitSCM git, String revision) throws MalformedURLException {
+  private List<ScmInformation> createInformation(GitSCM git, String revision) {
     List<ScmInformation> information = new ArrayList<>();
     for (UserRemoteConfig urc : git.getUserRemoteConfigs()) {
       information.add(createInformation(urc, revision));
@@ -47,8 +44,8 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     return Collections.unmodifiableList(information);
   }
 
-  private ScmInformation createInformation(UserRemoteConfig urc, String revision) throws MalformedURLException {
-    return new ScmInformation(TYPE, new URL(urc.getUrl()), revision, urc.getCredentialsId());
+  private ScmInformation createInformation(UserRemoteConfig urc, String revision) {
+    return new ScmInformation(TYPE, urc.getUrl(), revision, urc.getCredentialsId());
   }
 
   private Optional<String> getRevision(Run<?, ?> run, GitSCM git) {

@@ -1,15 +1,13 @@
 package com.cloudogu.scmmanager.config;
 
-import java.net.URL;
-
 public class ScmInformation {
 
   private final String type;
-  private final URL url;
+  private final String url;
   private final String revision;
   private final String credentialsId;
 
-  public ScmInformation(String type, URL url, String revision, String credentialsId) {
+  public ScmInformation(String type, String url, String revision, String credentialsId) {
     this.type = type;
     this.url = url;
     this.revision = revision;
@@ -20,7 +18,7 @@ public class ScmInformation {
     return type;
   }
 
-  public URL getUrl() {
+  public String getUrl() {
     return url;
   }
 

@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,20 +32,20 @@ public class GitScmInformationResolverTest {
   private final GitScmInformationResolver resolver = new GitScmInformationResolver();
 
   @Test
-  public void testResolveNonGitSCM() throws IOException {
+  public void testResolveNonGitSCM() {
     MercurialSCM scm = mock(MercurialSCM.class);
     Collection<ScmInformation> information = resolver.resolve(run, scm);
     assertTrue(information.isEmpty());
   }
 
   @Test
-  public void testResolveWithoutBuildData() throws IOException {
+  public void testResolveWithoutBuildData() {
     Collection<ScmInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
   @Test
-  public void testResolveWithoutRevision() throws IOException {
+  public void testResolveWithoutRevision() {
     BuildData buildData = mock(BuildData.class);
     when(git.getBuildData(run)).thenReturn(buildData);
 
@@ -55,7 +54,7 @@ public class GitScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithoutSha1() throws IOException {
+  public void testResolveWithoutSha1() {
     BuildData buildData = mock(BuildData.class);
     Revision revision = mock(Revision.class);
     when(buildData.getLastBuiltRevision()).thenReturn(revision);
@@ -66,7 +65,7 @@ public class GitScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithoutUserRepositoryData() throws IOException {
+  public void testResolveWithoutUserRepositoryData() {
     applyRevision("abc42");
 
     Collection<ScmInformation> information = resolver.resolve(run, git);
@@ -74,7 +73,7 @@ public class GitScmInformationResolverTest {
   }
 
   @Test
-  public void testResolve() throws IOException {
+  public void testResolve() {
     applyRevision("abc42");
     applyUrcs(
       urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),

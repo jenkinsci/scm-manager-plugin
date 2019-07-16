@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class SvnScmInformationResolverTest {
   private final SvnScmInformationResolver resolver = new SvnScmInformationResolver();
 
   @Test
-  public void testResolveWithWrongSCM() throws IOException {
+  public void testResolveWithWrongSCM() {
     GitSCM git = Mockito.mock(GitSCM.class);
 
     Collection<ScmInformation> information = resolver.resolve(run, git);
@@ -40,13 +39,13 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithoutLocations() throws IOException {
+  public void testResolveWithoutLocations() {
     Collection<ScmInformation> information = resolver.resolve(run, svn);
     assertTrue(information.isEmpty());
   }
 
   @Test
-  public void testResolveWithEmptyLocations() throws IOException {
+  public void testResolveWithEmptyLocations() {
     when(svn.getLocations()).thenReturn(new SubversionSCM.ModuleLocation[0]);
 
     Collection<ScmInformation> information = resolver.resolve(run, svn);
@@ -54,7 +53,7 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithOneLocation() throws IOException {
+  public void testResolveWithOneLocation() {
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
     applyRevisions(42);
 
@@ -71,7 +70,7 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveOneWithoutRevision() throws IOException {
+  public void testResolveOneWithoutRevision() {
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
 
     Collection<ScmInformation> information = resolver.resolve(run, svn);
@@ -79,7 +78,7 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveMutlipleWithTooFewRevision() throws IOException {
+  public void testResolveMutlipleWithTooFewRevision() {
     applyLocations(
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two"),
@@ -92,7 +91,7 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithMultipleLocations() throws IOException {
+  public void testResolveWithMultipleLocations() {
     applyLocations(
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two")
@@ -139,7 +138,14 @@ public class SvnScmInformationResolverTest {
   }
 
   private SubversionSCM.ModuleLocation location(String remote, String credentialsId) {
-    return new SubversionSCM.ModuleLocation(remote, credentialsId, null, null, true, true);
+    return new SubversionSCM.ModuleLocation(
+      remote,
+      credentialsId,
+      null,
+      null,
+      true,
+      true
+    );
   }
 
 }

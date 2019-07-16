@@ -9,11 +9,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,7 +28,7 @@ public class HgScmInformationResolverTest {
   private final HgScmInformationResolver resolver = new HgScmInformationResolver();
 
   @Test
-  public void testResolveWithWrongSCM() throws IOException {
+  public void testResolveWithWrongSCM() {
     GitSCM git = Mockito.mock(GitSCM.class);
 
     Collection<ScmInformation> information = resolver.resolve(run, git);
@@ -36,7 +36,7 @@ public class HgScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithoutSource() throws IOException {
+  public void testResolveWithoutSource() {
     applyRevision("abc42");
 
     Collection<ScmInformation> information = resolver.resolve(run, hg);
@@ -44,7 +44,7 @@ public class HgScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveWithoutRevision() throws IOException {
+  public void testResolveWithoutRevision() {
     when(hg.getSource()).thenReturn("https://scm.scm-manager.org/repo/ns/one");
 
     Collection<ScmInformation> information = resolver.resolve(run, hg);
@@ -52,7 +52,7 @@ public class HgScmInformationResolverTest {
   }
 
   @Test
-  public void testResolve() throws IOException {
+  public void testResolve() {
     when(hg.getSource()).thenReturn("https://scm.scm-manager.org/repo/ns/one");
     applyRevision("42abc");
     when(hg.getCredentialsId()).thenReturn("scm-one");

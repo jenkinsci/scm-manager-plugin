@@ -5,9 +5,6 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,7 +17,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "svn";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ?> run, SCM scm) throws IOException {
+  public Collection<ScmInformation> resolve(Run<?, ?> run, SCM scm) {
     if (!(scm instanceof SubversionSCM)) {
       return Collections.emptyList();
     }
@@ -38,7 +35,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     return Collections.unmodifiableList(configurations);
   }
 
-  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) throws MalformedURLException {
+  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
     if (locations.length == 1) {
       appendInformation(configurations, locations[0], env.get("SVN_REVISION"));
     } else if (locations.length > 1) {
@@ -46,16 +43,16 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     }
   }
 
-  private void appendMultipleInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) throws MalformedURLException {
+  private void appendMultipleInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
     for (int i = 0; i < locations.length; i++) {
       appendInformation(configurations, locations[i], env.get("SVN_REVISION_" + (i + 1)));
     }
   }
 
-  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation location, String revision) throws MalformedURLException {
+  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
     String url = location.getURL();
     if (!Strings.isNullOrEmpty(url) && !Strings.isNullOrEmpty(revision)) {
-      configurations.add(new ScmInformation(TYPE, new URL(url), revision, location.credentialsId));
+      configurations.add(new ScmInformation(TYPE, url, revision, location.credentialsId));
     }
   }
 }

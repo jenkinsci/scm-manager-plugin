@@ -5,8 +5,6 @@ import hudson.model.Run;
 import hudson.plugins.mercurial.MercurialSCM;
 import hudson.scm.SCM;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +15,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "hg";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ?> run , SCM scm) throws IOException {
+  public Collection<ScmInformation> resolve(Run<?, ?> run , SCM scm) {
     if (!(scm instanceof MercurialSCM)) {
       return Collections.emptyList();
     }
@@ -31,7 +29,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
       return Collections.emptyList();
     }
 
-    ScmInformation config = new ScmInformation(TYPE, new URL(source), revision, hg.getCredentialsId());
+    ScmInformation config = new ScmInformation(TYPE, source, revision, hg.getCredentialsId());
     return Collections.singleton(config);
   }
 
