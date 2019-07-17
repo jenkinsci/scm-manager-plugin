@@ -3,7 +3,7 @@ package com.cloudogu.scmmanager;
 import hudson.model.Result;
 import hudson.model.Run;
 
-final class BuildStatusFactory {
+class BuildStatusFactory {
 
   BuildStatusFactory() {
   }

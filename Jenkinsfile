@@ -11,8 +11,7 @@ properties([
 
 node {
 
-  def javaHome = tool 'JDK8'
-  Maven mvn = new MavenWrapper(this, javaHome)
+  Maven mvn = new MavenInDocker(this, "3.5.2-jdk-8")
   mvn.additionalArgs = "-DperformRelease"
   Git git = new Git(this)
 
@@ -22,8 +21,6 @@ node {
       checkout scm
       git.clean('')
     }
-
-    initMaven(mvn)
 
     stage('Build') {
       mvn 'clean install -DskipTests'
