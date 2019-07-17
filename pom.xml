@@ -147,14 +147,18 @@
     </dependencies>
   </dependencyManagement>
 
-  <!-- If you want this to appear on the wiki page:
   <developers>
     <developer>
-      <id>bhacker</id>
-      <name>Bob Q. Hacker</name>
-      <email>bhacker@nowhere.net</email>
+      <id>sdorra</id>
+      <name>Sebastian Sdorra</name>
+      <email>sebastian.sdorra@cloudogu.com</email>
     </developer>
-  </developers> -->
+  </developers>
+
+  <organization>
+    <name>Cloudogu GmbH</name>
+    <url>https://cloudogu.com</url>
+  </organization>
 
   <!-- Assuming you want to host on @jenkinsci:
   <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
@@ -170,6 +174,7 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </repository>
   </repositories>
+
   <pluginRepositories>
     <pluginRepository>
       <id>repo.jenkins-ci.org</id>
