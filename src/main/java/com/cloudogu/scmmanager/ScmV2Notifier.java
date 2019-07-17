@@ -13,7 +13,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
-public final class ScmV2Notifier implements Notifier {
+public class ScmV2Notifier implements Notifier {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmV2Notifier.class);
 
@@ -25,7 +25,6 @@ public final class ScmV2Notifier implements Notifier {
 
   private AsyncHttpClient client;
 
-  @VisibleForTesting
   private Consumer<Response> completionListener = response -> {};
 
   ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, Authentication authentication) {
