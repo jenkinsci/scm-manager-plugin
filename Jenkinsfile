@@ -19,20 +19,14 @@ node {
 
     stage('Checkout') {
       checkout scm
-      git.clean('')
     }
 
     stage('Build') {
       mvn 'clean install -DskipTests'
-      archive '**/target/*.jar'
     }
 
     stage('Unit Test') {
       mvn 'test'
-    }
-
-    stage('Integration Test') {
-      mvn 'verify -DskipUnitTests'
     }
 
     stage('Static Code Analysis') {
