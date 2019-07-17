@@ -16,8 +16,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -59,6 +58,8 @@ public class NotificationServiceTest {
   public void testNotifyWithoutInformation() {
     when(informationService.resolve(run)).thenReturn(Collections.emptyList());
     notificationService.notify(run, Result.SUCCESS);
+
+    assertNotCalled();
   }
 
   @Test
@@ -67,6 +68,13 @@ public class NotificationServiceTest {
     when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
 
     notificationService.notify(run, Result.SUCCESS);
+    assertNotCalled();
+  }
+
+  private void assertNotCalled() {
+    CapturingNotifier notifier = getNotifier();
+    assertNull(notifier.revision);
+    assertNull(notifier.buildStatus);
   }
 
   private CapturingNotifier getNotifier() {
@@ -75,7 +83,7 @@ public class NotificationServiceTest {
         return ((SampleNotifierProvider)provider).notifier;
       }
     }
-    return null;
+    throw new IllegalStateException("could not find CapturingNotifier");
   }
 
   @Extension
