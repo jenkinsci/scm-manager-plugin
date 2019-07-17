@@ -5,7 +5,7 @@ import hudson.model.Run;
 
 final class BuildStatusFactory {
 
-  private BuildStatusFactory() {
+  BuildStatusFactory() {
   }
 
   public BuildStatus create(String rootUrl, Run<?, ?> run, Result result) {

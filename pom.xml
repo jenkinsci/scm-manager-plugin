@@ -2,16 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>3.43</version>
     <relativePath/>
   </parent>
+
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>scm-manager</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
+
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.version>2.107.3</jenkins.version>
@@ -23,6 +26,7 @@
  -->
   </properties>
   <name>scm-manager</name>
+
   <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
   <licenses>
     <license>
@@ -122,6 +126,22 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
         <version>2.6.3</version>
+      </dependency>
+
+      <!-- fix require upper bound dependencies error for wiremock -->
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.8.1</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-security</artifactId>
+        <version>9.4.15.v20190215</version>
+        <scope>test</scope>
       </dependency>
 
     </dependencies>
