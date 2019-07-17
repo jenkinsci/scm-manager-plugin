@@ -10,7 +10,7 @@ final class Assertions {
   static void info(ScmInformation info, String type, String rev, String url, String credentials) {
     assertEquals(type, info.getType());
     assertEquals(rev, info.getRevision());
-    assertEquals(url, info.getUrl().toExternalForm());
+    assertEquals(url, info.getUrl());
     assertEquals(credentials, info.getCredentialsId());
   }
 }

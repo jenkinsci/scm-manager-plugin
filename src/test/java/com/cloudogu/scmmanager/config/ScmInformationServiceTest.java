@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
-public class ScmInformationResolversTest {
+public class ScmInformationServiceTest {
 
   @Rule
   public JenkinsRule jenkins = new JenkinsRule();
@@ -32,9 +32,11 @@ public class ScmInformationResolversTest {
   @Mock
   private Run run;
 
+  private ScmInformationService informationService = new ScmInformationService();
+
   @Test
   public void testResolveWithoutScmResolver() {
-    List<ScmInformation> informationList = ScmInformationResolvers.resolve(run);
+    List<ScmInformation> informationList = informationService.resolve(run);
     assertTrue(informationList.isEmpty());
   }
 
@@ -42,7 +44,7 @@ public class ScmInformationResolversTest {
   public void testResolveWithUnknownSCM() {
     applySCM(new UnknownSCM());
 
-    List<ScmInformation> informationList = ScmInformationResolvers.resolve(run);
+    List<ScmInformation> informationList = informationService.resolve(run);
     assertTrue(informationList.isEmpty());
   }
 
@@ -50,7 +52,7 @@ public class ScmInformationResolversTest {
   public void testResolve() {
     applySCM(new SampleSCM());
 
-    List<ScmInformation> informationList = ScmInformationResolvers.resolve(run);
+    List<ScmInformation> informationList = informationService.resolve(run);
     assertEquals(1, informationList.size());
     assertEquals("sample", informationList.get(0).getType());
   }
