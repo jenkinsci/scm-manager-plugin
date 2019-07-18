@@ -18,6 +18,8 @@ class BuildStatusFactory {
       return BuildStatus.success(displayName, url);
     } else if (result == Result.FAILURE) {
       return BuildStatus.failure(displayName, url);
+    } else if (result == Result.UNSTABLE) {
+      return BuildStatus.unstable(displayName, url);
     } else if (result == Result.ABORTED) {
       return BuildStatus.aborted(displayName, url);
     } else {

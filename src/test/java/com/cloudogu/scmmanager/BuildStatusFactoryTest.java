@@ -62,6 +62,12 @@ public class BuildStatusFactoryTest {
   }
 
   @Test
+  public void testUnstable() {
+    BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.UNSTABLE);
+    assertStatus(buildStatus, BuildStatus.StatusType.UNSTABLE);
+  }
+
+  @Test
   public void testUnknownStatus() {
     BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.NOT_BUILT);
     assertNull(buildStatus);

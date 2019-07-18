@@ -30,7 +30,7 @@ public final class BuildStatus {
   }
 
   public enum StatusType {
-    PENDING, ABORTED, FAILURE, SUCCESS
+    PENDING, ABORTED, UNSTABLE, FAILURE, SUCCESS
   }
 
   static BuildStatus pending(String name, String url) {
@@ -39,6 +39,10 @@ public final class BuildStatus {
 
   static BuildStatus aborted(String name, String url) {
     return new BuildStatus(name, url, StatusType.ABORTED);
+  }
+
+  static BuildStatus unstable(String name, String url) {
+    return new BuildStatus(name, url, StatusType.UNSTABLE);
   }
 
   static BuildStatus success(String name, String url) {
