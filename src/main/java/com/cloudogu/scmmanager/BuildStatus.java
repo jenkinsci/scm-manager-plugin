@@ -4,6 +4,9 @@ public final class BuildStatus {
 
   private final String name;
   private final String url;
+
+  // field is required for marshaling to json
+  @SuppressWarnings("squid:S1170")
   private final String type = "jenkins";
   private final StatusType status;
 
