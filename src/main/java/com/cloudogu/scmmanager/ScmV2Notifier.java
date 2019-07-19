@@ -75,7 +75,7 @@ public class ScmV2Notifier implements Notifier {
     AsyncHttpClient.BoundRequestBuilder post = getClient().preparePost(url);
     authentication.authenticate(post);
 
-    post.setHeader("Content-Type", "application/json; charset=UTF-8")
+    post.setHeader("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
       .setBody(createRequestBody(buildStatus))
       .execute(new AsyncCompletionHandler<Object>() {
         @Override

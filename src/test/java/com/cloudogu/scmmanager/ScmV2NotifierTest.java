@@ -47,7 +47,7 @@ public class ScmV2NotifierTest {
     verify(
       postRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold"))
         .withHeader("Authenticated", equalTo("yes; awesome"))
-        .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+        .withHeader("Content-Type", equalTo("application/vnd.scmm-cistatus+json;v=2"))
         .withRequestBody(
           matchingJsonPath("$.type", equalTo("jenkins"))
         )
