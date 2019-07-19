@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.config.ScmInformation;
+import com.cloudogu.scmmanager.info.ScmInformation;
 import hudson.model.Run;
 import org.junit.Test;
 import org.junit.runner.RunWith;

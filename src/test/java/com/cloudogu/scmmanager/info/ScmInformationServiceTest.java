@@ -1,4 +1,4 @@
-package com.cloudogu.scmmanager.config;
+package com.cloudogu.scmmanager.info;
 
 import hudson.Extension;
 import hudson.model.Job;

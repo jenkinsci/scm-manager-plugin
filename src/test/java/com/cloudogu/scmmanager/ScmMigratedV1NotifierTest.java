@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.config.ScmInformation;
+import com.cloudogu.scmmanager.info.ScmInformation;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.ning.http.client.AsyncHttpClient;
 import hudson.model.Run;

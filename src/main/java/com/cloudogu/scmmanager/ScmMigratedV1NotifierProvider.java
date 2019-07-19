@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.config.ScmInformation;
+import com.cloudogu.scmmanager.info.ScmInformation;
 import hudson.Extension;
 import hudson.model.Run;
 

@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.config.ScmInformation;
-import com.cloudogu.scmmanager.config.ScmInformationService;
+import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.ScmInformationService;
 import com.google.common.base.Strings;
 import hudson.model.Result;
 import hudson.model.Run;

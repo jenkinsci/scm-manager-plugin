@@ -1,4 +1,4 @@
-package com.cloudogu.scmmanager.config;
+package com.cloudogu.scmmanager.info;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;

@@ -1,4 +1,4 @@
-package com.cloudogu.scmmanager.config;
+package com.cloudogu.scmmanager.info;
 
 import hudson.model.Run;
 import hudson.plugins.git.GitSCM;

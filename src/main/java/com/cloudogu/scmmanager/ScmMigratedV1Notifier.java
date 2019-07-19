@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.config.ScmInformation;
+import com.cloudogu.scmmanager.info.ScmInformation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.ning.http.client.AsyncCompletionHandler;

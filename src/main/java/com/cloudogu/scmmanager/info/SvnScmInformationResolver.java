@@ -1,4 +1,4 @@
-package com.cloudogu.scmmanager.config;
+package com.cloudogu.scmmanager.info;
 
 import com.google.common.base.Strings;
 import hudson.model.Run;
