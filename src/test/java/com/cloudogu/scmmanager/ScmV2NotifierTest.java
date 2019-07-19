@@ -20,7 +20,7 @@ public class ScmV2NotifierTest {
   @Test
   public void testNotify() throws MalformedURLException, InterruptedException {
     stubFor(
-      post("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold")
+      put("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold")
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -45,7 +45,7 @@ public class ScmV2NotifierTest {
     }
 
     verify(
-      postRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold"))
+      putRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold"))
         .withHeader("Authenticated", equalTo("yes; awesome"))
         .withHeader("Content-Type", equalTo("application/vnd.scmm-cistatus+json;v=2"))
         .withRequestBody(
