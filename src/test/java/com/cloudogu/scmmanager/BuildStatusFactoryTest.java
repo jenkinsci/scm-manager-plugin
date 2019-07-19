@@ -4,6 +4,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
+import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,11 +74,25 @@ public class BuildStatusFactoryTest {
     assertNull(buildStatus);
   }
 
+  @Test
+  public void testMarshaling() {
+    BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.UNSTABLE);
+    JSONObject jsonObject = JSONObject.fromObject(buildStatus);
+    assertEquals("jenkins/scm-manager-plugin", jsonObject.getString("name"));
+    assertEquals("jenkins", jsonObject.getString("type"));
+    assertEquals("UNSTABLE", jsonObject.getString("status"));
+    assertUrl(jsonObject.getString("url"));
+  }
+
   private void assertStatus(BuildStatus buildStatus, BuildStatus.StatusType type) {
     assertEquals("jenkins", buildStatus.getType());
     assertEquals("jenkins/scm-manager-plugin", buildStatus.getName());
-    assertEquals(URL + "/job/jenkins/scm-manager-plugin/42", buildStatus.getUrl());
     assertEquals(type, buildStatus.getStatus());
+    assertUrl(buildStatus.getUrl());
+  }
+
+  private void assertUrl(String url) {
+    assertEquals(URL + "/job/jenkins/scm-manager-plugin/42", url);
   }
 
   private static class SimpleJob extends Job {

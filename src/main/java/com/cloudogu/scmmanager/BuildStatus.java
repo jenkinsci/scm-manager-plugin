@@ -5,9 +5,9 @@ public final class BuildStatus {
   private final String name;
   private final String url;
 
-  // field is required for marshaling to json
-  @SuppressWarnings("squid:S1170")
-  private final String type = "jenkins";
+  // field name is required for marshaling to json
+  @SuppressWarnings("squid:S00115")
+  private static final String type = "jenkins";
   private final StatusType status;
 
   private BuildStatus(String name, String url, StatusType status) {
