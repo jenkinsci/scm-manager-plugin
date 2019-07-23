@@ -1,33 +1,20 @@
 package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.ScmInformation;
-import hudson.model.Run;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ScmMigratedV1NotifierProviderTest {
 
-  @Mock
-  private AuthenticationFactory authenticationFactory;
-
-  @InjectMocks
-  private ScmMigratedV1NotifierProvider provider;
-
-  @Mock
-  private Run<?, ?> run;
+  private ScmMigratedV1NotifierProvider provider = new ScmMigratedV1NotifierProvider();
 
   @Test
   public void testGetWithWrongUrl() {
-    Optional<? extends Notifier> notifier = provider.get(run, createInformation("http://localhost/awesome/repo"));
+    Optional<? extends Notifier> notifier = provider.get(null, createInformation("http://localhost/awesome/repo"));
     assertFalse(notifier.isPresent());
   }
 
@@ -53,7 +40,7 @@ public class ScmMigratedV1NotifierProviderTest {
 
   private void assertIsPresent(String s) {
     ScmInformation information = createInformation(s);
-    Optional<ScmMigratedV1Notifier> notifier = provider.get(run, information);
+    Optional<ScmMigratedV1Notifier> notifier = provider.get(null, information);
     assertTrue(notifier.isPresent());
   }
 
