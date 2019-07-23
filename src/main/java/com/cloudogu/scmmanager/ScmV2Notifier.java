@@ -58,7 +58,7 @@ public class ScmV2Notifier implements Notifier {
     this.completionListener = completionListener;
   }
 
-  public AsyncHttpClient getClient() {
+  private AsyncHttpClient getClient() {
     if (client == null) {
       return AHC.instance();
     }
