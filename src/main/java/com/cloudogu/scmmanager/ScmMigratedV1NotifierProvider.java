@@ -9,6 +9,9 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 @Extension
 public class ScmMigratedV1NotifierProvider implements NotifierProvider {
 
@@ -23,13 +26,11 @@ public class ScmMigratedV1NotifierProvider implements NotifierProvider {
 
   @Override
   public Optional<ScmMigratedV1Notifier> get(Run<?, ?> run, ScmInformation information) {
-    ScmMigratedV1Notifier notifier = null;
-
     Matcher matcher = PATTERN.matcher(information.getUrl());
     if (matcher.matches()) {
-      notifier = new ScmMigratedV1Notifier(authenticationFactory, run, information);
+      return of(new ScmMigratedV1Notifier(authenticationFactory, run, information));
     }
 
-    return Optional.ofNullable(notifier);
+    return empty();
   }
 }
