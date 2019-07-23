@@ -40,13 +40,13 @@ class NotificationService {
 
     List<ScmInformation> informationList = informationService.resolve(run);
     if (informationList.isEmpty()) {
-      LOG.warn("no scm information could be extracted from build {}", run);
+      LOG.info("no scm information could be extracted from build {}", run);
       return;
     }
 
     BuildStatus buildStatus = buildStatusFactory.create(rootUrl, run, result);
     if (buildStatus == null) {
-      LOG.warn("could not create build status from build {}", run);
+      LOG.warn("could not create build status from build {} with result {}", run, result);
       return;
     }
 
@@ -54,7 +54,11 @@ class NotificationService {
       try {
         notify(run, buildStatus, info);
       } catch (IOException ex) {
-        LOG.warn("failed to send build status notification", ex);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("failed to send build status notification", ex);
+        } else {
+          LOG.info("failed to send build status notification: {}", ex.getMessage());
+        }
       }
     }
   }
