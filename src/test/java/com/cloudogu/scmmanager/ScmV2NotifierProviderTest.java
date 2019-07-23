@@ -47,6 +47,32 @@ public class ScmV2NotifierProviderTest {
   }
 
   @Test
+  public void testGetWithFurtherPath() throws MalformedURLException {
+    applyAuthentication();
+
+    ScmInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one/some/file");
+    ScmV2Notifier notifier = provider.get(run, information).get();
+
+    assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
+    assertEquals("one", notifier.getNamespaceAndName().getName());
+    assertEquals("https://scm.scm-manager.org", notifier.getInstance().toExternalForm());
+    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, notifier.getAuthentication());
+  }
+
+  @Test
+  public void testGetWithDotGit() throws MalformedURLException {
+    applyAuthentication();
+
+    ScmInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one.git");
+    ScmV2Notifier notifier = provider.get(run, information).get();
+
+    assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
+    assertEquals("one", notifier.getNamespaceAndName().getName());
+    assertEquals("https://scm.scm-manager.org", notifier.getInstance().toExternalForm());
+    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, notifier.getAuthentication());
+  }
+
+  @Test
   public void testGetWithContextPath() throws MalformedURLException {
     applyAuthentication();
 
