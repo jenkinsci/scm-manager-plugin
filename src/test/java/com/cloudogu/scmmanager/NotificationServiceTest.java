@@ -41,7 +41,11 @@ public class NotificationServiceTest {
   public void testNotify() {
     String rootUrl = jenkins.jenkins.getRootUrl();
 
-    BuildStatus status = BuildStatus.success("scm-manager-plugin", "http://localhost:8080/jenkins/job/scm-manager-plugin/42");
+    BuildStatus status = BuildStatus.success(
+      "scm-manager-plugin",
+      "scm-manager-plugin",
+      "http://localhost:8080/jenkins/job/scm-manager-plugin/42"
+    );
     when(buildStatusFactory.create(rootUrl, run, Result.SUCCESS)).thenReturn(status);
 
     ScmInformation information = new ScmInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");

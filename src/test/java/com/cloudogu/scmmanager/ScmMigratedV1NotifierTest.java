@@ -56,7 +56,7 @@ public class ScmMigratedV1NotifierTest {
 
     try (AsyncHttpClient client = new AsyncHttpClient()) {
       notifier.setClient(client);
-      notifier.notify("abc123", BuildStatus.success("old-repo", "https://oss.cloudogu.com"));
+      notifier.notify("abc123", BuildStatus.success("old-repo", "Old-Repo", "https://oss.cloudogu.com"));
 
       cdl.await(30, TimeUnit.SECONDS);
     }
@@ -75,7 +75,7 @@ public class ScmMigratedV1NotifierTest {
     ScmV2Notifier v2Notifier = mock(ScmV2Notifier.class);
     AtomicReference<ScmInformation> reference = applyV2Notifier(cdl, v2Notifier);
 
-    BuildStatus success = BuildStatus.success("old-repo", "https://oss.cloudogu.com");
+    BuildStatus success = BuildStatus.success("old-repo", "Old-Repo",  "https://oss.cloudogu.com");
 
     try (AsyncHttpClient client = new AsyncHttpClient()) {
       notifier.setClient(client);

@@ -40,7 +40,13 @@ public class ScmV2NotifierTest {
       notifier.setClient(client);
       notifier.setCompletionListener((response -> cdl.countDown()));
 
-      notifier.notify("abc", BuildStatus.success("hitchhiker/heart-of-gold", "https://hitchhiker.com"));
+      BuildStatus status = BuildStatus.success(
+        "hitchhiker/heart-of-gold",
+        "hitchhiker >> heart-of-gold",
+        "https://hitchhiker.com"
+      );
+
+      notifier.notify("abc", status);
 
       cdl.await(30, TimeUnit.SECONDS);
     }

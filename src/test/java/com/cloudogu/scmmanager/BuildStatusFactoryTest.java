@@ -29,10 +29,10 @@ public class BuildStatusFactoryTest {
   private BuildStatusFactory buildStatusFactory = new BuildStatusFactory();
 
   @Before
-  @SuppressWarnings("unchecked")
   public void prepareRun() {
     ItemGroup group = mock(ItemGroup.class);
     when(group.getFullName()).thenReturn("jenkins");
+    when(group.getFullDisplayName()).thenReturn("Jenkins");
     Job job = new SimpleJob(group, "scm-manager-plugin");
     when(run.getParent()).thenReturn(job);
     when(run.getUrl()).thenReturn("/job/jenkins/scm-manager-plugin/42");
@@ -79,6 +79,7 @@ public class BuildStatusFactoryTest {
     BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.UNSTABLE);
     JSONObject jsonObject = JSONObject.fromObject(buildStatus);
     assertEquals("jenkins/scm-manager-plugin", jsonObject.getString("name"));
+    assertEquals("Jenkins » scm-manager-plugin", jsonObject.getString("displayName"));
     assertEquals("jenkins", jsonObject.getString("type"));
     assertEquals("UNSTABLE", jsonObject.getString("status"));
     assertUrl(jsonObject.getString("url"));
@@ -87,6 +88,7 @@ public class BuildStatusFactoryTest {
   private void assertStatus(BuildStatus buildStatus, BuildStatus.StatusType type) {
     assertEquals("jenkins", buildStatus.getType());
     assertEquals("jenkins/scm-manager-plugin", buildStatus.getName());
+    assertEquals("Jenkins » scm-manager-plugin", buildStatus.getDisplayName());
     assertEquals(type, buildStatus.getStatus());
     assertUrl(buildStatus.getUrl());
   }
