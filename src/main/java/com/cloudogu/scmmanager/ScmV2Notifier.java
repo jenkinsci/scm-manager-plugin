@@ -59,7 +59,7 @@ public class ScmV2Notifier implements Notifier {
     this.completionListener = completionListener;
   }
 
-  public AsyncHttpClient getClient() {
+  private AsyncHttpClient getClient() {
     if (client == null) {
       return AHC.instance();
     }
@@ -73,10 +73,10 @@ public class ScmV2Notifier implements Notifier {
     String url = createUrl(revision, buildStatus);
     LOG.info("send build status to {}", url);
 
-    AsyncHttpClient.BoundRequestBuilder post = getClient().preparePost(url);
-    authentication.authenticate(post);
+    AsyncHttpClient.BoundRequestBuilder put = getClient().preparePut(url);
+    authentication.authenticate(put);
 
-    post.setHeader("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
+    put.setHeader("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
       .setBody(createRequestBody(buildStatus))
       .execute(new AsyncCompletionHandler<Object>() {
         @Override

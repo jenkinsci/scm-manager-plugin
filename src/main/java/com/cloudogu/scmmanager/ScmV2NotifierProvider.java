@@ -12,10 +12,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 @Extension
 public class ScmV2NotifierProvider implements NotifierProvider {
 
-  private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/repo/([A-Za-z0-9.\\-_]+)/([A-Za-z0-9.\\-_]+)$");
+  private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/repo/([A-Za-z0-9.\\-_]+)/([A-Za-z0-9.\\-_]+)(?:/.*)?$");
 
   private AuthenticationFactory authenticationFactory;
 
@@ -26,14 +29,12 @@ public class ScmV2NotifierProvider implements NotifierProvider {
 
   @Override
   public Optional<ScmV2Notifier> get(Run<?, ?>  run, ScmInformation information) throws MalformedURLException {
-    ScmV2Notifier notifier = null;
-
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
-      notifier = createNotifier(run, information, url, matcher);
+      return of(createNotifier(run, information, url, matcher));
     }
-    return Optional.ofNullable(notifier);
+    return empty();
   }
 
   private ScmV2Notifier createNotifier(Run<?, ?> run, ScmInformation information, String url, Matcher matcher) throws MalformedURLException {
@@ -45,7 +46,13 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {
-    return new NamespaceAndName(matcher.group(2), matcher.group(3));
+    String namespace = matcher.group(2);
+    String name = matcher.group(3);
+    if (name.endsWith(".git")) {
+      return new NamespaceAndName(namespace, name.substring(0, name.length() - ".git".length()));
+    } else {
+      return new NamespaceAndName(namespace, name);
+    }
   }
 
   private URL createInstanceURL(String stringUrl, Matcher matcher) throws MalformedURLException {
