@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.net.UrlEscapers;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
@@ -10,7 +9,10 @@ import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
@@ -67,7 +69,7 @@ public class ScmV2Notifier implements Notifier {
   }
 
   @Override
-  public void notify(String revision, BuildStatus buildStatus) {
+  public void notify(String revision, BuildStatus buildStatus) throws IOException {
     LOG.info("set rev {} of {} to {}", revision, namespaceAndName, buildStatus.getStatus());
 
     String url = createUrl(revision, buildStatus);
@@ -101,14 +103,14 @@ public class ScmV2Notifier implements Notifier {
     return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
   }
 
-  private String createUrl(String revision, BuildStatus buildStatus) {
+  private String createUrl(String revision, BuildStatus buildStatus) throws UnsupportedEncodingException {
     return String.format(URL,
       instance.toExternalForm(),
       namespaceAndName.getNamespace(),
       namespaceAndName.getName(),
       revision,
       buildStatus.getType(),
-      UrlEscapers.urlPathSegmentEscaper().escape(buildStatus.getName())
+      URLEncoder.encode(buildStatus.getName(), "UTF-8")
     );
   }
 }

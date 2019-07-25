@@ -11,7 +11,7 @@ import jenkins.plugins.asynchttpclient.AHC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.Optional;
 
 public class ScmMigratedV1Notifier implements Notifier {
@@ -83,7 +83,7 @@ public class ScmMigratedV1Notifier implements Notifier {
     });
   }
 
-  private void notifyV2(String location, String revision, BuildStatus buildStatus) throws MalformedURLException {
+  private void notifyV2(String location, String revision, BuildStatus buildStatus) throws IOException {
     ScmV2NotifierProvider provider = getV2NotifierProvider();
     provider.setAuthenticationFactory(authenticationFactory);
 

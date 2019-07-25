@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -64,7 +65,7 @@ public class ScmMigratedV1NotifierTest {
   }
 
   @Test
-  public void testNotify() throws InterruptedException, MalformedURLException {
+  public void testNotify() throws InterruptedException, IOException {
     stubResource();
 
     CountDownLatch cdl = new CountDownLatch(1);

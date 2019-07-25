@@ -5,6 +5,7 @@ import com.ning.http.client.AsyncHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
@@ -18,7 +19,7 @@ public class ScmV2NotifierTest {
   public WireMockRule wireMockRule = new WireMockRule();
 
   @Test
-  public void testNotify() throws MalformedURLException, InterruptedException {
+  public void testNotify() throws IOException, InterruptedException {
     stubFor(
       put("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold")
         .willReturn(
