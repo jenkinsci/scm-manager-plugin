@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.net.UrlEscapers;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
@@ -107,7 +108,7 @@ public class ScmV2Notifier implements Notifier {
       namespaceAndName.getName(),
       revision,
       buildStatus.getType(),
-      buildStatus.getName()
+      UrlEscapers.urlPathSegmentEscaper().escape(buildStatus.getName())
     );
   }
 }

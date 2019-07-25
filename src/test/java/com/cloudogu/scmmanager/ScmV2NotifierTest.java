@@ -20,7 +20,7 @@ public class ScmV2NotifierTest {
   @Test
   public void testNotify() throws MalformedURLException, InterruptedException {
     stubFor(
-      post("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold")
+      post("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold")
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -39,20 +39,20 @@ public class ScmV2NotifierTest {
       notifier.setClient(client);
       notifier.setCompletionListener((response -> cdl.countDown()));
 
-      notifier.notify("abc", BuildStatus.success("heart-of-gold", "https://hitchhiker.com"));
+      notifier.notify("abc", BuildStatus.success("hitchhiker/heart-of-gold", "https://hitchhiker.com"));
 
       cdl.await(30, TimeUnit.SECONDS);
     }
 
     verify(
-      postRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/heart-of-gold"))
+      postRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold"))
         .withHeader("Authenticated", equalTo("yes; awesome"))
         .withHeader("Content-Type", equalTo("application/vnd.scmm-cistatus+json;v=2"))
         .withRequestBody(
           matchingJsonPath("$.type", equalTo("jenkins"))
         )
         .withRequestBody(
-          matchingJsonPath("$.name", equalTo("heart-of-gold"))
+          matchingJsonPath("$.name", equalTo("hitchhiker/heart-of-gold"))
         )
         .withRequestBody(
           matchingJsonPath("$.url", equalTo("https://hitchhiker.com"))
