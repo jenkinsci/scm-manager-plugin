@@ -2,8 +2,10 @@ package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.ScmInformation;
 import com.google.common.base.Strings;
+import com.jcraft.jsch.JSchException;
 import hudson.Extension;
 import hudson.model.Run;
+import org.jenkinsci.plugins.jsch.JSchConnector;
 
 import javax.inject.Inject;
 import java.net.MalformedURLException;
@@ -28,7 +30,7 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2Notifier> get(Run<?, ?>  run, ScmInformation information) throws MalformedURLException {
+  public Optional<ScmV2Notifier> get(Run<?, ?> run, ScmInformation information) throws MalformedURLException, JSchException {
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
@@ -37,12 +39,26 @@ public class ScmV2NotifierProvider implements NotifierProvider {
     return empty();
   }
 
-  private ScmV2Notifier createNotifier(Run<?, ?> run, ScmInformation information, String url, Matcher matcher) throws MalformedURLException {
+  private ScmV2Notifier createNotifier(Run<?, ?> run, ScmInformation information, String url, Matcher matcher) throws MalformedURLException, JSchException {
     URL instance = createInstanceURL(url, matcher);
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
-    Authentication authentication = authenticationFactory.create(run, information.getCredentialsId());
 
-    return new ScmV2Notifier(instance, namespaceAndName, authentication);
+    JSchConnector connector = createSSHConnector(instance, information);
+    if (connector.hasSession()) {
+      return new ScmV2Notifier(instance, namespaceAndName, connector);
+    } else {
+      Authentication authentication = authenticationFactory.create(run, information.getCredentialsId());
+      return new ScmV2Notifier(instance, namespaceAndName, authentication);
+    }
+  }
+
+  private JSchConnector createSSHConnector(URL instance, ScmInformation information) {
+    JSchConnector connector = new JSchConnector(information.getCredentialsId(), instance.getHost(), instance.getPort());
+    connector.getSession().setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
+    java.util.Properties config = new java.util.Properties();
+    config.put("StrictHostKeyChecking", "no");
+    connector.getSession().setConfig(config);
+    return connector;
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {

@@ -3,6 +3,7 @@ package com.cloudogu.scmmanager;
 import com.cloudogu.scmmanager.info.ScmInformation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.jcraft.jsch.JSchException;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
@@ -83,7 +84,7 @@ public class ScmMigratedV1Notifier implements Notifier {
     });
   }
 
-  private void notifyV2(String location, String revision, BuildStatus buildStatus) throws IOException {
+  private void notifyV2(String location, String revision, BuildStatus buildStatus) throws IOException, JSchException {
     ScmV2NotifierProvider provider = getV2NotifierProvider();
     provider.setAuthenticationFactory(authenticationFactory);
 
