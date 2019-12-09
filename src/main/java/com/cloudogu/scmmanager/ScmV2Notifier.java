@@ -1,9 +1,6 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
@@ -14,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -26,7 +22,6 @@ public class ScmV2Notifier implements Notifier {
   private static final Logger LOG = LoggerFactory.getLogger(ScmV2Notifier.class);
 
   private static final String URL = "%s/api/v2/ci/%s/%s/changesets/%s/%s/%s";
-  private static final String SSH_COMMAND = "scm ci --namespace %s --name %s --revision %s --cistatus %s";
 
   private final URL instance;
   private final NamespaceAndName namespaceAndName;
@@ -42,12 +37,6 @@ public class ScmV2Notifier implements Notifier {
     this.instance = instance;
     this.namespaceAndName = namespaceAndName;
     this.authentication = authentication;
-  }
-
-  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, JSchConnector connector) {
-    this.instance = instance;
-    this.namespaceAndName = namespaceAndName;
-    this.connector = connector;
   }
 
   @VisibleForTesting
@@ -83,27 +72,9 @@ public class ScmV2Notifier implements Notifier {
   }
 
   @Override
-  public void notify(String revision, BuildStatus buildStatus) throws IOException, JSchException {
+  public void notify(String revision, BuildStatus buildStatus) throws IOException {
     LOG.info("set rev {} of {} to {}", revision, namespaceAndName, buildStatus.getStatus());
 
-    if (connector != null) {
-      notifyViaSSH(revision, buildStatus);
-    } else {
-      notifyViaHTTP(revision, buildStatus);
-    }
-  }
-
-  private void notifyViaSSH(String revision, BuildStatus buildStatus) throws JSchException, IOException {
-    Session session = connector.getSession();
-    Channel channel = session.openChannel("ciStatus");
-    OutputStream out = channel.getOutputStream();
-    out.write(String.format(SSH_COMMAND, namespaceAndName.getNamespace(), namespaceAndName.getName(), revision, buildStatus.getStatus()).getBytes());
-    out.flush();
-    channel.disconnect();
-    session.disconnect();
-  }
-
-  private void notifyViaHTTP(String revision, BuildStatus buildStatus) throws UnsupportedEncodingException {
     String url = createUrl(revision, buildStatus);
     LOG.info("send build status to {}", url);
 
