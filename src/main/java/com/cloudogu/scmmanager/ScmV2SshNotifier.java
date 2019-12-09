@@ -53,6 +53,10 @@ public class ScmV2SshNotifier implements Notifier {
     session.connect(5000);
     Channel channel = session.openChannel("exec");
     ((ChannelExec) channel).setCommand(String.format(SSH_COMMAND, namespaceAndName.getNamespace(), namespaceAndName.getName(), revision));
+    if (buildStatus.getType() == null) {
+      buildStatus.setType("jenkins");
+    }
+    channel.connect();
     OutputStream out = channel.getOutputStream();
     JAXBContext jaxbContext = JAXBContext.newInstance(BuildStatus.class);
     Marshaller marshaller = jaxbContext.createMarshaller();

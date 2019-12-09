@@ -1,21 +1,30 @@
 package com.cloudogu.scmmanager;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name = "cistatus")
+@XmlAccessorType(XmlAccessType.FIELD)
 public final class BuildStatus {
 
-  private final String name;
-  private final String displayName;
-  private final String url;
+  private String name;
+  private String displayName;
+  private String url;
 
   // field name is required for marshaling to json
   @SuppressWarnings("squid:S00115")
-  private static final String type = "jenkins";
-  private final StatusType status;
+  private String type = "jenkins";
+  private StatusType status;
 
   private BuildStatus(String name, String displayName, String url, StatusType status) {
     this.name = name;
     this.displayName = displayName;
     this.url = url;
     this.status = status;
+  }
+
+  private BuildStatus() {
   }
 
   public String getName() {
@@ -36,6 +45,26 @@ public final class BuildStatus {
 
   public StatusType getStatus() {
     return status;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public void setStatus(StatusType status) {
+    this.status = status;
   }
 
   public enum StatusType {
