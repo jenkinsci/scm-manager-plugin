@@ -1,5 +1,9 @@
 package com.cloudogu.scmmanager;
 
+import com.cloudbees.jenkins.plugins.sshcredentials.SSHUserPrivateKey;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudogu.scmmanager.info.ScmInformation;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -7,6 +11,7 @@ import hudson.Extension;
 import hudson.model.Run;
 import org.jenkinsci.plugins.jsch.JSchConnector;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,17 +42,48 @@ public class ScmV2SSHNotifierProvider implements NotifierProvider {
   }
 
   private JSchConnector createSSHConnector(Matcher matcher, ScmInformation information, Run<?, ?> run) throws JSchException {
-    JSchConnector connector = new JSchConnector("scmadmin", matcher.group(2), getPort(matcher));
+    JSchConnector connector;
+    SSHUserPrivateKey credentialById = CredentialsProvider.findCredentialById(information.getCredentialsId(), SSHUserPrivateKey.class, run, Collections.emptyList());
+    if (isPrivateKeyAvailable(credentialById)) {
+      connector = createSSHPrivateKeyConnector(credentialById, matcher);
+    } else {
+      connector = createSSHUsernamePasswordConnector(run, information, matcher);
+    }
 
-//    SSHUserPrivateKey credentialById = CredentialsProvider.findCredentialById(information.getCredentialsId(), SSHUserPrivateKey.class, run, Collections.emptyList());
-//    connector.getJSch().addIdentity("scmadmin",credentialById.getPrivateKeys().get(0).getBytes(),"".getBytes(),"".getBytes());
-    connector.getJSch().addIdentity("~/scmadmin");
-    Session session = connector.getSession();
+    setupSessionConfig(connector.getSession());
+    return connector;
+  }
+
+  private JSchConnector createSSHUsernamePasswordConnector(Run<?, ?> run, ScmInformation information, Matcher matcher) {
+    StandardUsernamePasswordCredentials usernamePasswordCredentials = CredentialsProvider.findCredentialById(information.getCredentialsId(), StandardUsernamePasswordCredentials.class, run, Collections.emptyList());
+    if (usernamePasswordCredentials == null) {
+      throw new CredentialsUnavailableException(String.format("could not find credentials by id: %s", information.getCredentialsId()));
+    }
+    JSchConnector connector = createConnector(usernamePasswordCredentials.getUsername(), matcher);
+    connector.getSession().setPassword(usernamePasswordCredentials.getPassword().getPlainText());
+    return connector;
+  }
+
+
+  private JSchConnector createSSHPrivateKeyConnector(SSHUserPrivateKey credentialById, Matcher matcher) throws JSchException {
+    JSchConnector connector = createConnector(credentialById.getUsername(), matcher);
+    connector.getJSch().addIdentity(credentialById.getUsername(), credentialById.getPrivateKeys().get(0).getBytes(), "".getBytes(), "".getBytes());
+    return connector;
+  }
+
+  private boolean isPrivateKeyAvailable(SSHUserPrivateKey credentialById) {
+    return credentialById != null && !credentialById.getPrivateKeys().isEmpty();
+  }
+
+  private JSchConnector createConnector(String username, Matcher matcher) {
+    return new JSchConnector(username, matcher.group(2), getPort(matcher));
+  }
+
+  private void setupSessionConfig(Session session) {
     java.util.Properties config = new java.util.Properties();
     config.put("StrictHostKeyChecking", "no");
-    config.put("PreferredAuthentications","publickey,password");
+    config.put("PreferredAuthentications", "publickey,password");
     session.setConfig(config);
-    return connector;
   }
 
   private Integer getPort(Matcher matcher) {
