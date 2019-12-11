@@ -25,7 +25,7 @@ public class ScmV2Notifier implements Notifier {
 
   private final URL instance;
   private final NamespaceAndName namespaceAndName;
-  private Authentication authentication;
+  private HttpAuthentication httpAuthentication;
   private JSchConnector connector;
 
   private AsyncHttpClient client;
@@ -33,10 +33,10 @@ public class ScmV2Notifier implements Notifier {
   private Consumer<Response> completionListener = response -> {
   };
 
-  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, Authentication authentication) {
+  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication) {
     this.instance = instance;
     this.namespaceAndName = namespaceAndName;
-    this.authentication = authentication;
+    this.httpAuthentication = httpAuthentication;
   }
 
   @VisibleForTesting
@@ -50,8 +50,8 @@ public class ScmV2Notifier implements Notifier {
   }
 
   @VisibleForTesting
-  Authentication getAuthentication() {
-    return authentication;
+  HttpAuthentication getHttpAuthentication() {
+    return httpAuthentication;
   }
 
   @VisibleForTesting
@@ -79,7 +79,7 @@ public class ScmV2Notifier implements Notifier {
     LOG.info("send build status to {}", url);
 
     AsyncHttpClient.BoundRequestBuilder put = getClient().preparePut(url);
-    authentication.authenticate(put);
+    httpAuthentication.authenticate(put);
 
     put.setHeader("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
       .setBody(createRequestBody(buildStatus))

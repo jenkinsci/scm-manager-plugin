@@ -41,7 +41,7 @@ public class ScmMigratedV1NotifierTest {
 
   @Before
   public void prepareAuthentication() {
-    when(authenticationFactory.create(run, "one"))
+    when(authenticationFactory.createHttp(run, "one"))
       .thenReturn(response -> response.setHeader("Auth", "Awesome"));
   }
 

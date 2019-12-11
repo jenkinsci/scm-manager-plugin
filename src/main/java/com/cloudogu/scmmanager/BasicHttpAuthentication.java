@@ -5,12 +5,12 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Realm;
 import hudson.util.Secret;
 
-public class BasicAuthentication implements Authentication {
+public class BasicHttpAuthentication implements HttpAuthentication {
 
   private final String username;
   private final Secret password;
 
-  BasicAuthentication(String username, Secret password) {
+  BasicHttpAuthentication(String username, Secret password) {
     this.username = username;
     this.password = password;
   }
@@ -25,7 +25,6 @@ public class BasicAuthentication implements Authentication {
     return password;
   }
 
-  @Override
   public void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder) {
     Realm realm = new Realm.RealmBuilder()
       .setUsePreemptiveAuth(true)

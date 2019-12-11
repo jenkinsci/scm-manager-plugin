@@ -3,7 +3,6 @@ package com.cloudogu.scmmanager;
 import com.cloudogu.scmmanager.info.ScmInformation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.jcraft.jsch.JSchException;
 import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
@@ -12,7 +11,6 @@ import jenkins.plugins.asynchttpclient.AHC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -60,7 +58,7 @@ public class ScmMigratedV1Notifier implements Notifier {
   public void notify(String revision, BuildStatus buildStatus) {
     AsyncHttpClient.BoundRequestBuilder request = getClient().prepareGet(information.getUrl())
       .setFollowRedirects(false);
-    authenticationFactory.create(run, information.getCredentialsId()).authenticate(request);
+    authenticationFactory.createHttp(run, information.getCredentialsId()).authenticate(request);
     request.execute(new AsyncCompletionHandler<Object>() {
 
       @Override

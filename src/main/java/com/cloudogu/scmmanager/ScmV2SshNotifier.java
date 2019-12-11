@@ -1,5 +1,7 @@
 package com.cloudogu.scmmanager;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.inject.internal.cglib.core.$ClassNameReader;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
@@ -27,6 +29,11 @@ public class ScmV2SshNotifier implements Notifier {
     this.connector = connector;
   }
 
+  @VisibleForTesting
+  public NamespaceAndName getNamespaceAndName() {
+    return namespaceAndName;
+  }
+
   @Override
   public void notify(String revision, BuildStatus buildStatus) throws IOException, JSchException, JAXBException {
     LOG.info("set rev {} of {} to {}", revision, namespaceAndName, buildStatus.getStatus());
@@ -41,7 +48,7 @@ public class ScmV2SshNotifier implements Notifier {
     ((ChannelExec) channel).setCommand(String.format(SSH_COMMAND, namespaceAndName.getNamespace(), namespaceAndName.getName(), revision));
     setBuildStatusTypeIfNull(buildStatus);
     channel.connect();
-    marshalBuildStatusIntoOutputstream(channel, buildStatus);
+    marshalBuildStatusIntoOutputStream(channel, buildStatus);
     channel.disconnect();
   }
 
@@ -51,7 +58,7 @@ public class ScmV2SshNotifier implements Notifier {
     }
   }
 
-  private void marshalBuildStatusIntoOutputstream(Channel channel, BuildStatus buildStatus) throws IOException, JAXBException {
+  private void marshalBuildStatusIntoOutputStream(Channel channel, BuildStatus buildStatus) throws IOException, JAXBException {
     OutputStream out = channel.getOutputStream();
     JAXBContext jaxbContext = JAXBContext.newInstance(BuildStatus.class);
     Marshaller marshaller = jaxbContext.createMarshaller();

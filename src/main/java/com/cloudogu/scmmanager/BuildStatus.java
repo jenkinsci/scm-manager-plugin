@@ -24,7 +24,7 @@ public final class BuildStatus {
     this.status = status;
   }
 
-  private BuildStatus() {
+  BuildStatus() {
   }
 
   public String getName() {

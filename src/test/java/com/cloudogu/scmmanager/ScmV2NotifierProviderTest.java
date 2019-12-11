@@ -43,7 +43,7 @@ public class ScmV2NotifierProviderTest {
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
     assertEquals("one", notifier.getNamespaceAndName().getName());
     assertEquals("https://scm.scm-manager.org", notifier.getInstance().toExternalForm());
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, notifier.getAuthentication());
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, notifier.getHttpAuthentication());
   }
 
   @Test
@@ -56,7 +56,7 @@ public class ScmV2NotifierProviderTest {
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
     assertEquals("one", notifier.getNamespaceAndName().getName());
     assertEquals("https://scm.scm-manager.org", notifier.getInstance().toExternalForm());
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, notifier.getAuthentication());
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, notifier.getHttpAuthentication());
   }
 
   @Test
@@ -69,7 +69,7 @@ public class ScmV2NotifierProviderTest {
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
     assertEquals("one", notifier.getNamespaceAndName().getName());
     assertEquals("https://scm.scm-manager.org", notifier.getInstance().toExternalForm());
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, notifier.getAuthentication());
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, notifier.getHttpAuthentication());
   }
 
   @Test
@@ -97,7 +97,7 @@ public class ScmV2NotifierProviderTest {
   }
 
   private void applyAuthentication() {
-    when(authenticationFactory.create(run, "one")).thenReturn(AuthenticationFactory.NOOP_AUTHENTICATION);
+    when(authenticationFactory.createHttp(run, "one")).thenReturn(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION);
   }
 
 }

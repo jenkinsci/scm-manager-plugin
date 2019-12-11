@@ -20,7 +20,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AuthenticationFactoryTest {
+public class HttpAuthenticationFactoryTest {
 
   @Rule
   public JenkinsRule jenkins = new JenkinsRule();
@@ -32,30 +32,30 @@ public class AuthenticationFactoryTest {
 
   @Test
   public void testCreateWithoutCredentialsId() {
-    Authentication authentication = authenticationFactory.create(run, null);
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, authentication);
+    HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, null);
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
   }
 
   @Test
   public void testCreateWithEmptyCredentialsId() {
-    Authentication authentication = authenticationFactory.create(run, "");
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, authentication);
+    HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "");
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
   }
 
   @Test
   public void testCreateWithNonExistingCredentials() {
-    Authentication authentication = authenticationFactory.create(run, "scm-two");
-    assertSame(AuthenticationFactory.NOOP_AUTHENTICATION, authentication);
+    HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-two");
+    assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
   }
 
   @Test
   public void testCreate() throws IOException {
     addCredential("scm-one", "trillian", "secret");
 
-    Authentication authentication = authenticationFactory.create(run, "scm-one");
-    assertThat(authentication, CoreMatchers.instanceOf(BasicAuthentication.class));
+    HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-one");
+    assertThat(httpAuthentication, CoreMatchers.instanceOf(BasicHttpAuthentication.class));
 
-    BasicAuthentication basic = (BasicAuthentication) authentication;
+    BasicHttpAuthentication basic = (BasicHttpAuthentication) httpAuthentication;
     assertEquals("trillian", basic.getUsername());
     assertEquals("secret", basic.getPassword().getPlainText());
   }
