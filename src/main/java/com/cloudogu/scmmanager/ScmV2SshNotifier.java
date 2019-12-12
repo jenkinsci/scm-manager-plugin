@@ -30,6 +30,11 @@ public class ScmV2SshNotifier implements Notifier {
     return namespaceAndName;
   }
 
+  @VisibleForTesting
+  public Connection getConnection() {
+    return connection;
+  }
+
   @Override
   public void notify(String revision, BuildStatus buildStatus) throws IOException {
     LOG.info("set rev {} of {} to {}", revision, namespaceAndName, buildStatus.getStatus());
@@ -41,7 +46,7 @@ public class ScmV2SshNotifier implements Notifier {
     }
   }
 
-  private void connect() throws SshConnectionFailedException {
+  private void connect() {
     try {
       // accept any host
       connection.connect((s, i, s1, bytes) -> true);

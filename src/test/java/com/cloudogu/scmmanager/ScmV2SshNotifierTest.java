@@ -1,22 +1,20 @@
 package com.cloudogu.scmmanager;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import org.jenkinsci.plugins.jsch.JSchConnector;
+import com.trilead.ssh2.Connection;
+import com.trilead.ssh2.Session;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.w3c.tidy.Out;
 
-import javax.xml.bind.JAXBException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,34 +22,30 @@ import static org.mockito.Mockito.when;
 public class ScmV2SshNotifierTest {
 
   @Mock
-  JSchConnector connector;
+  Connection connection;
+
+  @Mock
+  SSHAuthentication authentication;
 
   @Test
-  public void testNotify() throws JSchException, JAXBException, IOException {
+  public void testNotify() throws IOException {
     Session sessionMock = Mockito.mock(Session.class);
-    when(connector.getSession()).thenReturn(sessionMock);
-    ChannelExec channelExecMock = Mockito.mock(ChannelExec.class);
-    when(sessionMock.openChannel("exec")).thenReturn(channelExecMock);
-    OutputStream outMock = Mockito.mock(OutputStream.class);
-    when(channelExecMock.getOutputStream()).thenReturn(outMock);
-
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector, authentication);
+    when(connection.openSession()).thenReturn(sessionMock);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    when(sessionMock.getStdin()).thenReturn(out);
+    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connection, authentication);
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(true));
-
-    verify(outMock).flush();
+    verify(sessionMock).execCommand(any());
   }
 
   @Test
-  public void shouldSetTypeToJenkinsIfNoTypeAvailable() throws JSchException, JAXBException, IOException {
+  public void shouldSetTypeToJenkinsIfNoTypeAvailable() throws IOException {
     Session sessionMock = Mockito.mock(Session.class);
-    when(connector.getSession()).thenReturn(sessionMock);
-    ChannelExec channelExecMock = Mockito.mock(ChannelExec.class);
-    when(sessionMock.openChannel("exec")).thenReturn(channelExecMock);
-
+    when(connection.openSession()).thenReturn(sessionMock);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    when(channelExecMock.getOutputStream()).thenReturn(out);
+    when(sessionMock.getStdin()).thenReturn(out);
 
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector, authentication);
+    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connection, authentication);
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(false));
 
     assertTrue(out.toString().contains("jenkins"));
