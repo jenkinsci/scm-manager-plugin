@@ -28,7 +28,7 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2Notifier> get(Run<?, ?>  run, ScmInformation information) throws MalformedURLException {
+  public Optional<ScmV2Notifier> get(Run<?, ?> run, ScmInformation information) throws MalformedURLException {
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
@@ -40,9 +40,9 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   private ScmV2Notifier createNotifier(Run<?, ?> run, ScmInformation information, String url, Matcher matcher) throws MalformedURLException {
     URL instance = createInstanceURL(url, matcher);
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
-    Authentication authentication = authenticationFactory.create(run, information.getCredentialsId());
 
-    return new ScmV2Notifier(instance, namespaceAndName, authentication);
+    HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, information.getCredentialsId());
+    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication);
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {

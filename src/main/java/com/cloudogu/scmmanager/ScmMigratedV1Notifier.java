@@ -58,7 +58,7 @@ public class ScmMigratedV1Notifier implements Notifier {
   public void notify(String revision, BuildStatus buildStatus) {
     AsyncHttpClient.BoundRequestBuilder request = getClient().prepareGet(information.getUrl())
       .setFollowRedirects(false);
-    authenticationFactory.create(run, information.getCredentialsId()).authenticate(request);
+    authenticationFactory.createHttp(run, information.getCredentialsId()).authenticate(request);
     request.execute(new AsyncCompletionHandler<Object>() {
 
       @Override

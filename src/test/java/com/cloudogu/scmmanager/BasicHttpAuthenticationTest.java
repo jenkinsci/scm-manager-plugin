@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BasicAuthenticationTest {
+public class BasicHttpAuthenticationTest {
 
   @Mock
   private AsyncHttpClient.BoundRequestBuilder requestBuilder;
@@ -28,7 +28,7 @@ public class BasicAuthenticationTest {
     // secret without the usage of a password store
     Secret secret = Secret.fromString("{}");
 
-    BasicAuthentication authenticator = new BasicAuthentication("trillian", secret);
+    BasicHttpAuthentication authenticator = new BasicHttpAuthentication("trillian", secret);
     authenticator.authenticate(requestBuilder);
 
     verify(requestBuilder).setRealm(realmCaptor.capture());
