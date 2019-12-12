@@ -1,8 +1,8 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudbees.jenkins.plugins.sshcredentials.SSHUserPrivateKey;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -33,15 +33,10 @@ class AuthenticationFactory {
       throw new CredentialsUnavailableException("could not found credentials for ssh authentication");
     }
 
-    SSHUserPrivateKey sshUserPrivateKey = CredentialsProvider.findCredentialById(credentialsId, SSHUserPrivateKey.class, run, Collections.emptyList());
-    if (sshUserPrivateKey != null) {
-      return new SshPrivateKeyAuthentication(sshUserPrivateKey.getUsername(), sshUserPrivateKey.getPrivateKeys().get(0));
-    }
-
-    StandardUsernamePasswordCredentials usernamePasswordCredentials = CredentialsProvider.findCredentialById(credentialsId, StandardUsernamePasswordCredentials.class, run, Collections.emptyList());
-    if (usernamePasswordCredentials == null) {
+    StandardUsernameCredentials credentials = CredentialsProvider.findCredentialById(credentialsId, StandardUsernameCredentials.class, run, Collections.emptyList());
+    if (credentials == null) {
       throw new CredentialsUnavailableException(String.format("could not find credentials by id: %s", credentialsId));
     }
-    return new SshUsernamePasswordAuthentication(usernamePasswordCredentials.getUsername(), usernamePasswordCredentials.getPassword().getPlainText());
+    return new SSHAuthentication(credentials);
   }
 }

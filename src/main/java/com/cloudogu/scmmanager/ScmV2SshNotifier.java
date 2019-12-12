@@ -1,18 +1,12 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.inject.internal.cglib.core.$ClassNameReader;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import org.jenkinsci.plugins.jsch.JSchConnector;
+import com.trilead.ssh2.Connection;
+import com.trilead.ssh2.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.bind.JAXB;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -22,11 +16,13 @@ public class ScmV2SshNotifier implements Notifier {
   private static final String SSH_COMMAND = "scm ci-update --namespace %s --name %s --revision %s";
 
   private final NamespaceAndName namespaceAndName;
-  private JSchConnector connector;
+  private final Connection connection;
+  private final SSHAuthentication authentication;
 
-  ScmV2SshNotifier(NamespaceAndName namespaceAndName, JSchConnector connector) {
+  ScmV2SshNotifier(NamespaceAndName namespaceAndName, Connection connection, SSHAuthentication authentication) {
     this.namespaceAndName = namespaceAndName;
-    this.connector = connector;
+    this.connection = connection;
+    this.authentication = authentication;
   }
 
   @VisibleForTesting
@@ -35,21 +31,40 @@ public class ScmV2SshNotifier implements Notifier {
   }
 
   @Override
-  public void notify(String revision, BuildStatus buildStatus) throws IOException, JSchException, JAXBException {
+  public void notify(String revision, BuildStatus buildStatus) throws IOException {
     LOG.info("set rev {} of {} to {}", revision, namespaceAndName, buildStatus.getStatus());
-    Session session = connector.getSession();
-    session.connect(5000);
-    executeNotifyViaChannel(session, revision, buildStatus);
-    session.disconnect();
+    try {
+      connect();
+      executeStatusUpdateCommand(connection, revision, buildStatus);
+    } finally {
+      connection.close();
+    }
   }
 
-  private void executeNotifyViaChannel(Session session, String revision, BuildStatus buildStatus) throws JSchException, IOException, JAXBException {
-    Channel channel = session.openChannel("exec");
-    ((ChannelExec) channel).setCommand(String.format(SSH_COMMAND, namespaceAndName.getNamespace(), namespaceAndName.getName(), revision));
-    setBuildStatusTypeIfNull(buildStatus);
-    channel.connect();
-    marshalBuildStatusIntoOutputStream(channel, buildStatus);
-    channel.disconnect();
+  private void connect() throws SshConnectionFailedException {
+    try {
+      // accept any host
+      connection.connect((s, i, s1, bytes) -> true);
+      authentication.authenticate(connection);
+    } catch (IOException ex) {
+      throw new SshConnectionFailedException("ssh connection failed", ex);
+    }
+  }
+
+  private void executeStatusUpdateCommand(Connection connection, String revision, BuildStatus buildStatus) throws IOException {
+    String cmd = String.format(SSH_COMMAND, namespaceAndName.getNamespace(), namespaceAndName.getName(), revision);
+
+    Session session = null;
+    try {
+      session = connection.openSession();
+      session.execCommand(cmd);
+      setBuildStatusTypeIfNull(buildStatus);
+      marshalBuildStatusIntoOutputStream(session, buildStatus);
+    } finally {
+      if (session != null) {
+        session.close();
+      }
+    }
   }
 
   private void setBuildStatusTypeIfNull(BuildStatus buildStatus) {
@@ -58,11 +73,10 @@ public class ScmV2SshNotifier implements Notifier {
     }
   }
 
-  private void marshalBuildStatusIntoOutputStream(Channel channel, BuildStatus buildStatus) throws IOException, JAXBException {
-    OutputStream out = channel.getOutputStream();
-    JAXBContext jaxbContext = JAXBContext.newInstance(BuildStatus.class);
-    Marshaller marshaller = jaxbContext.createMarshaller();
-    marshaller.marshal(buildStatus, out);
-    out.flush();
+  private void marshalBuildStatusIntoOutputStream(Session session, BuildStatus buildStatus) throws IOException {
+    try (OutputStream out = session.getStdin()) {
+      JAXB.marshal(buildStatus, out);
+      out.flush();
+    }
   }
 }

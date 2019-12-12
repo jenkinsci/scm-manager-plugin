@@ -3,7 +3,6 @@ package com.cloudogu.scmmanager;
 import com.cloudogu.scmmanager.info.ScmInformation;
 import com.cloudogu.scmmanager.info.ScmInformationService;
 import com.google.common.base.Strings;
-import com.jcraft.jsch.JSchException;
 import hudson.model.Result;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +53,7 @@ class NotificationService {
     for (ScmInformation info : informationList) {
       try {
         notify(run, buildStatus, info);
-      } catch (IOException | JSchException | JAXBException ex) {
+      } catch (IOException ex) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("failed to send build status notification", ex);
         } else {
@@ -65,7 +63,7 @@ class NotificationService {
     }
   }
 
-  private void notify(Run<?, ?> run, BuildStatus buildStatus, ScmInformation info) throws IOException, JSchException, JAXBException {
+  private void notify(Run<?, ?> run, BuildStatus buildStatus, ScmInformation info) throws IOException {
     for (NotifierProvider provider : NotifierProvider.all()) {
       Optional<? extends Notifier> notifier = provider.get(run, info);
       if (notifier.isPresent()) {

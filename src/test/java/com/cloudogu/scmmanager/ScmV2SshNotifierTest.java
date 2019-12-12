@@ -11,14 +11,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.xml.bind.JAXBException;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +35,7 @@ public class ScmV2SshNotifierTest {
     OutputStream outMock = Mockito.mock(OutputStream.class);
     when(channelExecMock.getOutputStream()).thenReturn(outMock);
 
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector);
+    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector, authentication);
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(true));
 
     verify(outMock).flush();
@@ -56,7 +51,7 @@ public class ScmV2SshNotifierTest {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     when(channelExecMock.getOutputStream()).thenReturn(out);
 
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector);
+    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connector, authentication);
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(false));
 
     assertTrue(out.toString().contains("jenkins"));

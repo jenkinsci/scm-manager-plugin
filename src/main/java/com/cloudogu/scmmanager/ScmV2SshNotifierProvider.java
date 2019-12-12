@@ -1,12 +1,9 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudogu.scmmanager.info.ScmInformation;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.trilead.ssh2.Connection;
 import hudson.Extension;
 import hudson.model.Run;
-import org.jenkinsci.plugins.jsch.JSchConnector;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -29,7 +26,7 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2SshNotifier> get(Run<?, ?> run, ScmInformation information) throws JSchException {
+  public Optional<ScmV2SshNotifier> get(Run<?, ?> run, ScmInformation information) {
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
@@ -38,45 +35,11 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
     return empty();
   }
 
-  private ScmV2SshNotifier createNotifier(Run<?, ?> run, ScmInformation information, Matcher matcher) throws JSchException {
+  private ScmV2SshNotifier createNotifier(Run<?, ?> run, ScmInformation information, Matcher matcher)  {
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
     SSHAuthentication authentication = authenticationFactory.createSSH(run, information.getCredentialsId());
-    JSchConnector connector;
-    if (authentication instanceof SshPrivateKeyAuthentication) {
-      connector = createPrivateKeyConnector(matcher, (SshPrivateKeyAuthentication) authentication);
-    } else if (authentication instanceof SshUsernamePasswordAuthentication) {
-      connector = createUsernamePasswordConnector(matcher, (SshUsernamePasswordAuthentication) authentication);
-    } else {
-      throw new CredentialsUnavailableException("invalid credentials for ssh connection");
-    }
-    setupSessionConfig(connector.getSession());
-
-    return new ScmV2SshNotifier(namespaceAndName, connector);
-  }
-
-  private JSchConnector createUsernamePasswordConnector(Matcher matcher, SshUsernamePasswordAuthentication authentication) {
-    JSchConnector connector;
-    connector = createConnector(authentication.getUsername(), matcher);
-    connector.getSession().setPassword(authentication.getPassword());
-    return connector;
-  }
-
-  private JSchConnector createPrivateKeyConnector(Matcher matcher, SshPrivateKeyAuthentication authentication) throws JSchException {
-    JSchConnector connector;
-    connector = createConnector(authentication.getUsername(), matcher);
-    connector.getJSch().addIdentity(authentication.getUsername(), authentication.getPrivateKey().getBytes(), "".getBytes(), "".getBytes());
-    return connector;
-  }
-
-  private JSchConnector createConnector(String username, Matcher matcher) {
-    return new JSchConnector(username, matcher.group(2), getPort(matcher));
-  }
-
-  private void setupSessionConfig(Session session) {
-    java.util.Properties config = new java.util.Properties();
-    config.put("StrictHostKeyChecking", "no");
-    config.put("PreferredAuthentications", "publickey,password");
-    session.setConfig(config);
+    Connection connection = new Connection(matcher.group(2), getPort(matcher));
+    return new ScmV2SshNotifier(namespaceAndName, connection, authentication);
   }
 
   private Integer getPort(Matcher matcher) {
