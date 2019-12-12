@@ -13,7 +13,7 @@ import java.io.OutputStream;
 public class ScmV2SshNotifier implements Notifier {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmV2SshNotifier.class);
-  private static final String SSH_COMMAND = "scm ci-update --namespace %s --name %s --revision %s";
+  private static final String SSH_COMMAND = "scm-ci-update --namespace %s --name %s --revision %s";
 
   private final NamespaceAndName namespaceAndName;
   private final Connection connection;
