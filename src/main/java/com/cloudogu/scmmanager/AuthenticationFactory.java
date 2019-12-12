@@ -13,8 +13,7 @@ import java.util.Collections;
 class AuthenticationFactory {
 
   @VisibleForTesting
-  static final HttpAuthentication NOOP_HTTP_AUTHENTICATION = requestBuilder -> {
-  };
+  static final HttpAuthentication NOOP_HTTP_AUTHENTICATION = requestBuilder -> {};
 
   HttpAuthentication createHttp(Run<?, ?> run, String credentialsId) {
     if (Strings.isNullOrEmpty(credentialsId)) {

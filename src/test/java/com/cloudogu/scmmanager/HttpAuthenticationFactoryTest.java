@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.model.Run;
@@ -46,6 +47,18 @@ public class HttpAuthenticationFactoryTest {
   public void testCreateWithNonExistingCredentials() {
     HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-two");
     assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
+  }
+
+  @Test (expected = CredentialsUnavailableException.class)
+  public void testCredentialsUnavailableExceptionIfMissingCredentials() {
+    authenticationFactory.createSSH(run, "");
+  }
+
+  @Test
+  public void testCreateSSHAuthentication() throws IOException {
+    addCredential("scmadmin", "scmadmin", "scmadmin");
+    SSHAuthentication authentication = authenticationFactory.createSSH(run, "scmadmin");
+    assertSame(authentication.getClass(), SSHAuthentication.class);
   }
 
   @Test
