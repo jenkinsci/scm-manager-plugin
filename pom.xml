@@ -168,6 +168,11 @@
       <name>Sebastian Sdorra</name>
       <email>sebastian.sdorra@cloudogu.com</email>
     </developer>
+    <developer>
+      <id>eheimbuch</id>
+      <name>Eduard Heimbuch</name>
+      <email>eduard.heimbuch@cloudogu.com</email>
+    </developer>
   </developers>
 
   <organization>
