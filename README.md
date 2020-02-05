@@ -5,7 +5,7 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=io.jenkins.plugins%3Ascm-manager&metric=sqale_index)](https://sonarcloud.io/dashboard?id=io.jenkins.plugins%3Ascm-manager)
 [![License](https://img.shields.io/github/license/jenkinsci/github-plugin.svg)](LICENSE)
 
-Jenkins plugin for the upcoming version 2 of SCM-Manager.
+Jenkins SCM-Manager 2 Plugin
 
 ## Description
 

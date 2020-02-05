@@ -15,6 +15,9 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
+  <name>scm-manager</name>
+  <description>Jenkins SCM-Manager 2 Plugin</description>
+
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.version>2.184</jenkins.version>
@@ -25,12 +28,12 @@
       ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
  -->
   </properties>
-  <name>scm-manager</name>
 
   <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
   <licenses>
     <license>
       <name>MIT License</name>
+      <distribution>repo</distribution>
       <url>https://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
