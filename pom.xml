@@ -15,8 +15,9 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
-  <name>scm-manager</name>
+  <name>SCM-Manager Plugin</name>
   <description>Jenkins SCM-Manager 2 Plugin</description>
+  <url>https://github.com/jenkinsci/scm-manager-plugin</url>
 
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
