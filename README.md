@@ -1,8 +1,5 @@
 # Jenkins scm-manager-plugin
-[![Build Status](https://oss.cloudogu.com/jenkins/buildStatus/icon?job=cloudogu-github/jenkins-scm-manager-plugin/master)](https://oss.cloudogu.com/jenkins/blue/organizations/jenkins/cloudogu-github%2Fjenkins-scm-manager-plugin/branches/)
-[![Quality Gates](https://sonarcloud.io/api/project_badges/measure?project=io.jenkins.plugins%3Ascm-manager&metric=alert_status)](https://sonarcloud.io/dashboard?id=io.jenkins.plugins%3Ascm-manager)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=io.jenkins.plugins%3Ascm-manager&metric=coverage)](https://sonarcloud.io/dashboard?id=io.jenkins.plugins%3Ascm-manager)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=io.jenkins.plugins%3Ascm-manager&metric=sqale_index)](https://sonarcloud.io/dashboard?id=io.jenkins.plugins%3Ascm-manager)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fscm-manager-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/scm-manager-plugin/job/master/)
 [![License](https://img.shields.io/github/license/jenkinsci/github-plugin.svg)](LICENSE)
 
 Jenkins SCM-Manager 2 Plugin
