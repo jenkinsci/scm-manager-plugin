@@ -8,7 +8,7 @@ Jenkins SCM-Manager 2 Plugin
 
 Once the plugin is installed, it will automatically detect jobs which have configured scm that points to an instance of SCM-Manager v2.
 If such a build job is started, the plugin will send the `PENDING` state for the checkout revision to SCM-Manager.
-After the build is complete the plugin will send the resulting state to SCM-Manager (`SUCCESS` or `FAILURE`).
+After the build is complete the plugin will send the resulting state to SCM-Manager (`SUCCESS`, `UNSTABLE` or `FAILURE`).
 
 ## Requirements
 
