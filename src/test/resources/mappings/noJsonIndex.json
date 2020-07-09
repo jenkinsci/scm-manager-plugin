@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/noJson/api/v2",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-index+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "<html><body></body></html>",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
