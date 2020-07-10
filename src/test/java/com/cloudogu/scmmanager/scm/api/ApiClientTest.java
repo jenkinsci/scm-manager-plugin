@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.api;
 
-import com.cloudogu.scmmanager.HttpAuthentication;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
@@ -19,6 +18,20 @@ public class ApiClientTest extends ApiClientTestBase {
     assertThat(data).isNotNull();
     assertThat(data.someString).isEqualTo("stringValue");
     assertThat(data.someNumber).isEqualTo(42);
+  }
+
+  @Test
+  public void shouldTrimServerUrl() {
+    String fixedUrl = ApiClient.fixServerUrl("  http://hitchhiker.com/scm\t").apply("/api");
+
+    assertThat(fixedUrl).isEqualTo("http://hitchhiker.com/scm/api");
+  }
+
+  @Test
+  public void shouldRemoveTrailingSlashFromServerUrl() {
+    String fixedUrl = ApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("/api");
+
+    assertThat(fixedUrl).isEqualTo("http://hitchhiker.com/scm/api");
   }
 
   public static class SomeDataClass {

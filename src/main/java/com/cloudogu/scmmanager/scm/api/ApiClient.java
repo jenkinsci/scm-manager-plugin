@@ -35,14 +35,19 @@ public final class ApiClient {
   }
 
   public ApiClient(AsyncHttpClient client, String serverUrl, HttpAuthentication authentication) {
-    this(client, authentication, url -> {
-      // TODO needed?
-      //      if (url.contains("://")) {
-      //        return url;
-      //      }
-      // TODO check slash suffix and prefix
-      return serverUrl + url;
-    });
+    this(client, authentication, fixServerUrl(serverUrl));
+  }
+
+  @VisibleForTesting
+  static Function<String, String> fixServerUrl(String serverUrl) {
+    String trimmedServerUrl = serverUrl.trim();
+    String fixedServerUrl;
+    if (trimmedServerUrl.endsWith("/")) {
+      fixedServerUrl = trimmedServerUrl.substring(0, trimmedServerUrl.length() - 1);
+    } else {
+      fixedServerUrl = trimmedServerUrl;
+    }
+    return url -> fixedServerUrl + url;
   }
 
   @VisibleForTesting
