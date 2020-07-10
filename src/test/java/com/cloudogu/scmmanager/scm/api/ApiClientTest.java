@@ -2,14 +2,12 @@ package com.cloudogu.scmmanager.scm.api;
 
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ApiClientTest extends ApiClientTestBase {
 
   @Test
-  public void shouldReturnMockedData() throws ExecutionException, InterruptedException {
+  public void shouldReturnMockedData() throws InterruptedException {
     ApiClient api = apiClient();
 
     SomeDataClass data = api.get("/some/thing", "application/json", SomeDataClass.class)

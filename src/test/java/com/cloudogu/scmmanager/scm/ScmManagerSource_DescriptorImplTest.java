@@ -44,12 +44,30 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
   }
 
   @Test
+  public void shouldRejectNotWellFormedServerUrl() throws InterruptedException {
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("http://");
+
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    assertThat(formValidation.getMessage()).isEqualTo("illegal URL format");
+  }
+
+  @Test
+  public void shouldRejectServerUrlWithoutHttp() throws InterruptedException {
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("file://some/where");
+
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    assertThat(formValidation.getMessage()).isEqualTo("Only http or https urls accepted");
+  }
+
+  @Test
   public void shouldRejectServerUrlWithoutLoginLink() throws InterruptedException {
     injectPath("/noLogin");
 
-    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("example.com");
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("http://example.com");
 
-    assertThat(requestedUrl).isEqualTo("example.com");
+    assertThat(requestedUrl).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
     assertThat(formValidation.getMessage()).isEqualTo("api has no login link");
@@ -59,9 +77,9 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
   public void shouldRejectServerUrlWithIllegalResponse() throws InterruptedException {
     injectPath("/noJson");
 
-    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("example.com");
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("http://example.com");
 
-    assertThat(requestedUrl).isEqualTo("example.com");
+    assertThat(requestedUrl).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
     assertThat(formValidation.getMessage()).startsWith("could not parse response");
@@ -71,9 +89,9 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
   public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException {
     injectPath("/notFound");
 
-    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("example.com");
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("http://example.com");
 
-    assertThat(requestedUrl).isEqualTo("example.com");
+    assertThat(requestedUrl).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
     assertThat(formValidation.getMessage()).isEqualTo("illegal http status code: 404");
@@ -81,9 +99,9 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
 
   @Test
   public void shouldAcceptServerUrl() throws InterruptedException {
-    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("example.com");
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.doCheckServerUrl("http://example.com");
 
-    assertThat(requestedUrl).isEqualTo("example.com");
+    assertThat(requestedUrl).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
   }

@@ -32,6 +32,8 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -85,6 +87,18 @@ public class ScmManagerSource extends SCMSource {
       if (Strings.isNullOrEmpty(trimmedValue)) {
         return FormValidation.error("server url is required");
       }
+      try {
+        URI uri = new URI(value);
+        if (!uri.isAbsolute()) {
+          return FormValidation.error("illegal URL format");
+        }
+        if (!uri.getScheme().startsWith("http")) {
+          return FormValidation.error("Only http or https urls accepted");
+        }
+      } catch (URISyntaxException e) {
+        return FormValidation.error("illegal URL format");
+      }
+
 
       ApiClient client = apiClientFactory.apply(value);
       Promise<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
