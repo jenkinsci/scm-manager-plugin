@@ -4,6 +4,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
+import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -31,7 +32,6 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -80,25 +80,22 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public static FormValidation doCheckServerUrl(@QueryParameter String value) {
+    public static FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException {
       String trimmedValue = value.trim();
       if (Strings.isNullOrEmpty(trimmedValue)) {
         return FormValidation.error("server url is required");
       }
 
       ApiClient client = apiClientFactory.apply(value);
-      CompletableFuture<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
-      try {
-        HalRepresentation index = future.get();
-        if (index.getLinks().getLinkBy("login").isPresent()) {
-          return FormValidation.ok();
-        }
-        return FormValidation.error("api has no login link");
-      } catch (ExecutionException e) {
-        return FormValidation.error(e.getCause(), "request failed");
-      } catch (InterruptedException e) {
-        return FormValidation.error(e, "request interrupted");
-      }
+      Promise<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+      return future
+        .then(index -> {
+          if (index.getLinks().getLinkBy("login").isPresent()) {
+            return FormValidation.ok();
+          }
+          return FormValidation.error("api has no login link");
+        })
+        .mapError(e -> FormValidation.error(e.getMessage()));
     }
 
     @SuppressWarnings("unused") // used By stapler

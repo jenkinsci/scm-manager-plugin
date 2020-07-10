@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 public final class ApiClient {
@@ -24,7 +26,8 @@ public final class ApiClient {
   private final Function<String, String> urlModifier;
 
   public ApiClient(String serverUrl) {
-    this(serverUrl, rb -> {});
+    this(serverUrl, rb -> {
+    });
   }
 
   public ApiClient(String serverUrl, HttpAuthentication authentication) {
@@ -51,7 +54,7 @@ public final class ApiClient {
     this.urlModifier = urlModifier;
   }
 
-  public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
+  public <T> Promise<T> get(String url, String contentType, Class<T> type) {
     LOG.info("get {} from {}", type.getName(), url);
     AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(urlModifier.apply(url));
     authentication.authenticate(requestBuilder);
@@ -75,14 +78,81 @@ public final class ApiClient {
           }
         } else {
           // TODO more explicit exception
-          future.completeExceptionally(
-            new IllegalStateException("server returned status code " + response.getStatusCode())
-          );
+          future.completeExceptionally(new IllegalReturnStatusException(response.getStatusCode()));
         }
         return response;
       }
     });
 
-    return future;
+    return new Promise<T>(future);
+  }
+
+  private static class IllegalReturnStatusException extends Exception {
+    private final int statusCode;
+
+    private IllegalReturnStatusException(int statusCode) {
+      this.statusCode = statusCode;
+    }
+  }
+
+  public static class Promise<T> {
+
+    private final CompletableFuture<T> future;
+
+    public Promise(CompletableFuture<T> future) {
+      this.future = future;
+    }
+
+    public <T2> Promise<T2> then(Function<T, T2> function) {
+      return new Promise<>(future.thenApply(function));
+    }
+
+    public T mapError(Function<ApiError, T> errorConsumer) throws InterruptedException {
+      try {
+        return future.get();
+      } catch (InterruptedException e) {
+        throw e;
+      } catch (ExecutionException e) {
+        Throwable cause = e.getCause();
+        ApiError error;
+        String exceptionMessage = e.getMessage();
+        if (cause instanceof JsonParseException) {
+          LOG.debug("could not parse response", e);
+          error = new ApiError("could not parse response: " + exceptionMessage.substring(0, exceptionMessage.indexOf('\n')));
+        } else if (cause instanceof IllegalReturnStatusException) {
+          error = new ApiError(((IllegalReturnStatusException) cause).statusCode);
+        } else {
+          error = new ApiError("unknown exception: " + exceptionMessage);
+        }
+        return errorConsumer.apply(error);
+      }
+    }
+  }
+
+  public static class ApiError {
+    private final int status;
+    private final String message;
+
+    public ApiError(String message) {
+      status = 200;
+      this.message = message;
+    }
+
+    public ApiError(int httpStatus) {
+      this.status = httpStatus;
+      if (status == 200) {
+        message = "ok";
+      } else {
+        message = "illegal http status code: " + httpStatus;
+      }
+    }
+
+    public int getStatus() {
+      return status;
+    }
+
+    public String getMessage() {
+      return message;
+    }
   }
 }

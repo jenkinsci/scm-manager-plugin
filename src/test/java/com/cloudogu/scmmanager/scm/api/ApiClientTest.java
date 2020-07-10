@@ -13,7 +13,8 @@ public class ApiClientTest extends ApiClientTestBase {
   public void shouldReturnMockedData() throws ExecutionException, InterruptedException {
     ApiClient api = apiClient();
 
-    SomeDataClass data = api.get("/some/thing", "application/json", SomeDataClass.class).get();
+    SomeDataClass data = api.get("/some/thing", "application/json", SomeDataClass.class)
+      .mapError(e -> null);
 
     assertThat(data).isNotNull();
     assertThat(data.someString).isEqualTo("stringValue");
