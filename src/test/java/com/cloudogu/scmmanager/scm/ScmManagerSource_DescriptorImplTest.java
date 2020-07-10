@@ -1,25 +1,37 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClientTestBase;
+import com.cloudogu.scmmanager.scm.api.Authentications;
 import hudson.util.FormValidation;
+import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
 
   private ScmManagerSource.DescriptorImpl descriptor = new ScmManagerSource.DescriptorImpl();
 
+  private final SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
+  private final Authentications mockedAuthentication = Mockito.mock(Authentications.class);
+
   private String requestedUrl;
+  private HttpAuthentication requestedAuthentication;
 
   @Before
   public void mockApiClient() {
-    Function<String, ApiClient> apiClientFactory = url -> {
+    BiFunction<String, HttpAuthentication, ApiClient> apiClientFactory = (url, auth) -> {
       this.requestedUrl = url;
+      this.requestedAuthentication = auth;
       return this.apiClient();
     };
     ScmManagerSource.DescriptorImpl.apiClientFactory = apiClientFactory;
@@ -104,5 +116,48 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
     assertThat(requestedUrl).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+  }
+
+  @Test
+  public void shouldRejectEmptyCredentials() throws InterruptedException {
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.validateCredentialsId(scmSourceOwner, "http://example.com", "", u -> mockedAuthentication);
+
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    assertThat(formValidation.getMessage()).isEqualTo("credentials are required");
+  }
+
+  @Test
+  public void shouldAcceptWorkingCredentials() throws InterruptedException {
+    injectPath("", "/loggedIn");
+    SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
+    Authentications mockedAuthentication = Mockito.mock(Authentications.class);
+    HttpAuthentication authentication = x -> {};
+    when(mockedAuthentication.from("http://example.com", "myAuth")).thenReturn(authentication);
+    Function<SCMSourceOwner, Authentications> authenticationsProvider = mock(Function.class);
+    when(authenticationsProvider.apply(scmSourceOwner)).thenReturn(mockedAuthentication);
+
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth", authenticationsProvider);
+
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    assertThat(requestedAuthentication).isSameAs(authentication);
+  }
+
+  @Test
+  public void shouldRejectWrongCredentials() throws InterruptedException {
+//    injectPath("", "/loginFailed");
+    SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
+    Authentications mockedAuthentication = Mockito.mock(Authentications.class);
+    HttpAuthentication authentication = x -> {};
+    when(mockedAuthentication.from("http://example.com", "myAuth")).thenReturn(authentication);
+    Function<SCMSourceOwner, Authentications> authenticationsProvider = mock(Function.class);
+    when(authenticationsProvider.apply(scmSourceOwner)).thenReturn(mockedAuthentication);
+
+    FormValidation formValidation = ScmManagerSource.DescriptorImpl.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth", authenticationsProvider);
+
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    assertThat(formValidation.getMessage()).isEqualTo("login failed");
   }
 }

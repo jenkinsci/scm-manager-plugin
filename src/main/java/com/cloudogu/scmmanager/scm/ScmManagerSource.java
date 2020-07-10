@@ -3,8 +3,11 @@ package com.cloudogu.scmmanager.scm;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
+import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
+import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ScmManagerSource extends SCMSource {
@@ -73,7 +77,7 @@ public class ScmManagerSource extends SCMSource {
   @Symbol("scm-manager")
   public static class DescriptorImpl extends SCMSourceDescriptor {
 
-    static Function<String, ApiClient> apiClientFactory = DescriptorImpl::createHttpClient;
+    static BiFunction<String, HttpAuthentication, ApiClient> apiClientFactory = DescriptorImpl::createHttpClient;
 
     @Nonnull
     @Override
@@ -100,8 +104,8 @@ public class ScmManagerSource extends SCMSource {
       }
 
 
-      ApiClient client = apiClientFactory.apply(value);
-      Promise<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+      ApiClient apiClient = apiClientFactory.apply(value, x -> {});
+      Promise<HalRepresentation> future = apiClient.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
       return future
         .then(index -> {
           if (index.getLinks().getLinkBy("login").isPresent()) {
@@ -110,6 +114,30 @@ public class ScmManagerSource extends SCMSource {
           return FormValidation.error("api has no login link");
         })
         .mapError(e -> FormValidation.error(e.getMessage()));
+    }
+
+    @SuppressWarnings("unused") // used By stapler
+    public static FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException {
+      return validateCredentialsId(context, serverUrl, value, Authentications::new);
+    }
+
+    @VisibleForTesting
+    static FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
+      if (doCheckServerUrl(serverUrl).kind != FormValidation.Kind.OK) {
+        return FormValidation.error("server url is required");
+      }
+      if (Strings.isNullOrEmpty(value)) {
+        return FormValidation.error("credentials are required");
+      }
+      Authentications authentications = authenticationsProvider.apply(context);
+      ApiClient client = apiClientFactory.apply(serverUrl, authentications.from(serverUrl, value));
+      Promise<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+      return future.then(index -> {
+        if (index.getLinks().getLinkBy("me").isPresent()) {
+          return FormValidation.ok();
+        }
+        return FormValidation.error("login failed");
+      }).mapError(e -> FormValidation.error(e.getMessage()));
     }
 
     @SuppressWarnings("unused") // used By stapler
@@ -132,8 +160,8 @@ public class ScmManagerSource extends SCMSource {
       return new ListBoxModel();
     }
 
-    private static ApiClient createHttpClient(@QueryParameter String value) {
-      return new ApiClient(value);
+    private static ApiClient createHttpClient(String value, HttpAuthentication authentication) {
+      return new ApiClient(value, authentication);
     }
   }
 }

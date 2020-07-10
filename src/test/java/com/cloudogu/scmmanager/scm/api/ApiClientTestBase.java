@@ -15,7 +15,8 @@ public class ApiClientTestBase {
 
   private AsyncHttpClient client;
 
-  private String pathInjection = "";
+  private String[] pathInjection = {};
+  private int pathInjectionIndex = 0;
 
   @Before
   public void setUpAHC() {
@@ -32,11 +33,21 @@ public class ApiClientTestBase {
     return new ApiClient(client, noAuthentication, this::serverUrl);
   }
 
-  protected void injectPath(String pathInjection) {
+  protected void injectPath(String... pathInjection) {
     this.pathInjection = pathInjection;
   }
 
   private String serverUrl(String path) {
-    return String.format("http://localhost:%d%s", rule.port(), pathInjection + path);
+    return String.format("http://localhost:%d%s", rule.port(), nextPathInjection() + path);
+  }
+
+  private String nextPathInjection() {
+    if (pathInjection.length == 0) {
+      return "";
+    }
+    if (pathInjection.length == 1) {
+      return pathInjection[0];
+    }
+    return pathInjection[pathInjectionIndex++];
   }
 }
