@@ -7,6 +7,7 @@ import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
@@ -77,7 +78,7 @@ public class ScmManagerSource extends SCMSource {
   @Symbol("scm-manager")
   public static class DescriptorImpl extends SCMSourceDescriptor {
 
-    static BiFunction<String, HttpAuthentication, ApiClient> apiClientFactory = DescriptorImpl::createHttpClient;
+    static BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory = DescriptorImpl::createHttpClient;
 
     @Nonnull
     @Override
@@ -104,8 +105,8 @@ public class ScmManagerSource extends SCMSource {
       }
 
 
-      ApiClient apiClient = apiClientFactory.apply(value, x -> {});
-      Promise<HalRepresentation> future = apiClient.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+      ScmManagerApi api = apiFactory.apply(value, x -> {});
+      Promise<HalRepresentation> future = api.index();
       return future
         .then(index -> {
           if (index.getLinks().getLinkBy("login").isPresent()) {
@@ -130,8 +131,8 @@ public class ScmManagerSource extends SCMSource {
         return FormValidation.error("credentials are required");
       }
       Authentications authentications = authenticationsProvider.apply(context);
-      ApiClient client = apiClientFactory.apply(serverUrl, authentications.from(serverUrl, value));
-      Promise<HalRepresentation> future = client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+      ScmManagerApi client = apiFactory.apply(serverUrl, authentications.from(serverUrl, value));
+      Promise<HalRepresentation> future = client.index();
       return future.then(index -> {
         if (index.getLinks().getLinkBy("me").isPresent()) {
           return FormValidation.ok();
@@ -160,8 +161,8 @@ public class ScmManagerSource extends SCMSource {
       return new ListBoxModel();
     }
 
-    private static ApiClient createHttpClient(String value, HttpAuthentication authentication) {
-      return new ApiClient(value, authentication);
+    private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
+      return new ScmManagerApi(new ApiClient(value, authentication));
     }
   }
 }

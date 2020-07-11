@@ -1,9 +1,9 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClientTestBase;
 import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import hudson.util.FormValidation;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Before;
@@ -29,12 +29,12 @@ public class ScmManagerSource_DescriptorImplTest extends ApiClientTestBase {
 
   @Before
   public void mockApiClient() {
-    BiFunction<String, HttpAuthentication, ApiClient> apiClientFactory = (url, auth) -> {
+    BiFunction<String, HttpAuthentication, ScmManagerApi> apiClientFactory = (url, auth) -> {
       this.requestedUrl = url;
       this.requestedAuthentication = auth;
-      return this.apiClient();
+      return new ScmManagerApi(this.apiClient());
     };
-    ScmManagerSource.DescriptorImpl.apiClientFactory = apiClientFactory;
+    ScmManagerSource.DescriptorImpl.apiFactory = apiClientFactory;
   }
 
   @Test
