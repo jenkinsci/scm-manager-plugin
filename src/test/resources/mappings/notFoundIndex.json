@@ -4,7 +4,7 @@
     "method": "GET",
     "headers": {
       "Accept": {
-        "equalTo": "application/vnd.scmm-index+json;v=2"
+        "equalTo": "application/json"
       }
     }
   },

@@ -7,6 +7,7 @@ import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -38,9 +39,11 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static java.util.Collections.emptyList;
 
 public class ScmManagerSource extends SCMSource {
 
@@ -78,7 +81,15 @@ public class ScmManagerSource extends SCMSource {
   @Symbol("scm-manager")
   public static class DescriptorImpl extends SCMSourceDescriptor {
 
-    static BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory = DescriptorImpl::createHttpClient;
+    private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+
+    public DescriptorImpl() {
+      this(DescriptorImpl::createHttpClient);
+    }
+
+    public DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory) {
+      this.apiFactory = apiFactory;
+    }
 
     @Nonnull
     @Override
@@ -87,7 +98,7 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public static FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException {
+    public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException {
       String trimmedValue = value.trim();
       if (Strings.isNullOrEmpty(trimmedValue)) {
         return FormValidation.error("server url is required");
@@ -118,12 +129,12 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public static FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException {
+    public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException {
       return validateCredentialsId(context, serverUrl, value, Authentications::new);
     }
 
     @VisibleForTesting
-    static FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
+    FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
       if (doCheckServerUrl(serverUrl).kind != FormValidation.Kind.OK) {
         return FormValidation.error("server url is required");
       }
@@ -156,9 +167,28 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public ListBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws ExecutionException, InterruptedException {
-      System.out.println(serverUrl);
-      return new ListBoxModel();
+    public ListBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException {
+      return fillRepositoryItems(context, serverUrl, credentialsId, value, Authentications::new);
+    }
+
+    public ListBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
+      ListBoxModel model = new ListBoxModel();
+      if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
+        if (!Strings.isNullOrEmpty(value)) {
+          model.add(value);
+        }
+        return model;
+      }
+
+      Authentications authentications = authenticationsProvider.apply(context);
+      ScmManagerApi api = apiFactory.apply(serverUrl, authentications.from(serverUrl, credentialsId));
+      List<Repository> repositories = api.getRepositories().mapError(e -> emptyList());
+      for (Repository repository : repositories) {
+        String displayName = String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
+        String v = String.format("%s/%s", repository.getNamespace(), repository.getName());
+        model.add(displayName, v);
+      }
+      return model;
     }
 
     private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {

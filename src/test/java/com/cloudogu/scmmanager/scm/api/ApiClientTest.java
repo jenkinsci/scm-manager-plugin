@@ -19,6 +19,51 @@ public class ApiClientTest extends ApiClientTestBase {
   }
 
   @Test
+  public void shouldMapData() throws InterruptedException {
+    ApiClient api = apiClient();
+
+    String message = api
+      .get("/some/thing", "application/json", SomeDataClass.class)
+      .then(data -> data.someString)
+      .mapError(e -> null);
+
+    assertThat(message).isNotNull();
+    assertThat(message).isEqualTo("stringValue");
+  }
+
+  @Test
+  public void shouldFetchMismatchedInputException() throws InterruptedException {
+    ApiClient api = apiClient();
+
+    SomeOtherClass data = api.get("/some/thing", "application/json", SomeOtherClass.class)
+      .mapError(e -> new SomeOtherClass(e.getMessage()));
+
+    assertThat(data.different).contains("could not parse response", "MismatchedInputException");
+  }
+
+  @Test
+  public void shouldFetchJsonParseException() throws InterruptedException {
+    ApiClient api = apiClient();
+
+    String data = api.get("/no/json", "application/json", String.class)
+      .mapError(e -> e.getMessage());
+
+    assertThat(data).contains("could not parse response", "JsonParseException");
+  }
+
+  @Test
+  public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException {
+    injectPath("/notFound");
+
+    SomeDataClass someData = apiClient()
+      .get("/api/v2", "application/json", SomeDataClass.class)
+      .mapError(e -> new SomeDataClass(e.getMessage(), e.getStatus()));
+
+    assertThat(someData.someNumber).isEqualTo(404);
+    assertThat(someData.someString).isEqualTo("illegal http status code: 404");
+  }
+
+  @Test
   public void shouldTrimServerUrl() {
     String fixedUrl = ApiClient.fixServerUrl("  http://hitchhiker.com/scm\t").apply("/api");
 
@@ -35,5 +80,21 @@ public class ApiClientTest extends ApiClientTestBase {
   public static class SomeDataClass {
     public String someString;
     public int someNumber;
+
+    public SomeDataClass() {
+    }
+
+    public SomeDataClass(String someString, int someNumber) {
+      this.someString = someString;
+      this.someNumber = someNumber;
+    }
+  }
+
+  public static class SomeOtherClass {
+    public String different;
+
+    public SomeOtherClass(String different) {
+      this.different = different;
+    }
   }
 }

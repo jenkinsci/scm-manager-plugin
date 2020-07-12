@@ -3,6 +3,7 @@ package com.cloudogu.scmmanager.scm.api;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.ning.http.client.AsyncCompletionHandler;
@@ -89,7 +90,7 @@ public final class ApiClient {
       }
     });
 
-    return new Promise<T>(future);
+    return new Promise<>(future);
   }
 
   private static class IllegalReturnStatusException extends Exception {
@@ -121,7 +122,7 @@ public final class ApiClient {
         Throwable cause = e.getCause();
         ApiError error;
         String exceptionMessage = e.getMessage();
-        if (cause instanceof JsonParseException) {
+        if (cause instanceof JsonParseException || cause instanceof JsonMappingException) {
           LOG.debug("could not parse response", e);
           error = new ApiError("could not parse response: " + exceptionMessage.substring(0, exceptionMessage.indexOf('\n')));
         } else if (cause instanceof IllegalReturnStatusException) {
@@ -145,11 +146,7 @@ public final class ApiClient {
 
     public ApiError(int httpStatus) {
       this.status = httpStatus;
-      if (status == 200) {
-        message = "ok";
-      } else {
-        message = "illegal http status code: " + httpStatus;
-      }
+      message = "illegal http status code: " + httpStatus;
     }
 
     public int getStatus() {
