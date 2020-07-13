@@ -7,13 +7,19 @@ import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.cloudogu.scmmanager.scm.api.Branch;
+import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
+import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.TaskListener;
@@ -22,6 +28,7 @@ import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
@@ -29,16 +36,27 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.trait.SCMSourceTrait;
+import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
+import jenkins.scm.impl.TagSCMHeadCategory;
+import jenkins.scm.impl.UncategorizedSCMHeadCategory;
+import jenkins.util.NonLocalizable;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -50,31 +68,106 @@ public class ScmManagerSource extends SCMSource {
   private final String serverUrl;
   private final String namespace;
   private final String name;
+  private final String type;
   private final String credentialsId;
+
+  @NonNull
+  private List<SCMSourceTrait> traits = new ArrayList<>();
+
+  private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
 
   @DataBoundConstructor
   public ScmManagerSource(String serverUrl, String repository, String credentialsId) {
+    this(serverUrl, repository, credentialsId, ScmManagerSource::createHttpClient);
+  }
+
+  public ScmManagerSource(String serverUrl, String repository, String credentialsId, BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory) {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
 
     String[] parts = repository.split("/");
     this.namespace = parts[0];
     this.name = parts[1];
+    this.type = parts[2];
+
+    this.apiFactory = apiFactory;
+  }
+
+  @NonNull
+  public List<SCMSourceTrait> getTraits() {
+    return Collections.unmodifiableList(traits);
+  }
+
+  @DataBoundSetter
+  public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
+    this.traits = new ArrayList<>(Util.fixNull(traits));
   }
 
   @Override
   protected void retrieve(SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer, SCMHeadEvent<?> event, @NonNull TaskListener listener) throws IOException, InterruptedException {
+    try (ScmManagerSourceRequest request = new ScmManagerSourceContext(criteria, observer)
+      .withTraits(traits)
+      .newRequest(this, listener)) {
 
+      // this is fetch all
+      // TODO handle includes from criteria
+
+      HttpAuthentication authentication = Authentications.from(getOwner(), serverUrl, credentialsId);
+
+      ScmManagerApi api = apiFactory.apply(serverUrl, authentication);
+      Repository repository = api.getRepository(namespace, name).orElseThrow(error -> new UncheckedIOException(new IOException("failed to load repository: " + error.getMessage())));
+
+      // TODO evaluate event and check only what's necessary
+
+      Promise<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : new Promise<>(Collections.emptyList());
+//      CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags() ? repository.getTags() : CompletableFuture.completedFuture(Collections.emptyList());
+//      CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? repository.getPullRequests() : CompletableFuture.completedFuture(Collections.emptyList());
+
+      // wait until all futures are complete
+//      CompletableFuture.allOf(
+//        branchesFuture
+//        tagsFuture,
+//        pullRequestFuture
+//      ).join();
+
+      // TODO error handling
+      observe(observer, branchesFuture.mapError(e -> emptyList()));
+//      observe(observer, tagsFuture.get());
+//      observe(observer, pullRequestFuture.get());
+//    } catch (ExecutionException e) {
+//      throw new IOException("failed to get repository from api", e);
+    }
+  }
+
+  private void observe(SCMHeadObserver observer, List<? extends ScmManagerObservable> observables) throws IOException, InterruptedException {
+    for (ScmManagerObservable observable : observables) {
+      observer.observe(observable.head(), observable.revision());
+    }
   }
 
   @NonNull
   @Override
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
+    if (head instanceof ScmManagerHead) {
+      ScmManagerHead scmHead = (ScmManagerHead) head;
+      CloneInformation cloneInformation = (scmHead).getCloneInformation();
+      if (cloneInformation.getType().equals("git")) {
+        return new ScmManagerGitSCMBuilder(scmHead, revision, cloneInformation.getUrl(), credentialsId).build();
+      }
+    }
     return null;
   }
 
   public String getServerUrl() {
     return serverUrl;
+  }
+
+  public String getRepository() {
+    return String.format("%s/%s/%s", namespace, name, type);
+  }
+
+  public String getCredentialsId() {
+    return credentialsId;
   }
 
   @Extension
@@ -84,7 +177,7 @@ public class ScmManagerSource extends SCMSource {
     private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
 
     public DescriptorImpl() {
-      this(DescriptorImpl::createHttpClient);
+      this(ScmManagerSource::createHttpClient);
     }
 
     public DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory) {
@@ -116,7 +209,8 @@ public class ScmManagerSource extends SCMSource {
       }
 
 
-      ScmManagerApi api = apiFactory.apply(value, x -> {});
+      ScmManagerApi api = apiFactory.apply(value, x -> {
+      });
       Promise<HalRepresentation> future = api.index();
       return future
         .then(index -> {
@@ -185,14 +279,41 @@ public class ScmManagerSource extends SCMSource {
       List<Repository> repositories = api.getRepositories().mapError(e -> emptyList());
       for (Repository repository : repositories) {
         String displayName = String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
-        String v = String.format("%s/%s", repository.getNamespace(), repository.getName());
+        String v = String.format("%s/%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
         model.add(displayName, v);
       }
       return model;
     }
 
-    private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
-      return new ScmManagerApi(new ApiClient(value, authentication));
+    // need to implement this as the default filtering of form binding will not be specific enough
+    public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
+      // Git builder ?? what about hg and svn?
+      return SCMSourceTrait._for(this, ScmManagerSourceContext.class, ScmManagerGitSCMBuilder.class);
+    }
+
+    @Override
+    @NonNull
+    public List<SCMSourceTrait> getTraitsDefaults() {
+      return Arrays.asList(
+        new BranchDiscoveryTrait(),
+        new PullRequestDiscoveryTrait()
+      );
+    }
+
+    @NonNull
+    @Override
+    protected SCMHeadCategory[] createCategories() {
+      return new SCMHeadCategory[]{
+        UncategorizedSCMHeadCategory.DEFAULT,
+        // TODO do we have to localize it
+        new ChangeRequestSCMHeadCategory(new NonLocalizable("Pull Requests")),
+        TagSCMHeadCategory.DEFAULT
+      };
     }
   }
+
+  private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
+    return new ScmManagerApi(new ApiClient(value, authentication));
+  }
+
 }

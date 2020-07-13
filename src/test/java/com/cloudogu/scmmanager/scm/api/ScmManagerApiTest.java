@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScmManagerApiTest extends ApiClientTestBase {
@@ -13,7 +12,8 @@ public class ScmManagerApiTest extends ApiClientTestBase {
   public void shouldLoadAllRepositories() throws InterruptedException {
     ScmManagerApi api = new ScmManagerApi(apiClient());
 
-    List<Repository> repositories = api.getRepositories().mapError(error -> emptyList());
+    List<Repository> repositories = api.getRepositories()
+      .orElseThrow(error -> new RuntimeException("unexpected error: " + error.getMessage()));
 
     assertThat(repositories).hasSize(2);
     assertThat(repositories)
@@ -22,5 +22,15 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     assertThat(repositories)
       .extracting("name")
       .containsExactly("hello-shell", "scm-editor-plugin");
+  }
+
+  @Test
+  public void shouldLoadSingleRepository() throws InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = api.getRepository("plugins", "scm-editor-plugin")
+      .orElseThrow(error -> new RuntimeException("unexpected error: " + error.getMessage()));
+
+    assertThat(repository.getName()).isEqualTo("scm-editor-plugin");
   }
 }

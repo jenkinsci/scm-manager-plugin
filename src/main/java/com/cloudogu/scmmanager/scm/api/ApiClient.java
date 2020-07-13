@@ -105,6 +105,10 @@ public final class ApiClient {
 
     private final CompletableFuture<T> future;
 
+    public Promise(T value) {
+      this.future = CompletableFuture.completedFuture(value);
+    }
+
     public Promise(CompletableFuture<T> future) {
       this.future = future;
     }
@@ -132,6 +136,12 @@ public final class ApiClient {
         }
         return errorConsumer.apply(error);
       }
+    }
+
+    public T orElseThrow(Function<ApiError, RuntimeException> exceptionProvider) throws InterruptedException {
+      return mapError(error -> {
+        throw exceptionProvider.apply(error);
+      });
     }
   }
 
