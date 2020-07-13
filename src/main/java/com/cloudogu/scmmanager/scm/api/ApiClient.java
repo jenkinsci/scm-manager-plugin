@@ -48,7 +48,12 @@ public final class ApiClient {
     } else {
       fixedServerUrl = trimmedServerUrl;
     }
-    return url -> fixedServerUrl + url;
+    return url -> {
+      if (url.contains("://")) {
+        return url;
+      }
+      return fixedServerUrl + url;
+    };
   }
 
   @VisibleForTesting

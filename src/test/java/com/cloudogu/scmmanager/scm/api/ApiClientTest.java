@@ -77,6 +77,14 @@ public class ApiClientTest extends ApiClientTestBase {
     assertThat(fixedUrl).isEqualTo("http://hitchhiker.com/scm/api");
   }
 
+  @Test
+  public void shouldNotChangeAbsoluteUrl() {
+    String fixedUrl = ApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("http://vogon.vo/destroy");
+
+    assertThat(fixedUrl).isEqualTo("http://vogon.vo/destroy");
+
+  }
+
   public static class SomeDataClass {
     public String someString;
     public int someNumber;
