@@ -3,15 +3,19 @@ package com.cloudogu.scmmanager.scm.api;
 import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 
 public class ScmManagerApi {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerApi.class);
 
   private final ApiClient client;
 
@@ -37,6 +41,7 @@ public class ScmManagerApi {
         return repository;
       });
   }
+
   public Promise<List<Branch>> getBranches(Repository repository) {
     Optional<Link> branchesLink = repository.getLinks().getLinkBy("branches");
     if (branchesLink.isPresent()) {
@@ -47,7 +52,7 @@ public class ScmManagerApi {
             .collect(Collectors.toList())
         );
     }
-    return new Promise<>(CompletableFuture.completedFuture(emptyList()));
+    return new Promise<>(emptyList());
   }
 
   public Promise<List<Tag>> getTags(Repository repository) {
@@ -58,6 +63,40 @@ public class ScmManagerApi {
         .then(tags -> tags.stream().peek(t -> t.setCloneInformation(repository.getCloneInformation())).collect(Collectors.toList()));
     }
     return new Promise<>(emptyList());
+  }
+
+  public Promise<List<PullRequest>> getPullRequests(Repository repository) {
+    Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
+    if (pullRequestLink.isPresent()) {
+      return client.get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequest+json;v=2", PullRequestCollection.class)
+        .then(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests())
+        .then(pullRequests -> pullRequests.stream().peek(pullRequest -> {
+          pullRequest.setCloneInformation(repository.getCloneInformation());
+          try {
+            pullRequest.setTargetBranch(
+              client.get(getLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+                .mapError(e -> {
+                  LOG.error("Could not load target branch information for pull request: {}", e.getMessage());
+                  return null;
+                }));
+            pullRequest.setSourceBranch(
+              client.get(getLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+                .mapError(e -> {
+                  LOG.error("Could not load source branch information for pull request: {}", e.getMessage());
+                  return null;
+                }));
+          } catch (InterruptedException e) {
+            LOG.error("Could not load branch information for pull request", e);
+          }
+        }).collect(Collectors.toList()));
+    }
+    return new Promise<>(Collections.emptyList());
+  }
+
+  private String getLink(HalRepresentation hal, String linkName) {
+    return hal.getLinks().getLinkBy(linkName)
+      .orElseThrow(() -> new RuntimeException("could not find link '" + linkName + "'"))
+      .getHref();
   }
 
   private static class RepositoryCollection {
@@ -105,6 +144,22 @@ public class ScmManagerApi {
 
     public List<Tag> getTags() {
       return tags;
+    }
+  }
+
+  private static class PullRequestCollection {
+    private EmbeddedPullRequests _embedded;
+
+    public EmbeddedPullRequests get_embedded() {
+      return _embedded;
+    }
+  }
+
+  private static class EmbeddedPullRequests {
+    private List<PullRequest> pullRequests;
+
+    public List<PullRequest> getPullRequests() {
+      return pullRequests;
     }
   }
 }

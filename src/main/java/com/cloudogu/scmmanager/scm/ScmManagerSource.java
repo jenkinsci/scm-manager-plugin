@@ -9,6 +9,7 @@ import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
+import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
@@ -49,6 +50,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -66,6 +69,8 @@ import static java.util.Collections.emptyList;
 
 public class ScmManagerSource extends SCMSource {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
+
   private final String serverUrl;
   private final String namespace;
   private final String name;
@@ -75,8 +80,8 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
 
-  private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
-  private final Function<SCMSourceOwner, Authentications> authenticationsProvider;
+  private BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+  private Function<SCMSourceOwner, Authentications> authenticationsProvider;
 
   @DataBoundConstructor
   public ScmManagerSource(String serverUrl, String repository, String credentialsId) {
@@ -129,21 +134,21 @@ public class ScmManagerSource extends SCMSource {
 
   @VisibleForTesting
   void observe(@NonNull SCMHeadObserver observer, ScmManagerSourceRequest request) throws IOException, InterruptedException {
-    HttpAuthentication authentication = authenticationsProvider.apply(getOwner()).from(serverUrl, credentialsId);
+    HttpAuthentication authentication = getAuthenticationsProvider().apply(getOwner()).from(serverUrl, credentialsId);
 
-    ScmManagerApi api = apiFactory.apply(serverUrl, authentication);
+    ScmManagerApi api = getApiFactory().apply(serverUrl, authentication);
     Repository repository = api.getRepository(namespace, name).orElseThrow(error -> new UncheckedIOException(new IOException("failed to load repository: " + error.getMessage())));
 
     // TODO evaluate event and check only what's necessary
 
     Promise<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : new Promise<>(Collections.emptyList());
     Promise<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : new Promise<>(Collections.emptyList());
-//      Promise<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : new Promise<>(Collections.emptyList());
+    Promise<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : new Promise<>(Collections.emptyList());
 
     // TODO error handling
     observe(observer, branchesFuture.mapError(e -> emptyList()));
     observe(observer, tagsFuture.mapError(e -> emptyList()));
-//      observe(observer, pullRequestFuture.mapError(e -> emptyList()));
+    observe(observer, pullRequestFuture.mapError(e -> emptyList()));
   }
 
   private void observe(SCMHeadObserver observer, List<? extends ScmManagerObservable> observables) throws IOException, InterruptedException {
@@ -175,6 +180,20 @@ public class ScmManagerSource extends SCMSource {
 
   public String getCredentialsId() {
     return credentialsId;
+  }
+
+  private BiFunction<String, HttpAuthentication, ScmManagerApi> getApiFactory() {
+    if (apiFactory == null) {
+      apiFactory = ScmManagerSource::createHttpClient;
+    }
+    return apiFactory;
+  }
+
+  private Function<SCMSourceOwner, Authentications> getAuthenticationsProvider() {
+    if (authenticationsProvider == null) {
+      authenticationsProvider = Authentications::new;
+    }
+    return authenticationsProvider;
   }
 
   @Extension
