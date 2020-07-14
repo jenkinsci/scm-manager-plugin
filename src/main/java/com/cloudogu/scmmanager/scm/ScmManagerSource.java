@@ -13,6 +13,7 @@ import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
+import com.cloudogu.scmmanager.scm.api.Tag;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
@@ -75,13 +76,20 @@ public class ScmManagerSource extends SCMSource {
   private List<SCMSourceTrait> traits = new ArrayList<>();
 
   private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+  private final Function<SCMSourceOwner, Authentications> authenticationsProvider;
 
   @DataBoundConstructor
   public ScmManagerSource(String serverUrl, String repository, String credentialsId) {
-    this(serverUrl, repository, credentialsId, ScmManagerSource::createHttpClient);
+    this(serverUrl, repository, credentialsId, ScmManagerSource::createHttpClient, Authentications::new);
   }
 
-  public ScmManagerSource(String serverUrl, String repository, String credentialsId, BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory) {
+  ScmManagerSource(
+    String serverUrl,
+    String repository,
+    String credentialsId,
+    BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory,
+    Function<SCMSourceOwner, Authentications> authenticationsProvider
+  ) {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
 
@@ -91,6 +99,7 @@ public class ScmManagerSource extends SCMSource {
     this.type = parts[2];
 
     this.apiFactory = apiFactory;
+    this.authenticationsProvider = authenticationsProvider;
   }
 
   @NonNull
@@ -112,31 +121,29 @@ public class ScmManagerSource extends SCMSource {
       // this is fetch all
       // TODO handle includes from criteria
 
-      HttpAuthentication authentication = Authentications.from(getOwner(), serverUrl, credentialsId);
-
-      ScmManagerApi api = apiFactory.apply(serverUrl, authentication);
-      Repository repository = api.getRepository(namespace, name).orElseThrow(error -> new UncheckedIOException(new IOException("failed to load repository: " + error.getMessage())));
-
-      // TODO evaluate event and check only what's necessary
-
-      Promise<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : new Promise<>(Collections.emptyList());
-//      CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags() ? repository.getTags() : CompletableFuture.completedFuture(Collections.emptyList());
-//      CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? repository.getPullRequests() : CompletableFuture.completedFuture(Collections.emptyList());
-
-      // wait until all futures are complete
-//      CompletableFuture.allOf(
-//        branchesFuture
-//        tagsFuture,
-//        pullRequestFuture
-//      ).join();
-
-      // TODO error handling
-      observe(observer, branchesFuture.mapError(e -> emptyList()));
-//      observe(observer, tagsFuture.get());
-//      observe(observer, pullRequestFuture.get());
+      observe(observer, request);
 //    } catch (ExecutionException e) {
 //      throw new IOException("failed to get repository from api", e);
     }
+  }
+
+  @VisibleForTesting
+  void observe(@NonNull SCMHeadObserver observer, ScmManagerSourceRequest request) throws IOException, InterruptedException {
+    HttpAuthentication authentication = authenticationsProvider.apply(getOwner()).from(serverUrl, credentialsId);
+
+    ScmManagerApi api = apiFactory.apply(serverUrl, authentication);
+    Repository repository = api.getRepository(namespace, name).orElseThrow(error -> new UncheckedIOException(new IOException("failed to load repository: " + error.getMessage())));
+
+    // TODO evaluate event and check only what's necessary
+
+    Promise<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : new Promise<>(Collections.emptyList());
+    Promise<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : new Promise<>(Collections.emptyList());
+//      Promise<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : new Promise<>(Collections.emptyList());
+
+    // TODO error handling
+    observe(observer, branchesFuture.mapError(e -> emptyList()));
+    observe(observer, tagsFuture.mapError(e -> emptyList()));
+//      observe(observer, pullRequestFuture.mapError(e -> emptyList()));
   }
 
   private void observe(SCMHeadObserver observer, List<? extends ScmManagerObservable> observables) throws IOException, InterruptedException {

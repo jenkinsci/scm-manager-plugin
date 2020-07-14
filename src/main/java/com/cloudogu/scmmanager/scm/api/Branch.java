@@ -14,6 +14,11 @@ public class Branch extends HalRepresentation implements ScmManagerObservable {
   Branch() {
   }
 
+  public Branch(String name, String revision) {
+    this.name = name;
+    this.revision = revision;
+  }
+
   void setCloneInformation(CloneInformation cloneInformation) {
     this.cloneInformation = cloneInformation;
   }
