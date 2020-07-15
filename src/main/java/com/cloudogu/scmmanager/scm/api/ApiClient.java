@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -66,7 +67,20 @@ public final class ApiClient {
     this.urlModifier = urlModifier;
   }
 
-  public <T> Promise<T> get(String url, String contentType, Class<T> type) {
+  public static void handleException(ExecutionException e) {
+    Throwable cause = e.getCause();
+    if (cause instanceof JsonParseException || cause instanceof JsonMappingException) {
+      LOG.warn("could not parse response for request", e);
+    } else if (cause instanceof IllegalReturnStatusException) {
+      LOG.warn("got error in request: {}", e.getMessage());
+    } else if (cause instanceof TimeoutException) {
+      LOG.warn("request timed out: {}", e.getMessage());
+    } else {
+      LOG.warn("got unknown exception in request", e);
+    }
+  }
+
+  public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
     LOG.info("get {} from {}", type.getName(), url);
     AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(urlModifier.apply(url));
     authentication.authenticate(requestBuilder);
@@ -96,7 +110,7 @@ public final class ApiClient {
       }
     });
 
-    return new Promise<>(url, future);
+    return future;
   }
 
   private static class IllegalReturnStatusException extends Exception {
@@ -142,6 +156,9 @@ public final class ApiClient {
         } else if (cause instanceof IllegalReturnStatusException) {
           LOG.warn("got error in request '{}': {}", url, e.getMessage());
           error = new ApiError(((IllegalReturnStatusException) cause).statusCode);
+        } else if (cause instanceof TimeoutException) {
+          LOG.warn("request '{}' timed out: {}", url, e.getMessage());
+          error = new ApiError("request timed out");
         } else {
           LOG.warn("got unknown exception in request {}", url, e);
           error = new ApiError("unknown exception: " + exceptionMessage);

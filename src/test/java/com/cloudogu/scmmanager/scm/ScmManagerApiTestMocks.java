@@ -9,25 +9,25 @@ import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ScmManagerApiTestMocks {
 
-  public static <T> void mockResult(OngoingStubbing<ApiClient.Promise<T>> when, T... results) {
-    ApiClient.Promise<T>[] promises = Arrays.stream(results)
+  public static <T> void mockResult(OngoingStubbing<CompletableFuture<T>> when, T... results) {
+    CompletableFuture<T>[] futures = Arrays.stream(results)
       .map(result -> CompletableFuture.completedFuture(result))
-      .map(future -> new ApiClient.Promise<>(future))
-      .toArray(n -> new ApiClient.Promise[n]);
-    ApiClient.Promise<T>[] furtherResults =
-      promises.length == 0? new ApiClient.Promise[]{}: Arrays.copyOfRange(promises, 1, promises.length);
-    when.thenReturn(promises[0], furtherResults);
+      .toArray(n -> new CompletableFuture[n]);
+    CompletableFuture<T>[] furtherResults =
+      futures.length == 0? new CompletableFuture[]{}: Arrays.copyOfRange(futures, 1, futures.length);
+    when.thenReturn(futures[0], furtherResults);
   }
 
-  public static <T> void mockError(ApiClient.ApiError apiError, OngoingStubbing<ApiClient.Promise<T>> stubbing) throws InterruptedException {
-    ApiClient.Promise<?> promise = mock(ApiClient.Promise.class);
-    stubbing.thenReturn((ApiClient.Promise<T>) promise);
-    when(promise.then(any())).thenReturn((ApiClient.Promise<Object>) promise);
-    doAnswer(invocation -> invocation.getArgument(0, Function.class).apply(apiError)).when(promise).mapError(any());
+  public static <T> void mockError(Throwable apiError, OngoingStubbing<CompletableFuture<T>> stubbing) throws InterruptedException {
+    CompletableFuture<?> promise = mock(CompletableFuture.class);
+    stubbing.thenReturn((CompletableFuture<T>) promise);
+    lenient().when(promise.thenApply(any())).thenReturn((CompletableFuture<Object>) promise);
+    doAnswer(invocation -> CompletableFuture.completedFuture(invocation.getArgument(0, Function.class).apply(apiError))).when(promise).exceptionally(any());
   }
 }

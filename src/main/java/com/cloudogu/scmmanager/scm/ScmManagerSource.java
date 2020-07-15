@@ -62,6 +62,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -137,18 +139,34 @@ public class ScmManagerSource extends SCMSource {
     HttpAuthentication authentication = getAuthenticationsProvider().apply(getOwner()).from(serverUrl, credentialsId);
 
     ScmManagerApi api = getApiFactory().apply(serverUrl, authentication);
-    Repository repository = api.getRepository(namespace, name).orElseThrow(error -> new UncheckedIOException(new IOException("failed to load repository: " + error.getMessage())));
+    Repository repository = null;
+    try {
+      repository = api.getRepository(namespace, name).get();
+    } catch (ExecutionException e) {
+      ApiClient.handleException(e);
+      throw new UncheckedIOException(new IOException("failed to load repository"));
+    }
 
     // TODO evaluate event and check only what's necessary
 
-    Promise<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : new Promise<>(Collections.emptyList());
-    Promise<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : new Promise<>(Collections.emptyList());
-    Promise<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : new Promise<>(Collections.emptyList());
+    CompletableFuture<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : CompletableFuture.completedFuture(Collections.emptyList());
+    CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : CompletableFuture.completedFuture(Collections.emptyList());
+    CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : CompletableFuture.completedFuture(Collections.emptyList());
 
-    // TODO error handling
-    observe(observer, branchesFuture.mapError(e -> emptyList()));
-    observe(observer, tagsFuture.mapError(e -> emptyList()));
-    observe(observer, pullRequestFuture.mapError(e -> emptyList()));
+    CompletableFuture.allOf(
+      branchesFuture,
+      tagsFuture,
+      pullRequestFuture
+    ).join();
+
+    try {
+      observe(observer, branchesFuture.get());
+      observe(observer, tagsFuture.get());
+      observe(observer, pullRequestFuture.get());
+    } catch (ExecutionException e) {
+      ApiClient.handleException(e);
+      // TODO error handling
+    }
   }
 
   private void observe(SCMHeadObserver observer, List<? extends ScmManagerObservable> observables) throws IOException, InterruptedException {
@@ -217,7 +235,7 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException {
+    public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException, ExecutionException {
       String trimmedValue = value.trim();
       if (Strings.isNullOrEmpty(trimmedValue)) {
         return FormValidation.error("server url is required");
@@ -237,24 +255,25 @@ public class ScmManagerSource extends SCMSource {
 
       ScmManagerApi api = apiFactory.apply(value, x -> {
       });
-      Promise<HalRepresentation> future = api.index();
+      CompletableFuture<HalRepresentation> future = api.index();
       return future
-        .then(index -> {
+        .thenApply(index -> {
           if (index.getLinks().getLinkBy("login").isPresent()) {
             return FormValidation.ok();
           }
           return FormValidation.error("api has no login link");
         })
-        .mapError(e -> FormValidation.error(e.getMessage()));
+        .exceptionally(e -> FormValidation.error(e.getMessage()))
+        .get();
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException {
+    public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException, ExecutionException {
       return validateCredentialsId(context, serverUrl, value, Authentications::new);
     }
 
     @VisibleForTesting
-    FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
+    FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException, ExecutionException {
       if (doCheckServerUrl(serverUrl).kind != FormValidation.Kind.OK) {
         return FormValidation.error("server url is required");
       }
@@ -263,13 +282,16 @@ public class ScmManagerSource extends SCMSource {
       }
       Authentications authentications = authenticationsProvider.apply(context);
       ScmManagerApi client = apiFactory.apply(serverUrl, authentications.from(serverUrl, value));
-      Promise<HalRepresentation> future = client.index();
-      return future.then(index -> {
-        if (index.getLinks().getLinkBy("me").isPresent()) {
-          return FormValidation.ok();
-        }
-        return FormValidation.error("login failed");
-      }).mapError(e -> FormValidation.error(e.getMessage()));
+      CompletableFuture<HalRepresentation> future = client.index();
+      return future
+        .thenApply(index -> {
+          if (index.getLinks().getLinkBy("me").isPresent()) {
+            return FormValidation.ok();
+          }
+          return FormValidation.error("login failed");
+        })
+        .exceptionally(e -> FormValidation.error(e.getMessage()))
+        .get();
     }
 
     @SuppressWarnings("unused") // used By stapler
@@ -287,11 +309,11 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public ListBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException {
+    public ListBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
       return fillRepositoryItems(context, serverUrl, credentialsId, value, Authentications::new);
     }
 
-    public ListBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException {
+    public ListBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException, ExecutionException {
       ListBoxModel model = new ListBoxModel();
       if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
         if (!Strings.isNullOrEmpty(value)) {
@@ -302,7 +324,7 @@ public class ScmManagerSource extends SCMSource {
 
       Authentications authentications = authenticationsProvider.apply(context);
       ScmManagerApi api = apiFactory.apply(serverUrl, authentications.from(serverUrl, credentialsId));
-      List<Repository> repositories = api.getRepositories().mapError(e -> emptyList());
+      List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
       for (Repository repository : repositories) {
         String displayName = String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
         String v = String.format("%s/%s/%s", repository.getNamespace(), repository.getName(), repository.getType());

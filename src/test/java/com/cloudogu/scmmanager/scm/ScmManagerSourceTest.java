@@ -21,10 +21,12 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -71,7 +73,7 @@ public class ScmManagerSourceTest {
 
   @Test
   public void shouldUserConfiguredValues() throws IOException, InterruptedException {
-    when(api.getRepository("space", "X")).thenReturn(new Promise<>(REPOSITORY));
+    when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
 
     source.observe(observer, request);
 
@@ -80,8 +82,8 @@ public class ScmManagerSourceTest {
 
   @Test
   public void shouldObserverBranches() throws IOException, InterruptedException {
-    when(api.getRepository("space", "X")).thenReturn(new Promise<>(REPOSITORY));
-    when(api.getBranches(REPOSITORY)).thenReturn(new Promise<>(asList(new Branch("feature/hog", "42"))));
+    when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+    when(api.getBranches(REPOSITORY)).thenReturn(completedFuture(asList(new Branch("feature/hog", "42"))));
     when(request.isFetchBranches()).thenReturn(true);
 
     source.observe(observer, request);
@@ -92,8 +94,8 @@ public class ScmManagerSourceTest {
 
   @Test
   public void shouldObserverPullRequests() throws IOException, InterruptedException {
-    when(api.getRepository("space", "X")).thenReturn(new Promise<>(REPOSITORY));
-    when(api.getBranches(REPOSITORY)).thenReturn(new Promise<>(asList(new Branch("feature/hog", "42"))));
+    when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+    when(api.getBranches(REPOSITORY)).thenReturn(completedFuture(asList(new Branch("feature/hog", "42"))));
     when(request.isFetchBranches()).thenReturn(true);
 
     source.observe(observer, request);
