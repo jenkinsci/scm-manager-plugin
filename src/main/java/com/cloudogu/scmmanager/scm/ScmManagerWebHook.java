@@ -1,7 +1,5 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.scm.api.CloneInformation;
-import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
@@ -40,29 +38,8 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
 
   @RequirePOST
   public HttpResponse doNotify(StaplerRequest req) throws ServletException {
-    SCMHeadEvent.fireNow(new ScmManagerHeadEvent());
-
-    // check if the event payload at least provides some proof of origin
-    // this may be a query parameter or a HTTP header
-    // if the proof of origin is missing, drop the event on the floor and return
-
-    // extract the payload from the request
-    // parse the payload
-        /* PSEUDOCODE
-        for (event : payload) {
-            switch (eventType) {
-                case HEAD:
-                    SCMHeadEvent.fireNow(new MySCMHeadEvent(eventType, payload, SCMEvent.originOf(req));
-                    break;
-                case SOURCE:
-                    SCMHeadEvent.fireNow(new MySCMSourceEvent(eventType, payload, SCMEvent.originOf(req));
-                    break;
-                case NAVIGATOR:
-                    SCMHeadEvent.fireNow(new MySCMNavigatorEvent(eventType, payload, SCMEvent.originOf(req));
-                    break;
-            }
-        }
-        */
+    JSONObject form = req.getSubmittedForm();
+    SCMHeadEvent.fireNow(new ScmManagerHeadEvent(form.getString("namespace"), form.getString("name"), form.getString("type")));
     return HttpResponses.ok();
   }
 

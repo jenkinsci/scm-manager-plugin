@@ -18,8 +18,15 @@ import java.util.Map;
 
 public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
 
-  public ScmManagerHeadEvent() {
+  private final String namespace;
+  private final String name;
+  private final String type;
+
+  public ScmManagerHeadEvent(String namespace, String name, String type) {
     super(Type.UPDATED, new TriggerPayload(), SCMEvent.originOf(Stapler.getCurrentRequest()));
+    this.namespace = namespace;
+    this.name = name;
+    this.type = type;
   }
 
   @Override
@@ -42,7 +49,7 @@ public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trigge
 
   @Override
   public boolean isMatch(@NonNull SCMSource source) {
-    return source instanceof ScmManagerSource && ((ScmManagerSource)source).getRepository().equals("jenkins-plugin/hello-shell/git");
+    return source instanceof ScmManagerSource && ((ScmManagerSource)source).getRepository().equals(String.format("%s/%s/%s", namespace, name, type));
   }
 
   @Override
