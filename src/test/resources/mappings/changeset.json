@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-changeset+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{ \"id\": \"a41666c19c7c868410b80a963a50e8a2a9b0a958\", \"author\": { \"mail\": \"sebastian.sdorra@cloudogu.com\", \"name\": \"Sebastian Sdorra\" }, \"date\": \"2020-06-22T11:57:28Z\", \"description\": \"added build\", \"contributors\": [ { \"type\": \"Committed-by\", \"person\": { \"mail\": \"noreply@scm-manager.org\", \"name\": \"SCM-Manager\" } }, { \"type\": \"Pushed-by\", \"person\": { \"mail\": \"sebastian.sdorra@cloudogu.com\", \"name\": \"Sebastian Sdorra\" } } ], \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"diff\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/diff/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"sources\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"modifications\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/modifications/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"diffParsed\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/diff/a41666c19c7c868410b80a963a50e8a2a9b0a958/parsed\" }, \"ciStatus\": { \"href\": \"/scm/api/v2/ci/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } }, \"_embedded\": { \"tags\": [ { \"name\": \"1.0.0\", \"revision\": \"a41666c19c7c868410b80a963a50e8a2a9b0a958\", \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/1.0.0\" }, \"sources\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"changeset\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } } } ], \"branches\": [], \"parents\": [ { \"id\": \"53230837453360e198bf3a56a3cfa37472825976\", \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/53230837453360e198bf3a56a3cfa37472825976\" }, \"diff\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/diff/53230837453360e198bf3a56a3cfa37472825976\" } } } ], \"ciStatus\": [] } }",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-changeset+json;v=2"
+    }
+  }
+}

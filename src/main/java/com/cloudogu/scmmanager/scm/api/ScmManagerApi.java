@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 public class ScmManagerApi {
 
@@ -46,10 +47,11 @@ public class ScmManagerApi {
     Optional<Link> branchesLink = repository.getLinks().getLinkBy("branches");
     if (branchesLink.isPresent()) {
       return client.get(branchesLink.get().getHref(), "application/vnd.scmm-branchCollection+json;v=2", BranchCollection.class)
-        .then(
-          branchCollection -> branchCollection.get_embedded().getBranches().stream()
-            .peek(b -> b.setCloneInformation(repository.getCloneInformation()))
-            .collect(Collectors.toList())
+        .then(branchCollection -> branchCollection.get_embedded().getBranches())
+        .then(branches -> {
+            branches.forEach(branch -> branch.setCloneInformation(repository.getCloneInformation()));
+            return branches;
+          }
         );
     }
     return new Promise<>(emptyList());
@@ -60,9 +62,37 @@ public class ScmManagerApi {
     if (tagsLink.isPresent()) {
       return client.get(tagsLink.get().getHref(), "application/vnd.scmm-tagCollection+json;v=2", TagCollection.class)
         .then(tagCollection -> tagCollection.get_embedded().getTags())
-        .then(tags -> tags.stream().peek(t -> t.setCloneInformation(repository.getCloneInformation())).collect(Collectors.toList()));
+        .then(tags -> {
+          tags.forEach(t -> t.setCloneInformation(repository.getCloneInformation()));
+          tags.forEach(tag -> setChangeset(tag));
+          return tags;
+        });
     }
     return new Promise<>(emptyList());
+  }
+
+  private void setChangeset(Tag tag) {
+    Promise<Changeset> changeset = getChangeset(tag);
+    if (changeset == null) {
+      return;
+    }
+    try {
+      changeset.then(c -> {
+        tag.setChangeset(c);
+        return null;
+      }).mapError(e -> {
+        LOG.warn("could not load changeset for tag {}: {}", tag.getName(), e.getMessage());
+        return null;
+      });
+    } catch (InterruptedException e) {
+      LOG.warn("interrupted loading changeset for tag {}", tag.getName(), e);
+    }
+  }
+
+  private Promise<Changeset> getChangeset(Tag tag) {
+    return tag.getLinks().getLinkBy("changeset")
+      .map(link -> client.get(link.getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class))
+      .orElse(null);
   }
 
   public Promise<List<PullRequest>> getPullRequests(Repository repository) {
@@ -88,7 +118,7 @@ public class ScmManagerApi {
           } catch (InterruptedException e) {
             LOG.error("Could not load branch information for pull request", e);
           }
-        }).collect(Collectors.toList()));
+        }).collect(toList()));
     }
     return new Promise<>(Collections.emptyList());
   }
