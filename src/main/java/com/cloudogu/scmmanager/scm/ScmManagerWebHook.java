@@ -15,6 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Extension
 public class ScmManagerWebHook implements UnprotectedRootAction {
@@ -39,6 +40,9 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   @RequirePOST
   public HttpResponse doNotify(StaplerRequest req) throws ServletException {
     JSONObject form = req.getSubmittedForm();
+    if (!verifyParameters(form, "namespace", "name", "type", "server")) {
+      return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type', 'server'");
+    }
     SCMHeadEvent.fireNow(
       new ScmManagerHeadEvent(
         form.getString("namespace"),
@@ -46,6 +50,10 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
         form.getString("type"),
         form.getString("server")));
     return HttpResponses.ok();
+  }
+
+  private boolean verifyParameters(JSONObject form, String... keys) {
+    return Arrays.stream(keys).allMatch(form::containsKey);
   }
 
   @Extension
