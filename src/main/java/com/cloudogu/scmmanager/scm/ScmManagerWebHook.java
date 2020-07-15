@@ -39,7 +39,12 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   @RequirePOST
   public HttpResponse doNotify(StaplerRequest req) throws ServletException {
     JSONObject form = req.getSubmittedForm();
-    SCMHeadEvent.fireNow(new ScmManagerHeadEvent(form.getString("namespace"), form.getString("name"), form.getString("type")));
+    SCMHeadEvent.fireNow(
+      new ScmManagerHeadEvent(
+        form.getString("namespace"),
+        form.getString("name"),
+        form.getString("type"),
+        form.getString("server")));
     return HttpResponses.ok();
   }
 

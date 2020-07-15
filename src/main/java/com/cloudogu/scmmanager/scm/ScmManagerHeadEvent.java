@@ -21,12 +21,14 @@ public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trigge
   private final String namespace;
   private final String name;
   private final String type;
+  private final String serverUrl;
 
-  public ScmManagerHeadEvent(String namespace, String name, String type) {
+  public ScmManagerHeadEvent(String namespace, String name, String type, String serverUrl) {
     super(Type.UPDATED, new TriggerPayload(), SCMEvent.originOf(Stapler.getCurrentRequest()));
     this.namespace = namespace;
     this.name = name;
     this.type = type;
+    this.serverUrl = serverUrl;
   }
 
   @Override
@@ -49,7 +51,9 @@ public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trigge
 
   @Override
   public boolean isMatch(@NonNull SCMSource source) {
-    return source instanceof ScmManagerSource && ((ScmManagerSource)source).getRepository().equals(String.format("%s/%s/%s", namespace, name, type));
+    return source instanceof ScmManagerSource
+      && ((ScmManagerSource)source).getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
+      && ((ScmManagerSource)source).getServerUrl().startsWith(serverUrl);
   }
 
   @Override
