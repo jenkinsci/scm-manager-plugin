@@ -119,6 +119,18 @@ public class ScmManagerSource extends SCMSource {
     this.traits = new ArrayList<>(Util.fixNull(traits));
   }
 
+  String getNamespace() {
+    return namespace;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  String getType() {
+    return type;
+  }
+
   @Override
   protected void retrieve(SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer, SCMHeadEvent<?> event, @NonNull TaskListener listener) throws IOException, InterruptedException {
     try (ScmManagerSourceRequest request = new ScmManagerSourceContext(criteria, observer)

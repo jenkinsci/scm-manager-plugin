@@ -4,6 +4,7 @@ import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jenkins.scm.api.SCMHeadEvent;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -15,7 +16,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
 @Extension
 public class ScmManagerWebHook implements UnprotectedRootAction {
@@ -43,13 +48,24 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
     if (!verifyParameters(form, "namespace", "name", "type", "server")) {
       return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type', 'server'");
     }
-    SCMHeadEvent.fireNow(
-      new ScmManagerHeadEvent(
-        form.getString("namespace"),
-        form.getString("name"),
-        form.getString("type"),
-        form.getString("server")));
+    fireIfPresent(form, "deletedBranches", names -> new ScmManagerBranchDeletedEvent(form, names));
+    fireIfPresent(form, "createdOrModifiedBranches", names -> new ScmManagerBranchUpdatedEvent(form, names));
+    fireIfPresent(form, "deletedTags", names -> new ScmManagerTagDeletedEvent(form, names));
+    fireIfPresent(form, "createOrModifiedTags", names -> new ScmManagerTagUpdatedEvent(form, names));
     return HttpResponses.ok();
+  }
+
+  void fireIfPresent(JSONObject form, String arrayName, Function<Collection<String>, ScmManagerHeadEvent> eventProvider) {
+    if (form.containsKey(arrayName)) {
+      JSONArray array = form.getJSONArray(arrayName);
+      if (!array.isEmpty()) {
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < array.size(); ++i) {
+          names.add(array.getString(i));
+        }
+        SCMHeadEvent.fireNow(eventProvider.apply(names));
+      }
+    }
   }
 
   private boolean verifyParameters(JSONObject form, String... keys) {

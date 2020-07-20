@@ -1,8 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
-import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
-import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.scm.SCM;
 import jenkins.scm.api.SCMEvent;
@@ -11,20 +9,29 @@ import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
-public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
+abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
 
   private final String namespace;
   private final String name;
   private final String type;
   private final String serverUrl;
 
-  public ScmManagerHeadEvent(String namespace, String name, String type, String serverUrl) {
-    super(Type.UPDATED, new TriggerPayload(), SCMEvent.originOf(Stapler.getCurrentRequest()));
+  ScmManagerHeadEvent(Type changeType, JSONObject form) {
+    this(changeType, form.getString("namespace"),
+      form.getString("name"),
+      form.getString("type"),
+      form.getString("server"));
+  }
+
+  ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, String serverUrl) {
+    super(changeType, new TriggerPayload(), SCMEvent.originOf(Stapler.getCurrentRequest()));
     this.namespace = namespace;
     this.name = name;
     this.type = type;
@@ -45,15 +52,24 @@ public class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trigge
   @NonNull
   @Override
   public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
-    ScmManagerHead head = new ScmManagerHead(new CloneInformation("dummy", "dummy"), "dummy");
-    return Collections.singletonMap(head, new ScmManagerRevision(head, "dummy"));
+    ScmManagerSource scmManagerSource = (ScmManagerSource) source;
+    CloneInformation cloneInformation = new CloneInformation(scmManagerSource.getType(), scmManagerSource.getServerUrl());
+    Collection<SCMHead> heads = heads(cloneInformation);
+    HashMap<SCMHead, SCMRevision> map = new HashMap<>();
+    heads.forEach(head -> map.put(head, null));
+    return map;
   }
+
+  abstract Collection<SCMHead> heads(CloneInformation cloneInformation);
 
   @Override
   public boolean isMatch(@NonNull SCMSource source) {
-    return source instanceof ScmManagerSource
-      && ((ScmManagerSource)source).getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
-      && ((ScmManagerSource)source).getServerUrl().startsWith(serverUrl);
+    return source instanceof ScmManagerSource && isMatch((ScmManagerSource) source);
+  }
+
+  private boolean isMatch(@NonNull ScmManagerSource source) {
+    return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
+      && source.getServerUrl().startsWith(serverUrl);
   }
 
   @Override
