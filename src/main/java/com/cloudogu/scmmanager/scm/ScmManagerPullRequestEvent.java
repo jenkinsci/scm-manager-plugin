@@ -10,7 +10,7 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
-abstract class ScmManagerPullRequestEvent extends ScmManagerHeadEvent {
+public class ScmManagerPullRequestEvent extends ScmManagerHeadEvent {
 
   private Collection<PullRequestFromJson> pullRequests;
 

@@ -9,7 +9,7 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
-abstract class ScmManagerBranchEvent extends ScmManagerHeadEvent {
+public class ScmManagerBranchEvent extends ScmManagerHeadEvent {
 
   private Collection<String> names;
 

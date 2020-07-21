@@ -6,7 +6,6 @@ import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jenkins.scm.api.SCMHeadEvent;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -23,6 +22,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+
+import static jenkins.scm.api.SCMEvent.Type.REMOVED;
+import static jenkins.scm.api.SCMEvent.Type.UPDATED;
 
 @Extension
 public class ScmManagerWebHook implements UnprotectedRootAction {
@@ -50,12 +52,12 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
     if (!verifyParameters(form, "namespace", "name", "type", "server")) {
       return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type', 'server'");
     }
-    fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchDeletedEvent(form, branches));
-    fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchUpdatedEvent(form, branches));
-    fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagDeletedEvent(form, tags));
-    fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagUpdatedEvent(form, tags));
-    fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestDeletedEvent(form, pullRequests));
-    fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestUpdatedEvent(form, pullRequests));
+    fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
+    fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
+    fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
+    fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
+    fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
+    fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
     return HttpResponses.ok();
   }
 
