@@ -1,10 +1,12 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jenkins.scm.api.SCMHeadEvent;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -43,29 +45,36 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   }
 
   @RequirePOST
-  public HttpResponse doNotify(StaplerRequest req) throws ServletException {
-    JSONObject form = req.getSubmittedForm();
+  public HttpResponse doNotify(StaplerRequest request) throws ServletException {
+    JSONObject form = request.getSubmittedForm();
     if (!verifyParameters(form, "namespace", "name", "type", "server")) {
       return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type', 'server'");
     }
-    fireIfPresent(form, "deletedBranches", names -> new ScmManagerBranchDeletedEvent(form, names));
-    fireIfPresent(form, "createdOrModifiedBranches", names -> new ScmManagerBranchUpdatedEvent(form, names));
-    fireIfPresent(form, "deletedTags", names -> new ScmManagerTagDeletedEvent(form, names));
-    fireIfPresent(form, "createOrModifiedTags", names -> new ScmManagerTagUpdatedEvent(form, names));
+    fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchDeletedEvent(form, branches));
+    fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchUpdatedEvent(form, branches));
+    fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagDeletedEvent(form, tags));
+    fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagUpdatedEvent(form, tags));
+    fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestDeletedEvent(form, pullRequests));
+    fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestUpdatedEvent(form, pullRequests));
     return HttpResponses.ok();
   }
 
-  void fireIfPresent(JSONObject form, String arrayName, Function<Collection<String>, ScmManagerHeadEvent> eventProvider) {
+  void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
     if (form.containsKey(arrayName)) {
-      JSONArray array = form.getJSONArray(arrayName);
-      if (!array.isEmpty()) {
-        List<String> names = new ArrayList<>();
+      JSONArray array = form.optJSONArray(arrayName); // we have to use optJSONArray, because we can have null values
+      if (array != null && !array.isEmpty()) {
+        List<JSONObject> objects = new ArrayList<>();
         for (int i = 0; i < array.size(); ++i) {
-          names.add(array.getString(i));
+          objects.add(array.getJSONObject(i));
         }
-        SCMHeadEvent.fireNow(eventProvider.apply(names));
+        fireNow(eventProvider.apply(objects));
       }
     }
+  }
+
+  @VisibleForTesting
+  void fireNow(ScmManagerHeadEvent event) {
+    SCMHeadEvent.fireNow(event);
   }
 
   private boolean verifyParameters(JSONObject form, String... keys) {
