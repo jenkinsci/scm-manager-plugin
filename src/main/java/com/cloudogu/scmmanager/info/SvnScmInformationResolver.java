@@ -17,7 +17,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "svn";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ?> run, SCM scm) {
+  public Collection<JobInformation> resolve(Run<?, ?> run, SCM scm) {
     if (!(scm instanceof SubversionSCM)) {
       return Collections.emptyList();
     }
@@ -27,7 +27,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     Map<String, String> env = new HashMap<>();
     svn.buildEnvironment(run, env);
 
-    List<ScmInformation> configurations = new ArrayList<>();
+    List<JobInformation> configurations = new ArrayList<>();
     SubversionSCM.ModuleLocation[] locations = svn.getLocations();
     if (locations != null) {
       appendInformation(configurations, locations, env);
@@ -35,7 +35,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     return Collections.unmodifiableList(configurations);
   }
 
-  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
+  private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
     if (locations.length == 1) {
       appendInformation(configurations, locations[0], env.get("SVN_REVISION"));
     } else if (locations.length > 1) {
@@ -43,16 +43,16 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     }
   }
 
-  private void appendMultipleInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
+  private void appendMultipleInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
     for (int i = 0; i < locations.length; i++) {
       appendInformation(configurations, locations[i], env.get("SVN_REVISION_" + (i + 1)));
     }
   }
 
-  private void appendInformation(List<ScmInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
+  private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
     String url = location.getURL();
     if (!Strings.isNullOrEmpty(url) && !Strings.isNullOrEmpty(revision)) {
-      configurations.add(new ScmInformation(TYPE, url, revision, location.credentialsId));
+      configurations.add(new JobInformation(TYPE, url, revision, location.credentialsId));
     }
   }
 }

@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.model.Run;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +11,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.net.MalformedURLException;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -28,7 +30,7 @@ public class ScmV2NotifierProviderTest {
 
   @Test
   public void testGetWithoutMatchingNotifier() throws MalformedURLException {
-    ScmInformation information = createInformation("sample://one");
+    JobInformation information = createInformation("sample://one");
     Optional<ScmV2Notifier> notifier = provider.get(run, information);
     assertFalse(notifier.isPresent());
   }
@@ -37,7 +39,7 @@ public class ScmV2NotifierProviderTest {
   public void testGet() throws MalformedURLException {
     applyAuthentication();
 
-    ScmInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one");
+    JobInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one");
     ScmV2Notifier notifier = provider.get(run, information).get();
 
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
@@ -50,7 +52,7 @@ public class ScmV2NotifierProviderTest {
   public void testGetWithFurtherPath() throws MalformedURLException {
     applyAuthentication();
 
-    ScmInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one/some/file");
+    JobInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one/some/file");
     ScmV2Notifier notifier = provider.get(run, information).get();
 
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
@@ -63,7 +65,7 @@ public class ScmV2NotifierProviderTest {
   public void testGetWithDotGit() throws MalformedURLException {
     applyAuthentication();
 
-    ScmInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one.git");
+    JobInformation information = createInformation("https://scm.scm-manager.org/repo/ns/one.git");
     ScmV2Notifier notifier = provider.get(run, information).get();
 
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
@@ -76,7 +78,7 @@ public class ScmV2NotifierProviderTest {
   public void testGetWithContextPath() throws MalformedURLException {
     applyAuthentication();
 
-    ScmInformation information = createInformation("https://scm.scm-manager.org/scm/repo/ns/one");
+    JobInformation information = createInformation("https://scm.scm-manager.org/scm/repo/ns/one");
     ScmV2Notifier notifier = provider.get(run, information).get();
 
     assertEquals("https://scm.scm-manager.org/scm", notifier.getInstance().toExternalForm());
@@ -86,14 +88,14 @@ public class ScmV2NotifierProviderTest {
   public void testGetWithPort() throws MalformedURLException {
     applyAuthentication();
 
-    ScmInformation information = createInformation("http://localhost:8080/scm/repo/ns/one");
+    JobInformation information = createInformation("http://localhost:8080/scm/repo/ns/one");
     ScmV2Notifier notifier = provider.get(run, information).get();
 
     assertEquals("http://localhost:8080/scm", notifier.getInstance().toExternalForm());
   }
 
-  private ScmInformation createInformation(String s) {
-    return new ScmInformation("sample", s, "abc", "one");
+  private JobInformation createInformation(String s) {
+    return new JobInformation("sample", s, "abc", "one");
   }
 
   private void applyAuthentication() {

@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.trilead.ssh2.Connection;
 import hudson.Extension;
 import hudson.model.Run;
@@ -26,7 +26,7 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2SshNotifier> get(Run<?, ?> run, ScmInformation information) {
+  public Optional<ScmV2SshNotifier> get(Run<?, ?> run, JobInformation information) {
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
@@ -35,7 +35,7 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
     return empty();
   }
 
-  private ScmV2SshNotifier createNotifier(Run<?, ?> run, ScmInformation information, Matcher matcher)  {
+  private ScmV2SshNotifier createNotifier(Run<?, ?> run, JobInformation information, Matcher matcher)  {
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
     SSHAuthentication authentication = authenticationFactory.createSSH(run, information.getCredentialsId());
     Connection connection = new Connection(matcher.group(2), getPort(matcher));

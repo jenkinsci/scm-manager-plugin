@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.cloudogu.scmmanager.info.ScmInformationService;
 import com.google.common.base.Strings;
 import hudson.model.Result;
@@ -38,7 +38,7 @@ class NotificationService {
       return;
     }
 
-    List<ScmInformation> informationList = informationService.resolve(run);
+    List<JobInformation> informationList = informationService.resolve(run);
     if (informationList.isEmpty()) {
       LOG.info("no scm information could be extracted from build {}", run);
       return;
@@ -50,7 +50,7 @@ class NotificationService {
       return;
     }
 
-    for (ScmInformation info : informationList) {
+    for (JobInformation info : informationList) {
       try {
         notify(run, buildStatus, info);
       } catch (IOException ex) {
@@ -63,7 +63,7 @@ class NotificationService {
     }
   }
 
-  private void notify(Run<?, ?> run, BuildStatus buildStatus, ScmInformation info) throws IOException {
+  private void notify(Run<?, ?> run, BuildStatus buildStatus, JobInformation info) throws IOException {
     for (NotifierProvider provider : NotifierProvider.all()) {
       Optional<? extends Notifier> notifier = provider.get(run, info);
       if (notifier.isPresent()) {

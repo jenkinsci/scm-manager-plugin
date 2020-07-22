@@ -16,7 +16,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 @Extension
-public class ScmV2NotifierProvider implements NotifierProvider {
+public class PullRequestNotifierProvider implements NotifierProvider {
 
   private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/repo/([A-Za-z0-9.\\-_]+)/([A-Za-z0-9.\\-_]+)(?:/.*)?$");
 
@@ -28,21 +28,23 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2Notifier> get(Run<?, ?> run, JobInformation information) throws MalformedURLException {
+  public Optional<ScmPullRequestNotifier> get(Run<?, ?> run, JobInformation information) throws MalformedURLException {
     String url = information.getUrl();
-    Matcher matcher = PATTERN.matcher(url);
-    if (matcher.matches()) {
-      return of(createNotifier(run, information, url, matcher));
+    if (information.getType().equals("pr")) {
+      Matcher matcher = PATTERN.matcher(url);
+      if (matcher.matches()) {
+        return of(createNotifier(run, information, url, matcher));
+      }
     }
     return empty();
   }
 
-  private ScmV2Notifier createNotifier(Run<?, ?> run, JobInformation information, String url, Matcher matcher) throws MalformedURLException {
+  private ScmPullRequestNotifier createNotifier(Run<?, ?> run, JobInformation information, String url, Matcher matcher) throws MalformedURLException {
     URL instance = createInstanceURL(url, matcher);
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
 
     HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, information.getCredentialsId());
-    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication);
+    return new ScmPullRequestNotifier(instance, namespaceAndName, httpAuthentication);
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {

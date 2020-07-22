@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -39,13 +39,13 @@ public class ScmMigratedV1NotifierProviderTest {
   }
 
   private void assertIsPresent(String s) {
-    ScmInformation information = createInformation(s);
+    JobInformation information = createInformation(s);
     Optional<ScmMigratedV1Notifier> notifier = provider.get(null, information);
     assertTrue(notifier.isPresent());
   }
 
-  private ScmInformation createInformation(String url) {
-    return new ScmInformation("migrated", url, "abc", "v1");
+  private JobInformation createInformation(String url) {
+    return new JobInformation("migrated", url, "abc", "v1");
   }
 
 }

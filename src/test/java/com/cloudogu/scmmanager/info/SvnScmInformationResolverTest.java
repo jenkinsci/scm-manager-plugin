@@ -34,13 +34,13 @@ public class SvnScmInformationResolverTest {
   public void testResolveWithWrongSCM() {
     GitSCM git = Mockito.mock(GitSCM.class);
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
   @Test
   public void testResolveWithoutLocations() {
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertTrue(information.isEmpty());
   }
 
@@ -48,7 +48,7 @@ public class SvnScmInformationResolverTest {
   public void testResolveWithEmptyLocations() {
     when(svn.getLocations()).thenReturn(new SubversionSCM.ModuleLocation[0]);
 
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertTrue(information.isEmpty());
   }
 
@@ -57,7 +57,7 @@ public class SvnScmInformationResolverTest {
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
     applyRevisions(42);
 
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertEquals(1, information.size());
 
     Assertions.info(
@@ -73,7 +73,7 @@ public class SvnScmInformationResolverTest {
   public void testResolveOneWithoutRevision() {
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
 
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertTrue(information.isEmpty());
   }
 
@@ -86,7 +86,7 @@ public class SvnScmInformationResolverTest {
     );
     applyRevisions(42, 21);
 
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertEquals(2, information.size());
   }
 
@@ -98,10 +98,10 @@ public class SvnScmInformationResolverTest {
     );
     applyRevisions(42, 21);
 
-    Collection<ScmInformation> information = resolver.resolve(run, svn);
+    Collection<JobInformation> information = resolver.resolve(run, svn);
     assertEquals(2, information.size());
 
-    Iterator<ScmInformation> iterator = information.iterator();
+    Iterator<JobInformation> iterator = information.iterator();
     Assertions.info(
       iterator.next(),
       "svn",

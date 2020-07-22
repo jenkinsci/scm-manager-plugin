@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.cloudogu.scmmanager.info.ScmInformationService;
 import hudson.Extension;
 import hudson.model.Result;
@@ -48,7 +48,7 @@ public class NotificationServiceTest {
     );
     when(buildStatusFactory.create(rootUrl, run, Result.SUCCESS)).thenReturn(status);
 
-    ScmInformation information = new ScmInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
+    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
     when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
     notificationService.notify(run, Result.SUCCESS);
 
@@ -68,7 +68,7 @@ public class NotificationServiceTest {
 
   @Test
   public void testNotifyWithoutBuildStatus() {
-    ScmInformation information = new ScmInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
+    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
     when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
 
     notificationService.notify(run, Result.SUCCESS);
@@ -96,7 +96,7 @@ public class NotificationServiceTest {
     private CapturingNotifier notifier = new CapturingNotifier();
 
     @Override
-    public Optional<? extends Notifier> get(Run<?, ?> run, ScmInformation information) {
+    public Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) {
       if (information.getUrl().startsWith("sample://")) {
         return Optional.of(notifier);
       }
