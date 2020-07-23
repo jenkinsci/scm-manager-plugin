@@ -16,7 +16,7 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
 
   public ScmManagerPullRequestHead(@NonNull CloneInformation cloneInformation, @NonNull String id, @NonNull ScmManagerHead target, ScmManagerHead source) {
     // ?? why PullRequest/...
-    super(cloneInformation, "PR #" + id);
+    super(cloneInformation, "PR-" + id);
     this.id = id;
     this.target = target;
     this.source = source;
