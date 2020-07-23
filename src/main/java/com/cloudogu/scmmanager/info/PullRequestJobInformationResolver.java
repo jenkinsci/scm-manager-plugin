@@ -17,6 +17,9 @@ import static java.util.stream.Collectors.toList;
 
 @Extension(optional = true)
 public class PullRequestJobInformationResolver implements JobInformationResolver {
+
+  public static final String PULL_REQUEST_TYPE = "pr";
+
   @Override
   public Collection<JobInformation> resolve(Run<?, ?> run, Job<?, ?> job) {
     if (job == null) {
@@ -37,7 +40,7 @@ public class PullRequestJobInformationResolver implements JobInformationResolver
     if (scm instanceof GitSCM && scmHead instanceof ScmManagerPullRequestHead) {
       return ((GitSCM) scm).getUserRemoteConfigs().stream().map(urc ->
         new JobInformation(
-          "pr",
+          PULL_REQUEST_TYPE,
           ((ScmManagerPullRequestHead) scmHead).getCloneInformation().getUrl(),
           ((ScmManagerPullRequestHead) scmHead).getId(),
           urc.getCredentialsId()

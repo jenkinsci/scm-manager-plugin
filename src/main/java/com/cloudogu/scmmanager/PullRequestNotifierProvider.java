@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.JobInformation;
+import com.cloudogu.scmmanager.info.PullRequestJobInformationResolver;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Run;
@@ -30,7 +31,7 @@ public class PullRequestNotifierProvider implements NotifierProvider {
   @Override
   public Optional<ScmPullRequestNotifier> get(Run<?, ?> run, JobInformation information) throws MalformedURLException {
     String url = information.getUrl();
-    if (information.getType().equals("pr")) {
+    if (information.getType().equals(PullRequestJobInformationResolver.PULL_REQUEST_TYPE)) {
       Matcher matcher = PATTERN.matcher(url);
       if (matcher.matches()) {
         return of(createNotifier(run, information, url, matcher));
