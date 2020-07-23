@@ -29,7 +29,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
       return Collections.emptyList();
     }
 
-    JobInformation config = new JobInformation(TYPE, source, revision, hg.getCredentialsId());
+    JobInformation config = new JobInformation(TYPE, source, revision, hg.getCredentialsId(), false);
     return Collections.singleton(config);
   }
 

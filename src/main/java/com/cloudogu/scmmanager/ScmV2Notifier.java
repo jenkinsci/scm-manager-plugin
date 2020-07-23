@@ -21,22 +21,24 @@ public class ScmV2Notifier implements Notifier {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmV2Notifier.class);
 
-  private static final String URL = "%s/api/v2/ci/%s/%s/changesets/%s/%s/%s";
+  private static final String CHANGESET_URL = "%s/api/v2/ci/%s/%s/changesets/%s/%s/%s";
+  private static final String PULL_REQUEST_URL = "%s/api/v2/ci/%s/%s/pullrequest/%s/%s/%s";
 
   private final URL instance;
   private final NamespaceAndName namespaceAndName;
-  private HttpAuthentication httpAuthentication;
-  private JSchConnector connector;
+  private final HttpAuthentication httpAuthentication;
+  private final boolean pullRequest;
 
   private AsyncHttpClient client;
 
   private Consumer<Response> completionListener = response -> {
   };
 
-  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication) {
+  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication, boolean pullRequest) {
     this.instance = instance;
     this.namespaceAndName = namespaceAndName;
     this.httpAuthentication = httpAuthentication;
+    this.pullRequest = pullRequest;
   }
 
   @VisibleForTesting
@@ -107,7 +109,7 @@ public class ScmV2Notifier implements Notifier {
   }
 
   private String createUrl(String revision, BuildStatus buildStatus) throws UnsupportedEncodingException {
-    return String.format(URL,
+    return String.format(getUrl(),
       instance.toExternalForm(),
       namespaceAndName.getNamespace(),
       namespaceAndName.getName(),
@@ -115,5 +117,9 @@ public class ScmV2Notifier implements Notifier {
       buildStatus.getType(),
       URLEncoder.encode(buildStatus.getName(), "UTF-8")
     );
+  }
+
+  private String getUrl() {
+    return pullRequest? PULL_REQUEST_URL: CHANGESET_URL;
   }
 }

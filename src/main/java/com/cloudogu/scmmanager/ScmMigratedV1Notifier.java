@@ -91,8 +91,8 @@ public class ScmMigratedV1Notifier implements Notifier {
       information.getType(),
       location,
       revision,
-      information.getCredentialsId()
-    );
+      information.getCredentialsId(),
+      false);
 
     Optional<ScmV2Notifier> scmV2Notifier = provider.get(run, redirectedInformation);
     if (scmV2Notifier.isPresent()) {

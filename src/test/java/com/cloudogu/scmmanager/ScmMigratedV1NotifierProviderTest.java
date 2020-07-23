@@ -45,7 +45,7 @@ public class ScmMigratedV1NotifierProviderTest {
   }
 
   private JobInformation createInformation(String url) {
-    return new JobInformation("migrated", url, "abc", "v1");
+    return new JobInformation("migrated", url, "abc", "v1", false);
   }
 
 }

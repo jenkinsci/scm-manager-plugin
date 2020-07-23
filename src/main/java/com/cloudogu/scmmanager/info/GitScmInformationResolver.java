@@ -45,7 +45,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
   }
 
   private JobInformation createInformation(UserRemoteConfig urc, String revision) {
-    return new JobInformation(TYPE, urc.getUrl(), revision, urc.getCredentialsId());
+    return new JobInformation(TYPE, urc.getUrl(), revision, urc.getCredentialsId(), false);
   }
 
   private Optional<String> getRevision(Run<?, ?> run, GitSCM git) {

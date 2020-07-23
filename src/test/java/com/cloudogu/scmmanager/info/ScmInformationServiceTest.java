@@ -91,7 +91,7 @@ public class ScmInformationServiceTest {
         return Collections.emptyList();
       }
       return Collections.singletonList(
-        new JobInformation("sample", "https://scm.manager.org", "abc", "one")
+        new JobInformation("sample", "https://scm.manager.org", "abc", "one", false)
       );
     }
   }

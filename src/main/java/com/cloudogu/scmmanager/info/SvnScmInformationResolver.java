@@ -52,7 +52,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
   private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
     String url = location.getURL();
     if (!Strings.isNullOrEmpty(url) && !Strings.isNullOrEmpty(revision)) {
-      configurations.add(new JobInformation(TYPE, url, revision, location.credentialsId));
+      configurations.add(new JobInformation(TYPE, url, revision, location.credentialsId, false));
     }
   }
 }

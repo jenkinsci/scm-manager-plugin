@@ -42,7 +42,7 @@ public class ScmV2NotifierProvider implements NotifierProvider {
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
 
     HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, information.getCredentialsId());
-    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication);
+    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication, information.isPullRequest());
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {

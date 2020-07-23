@@ -6,12 +6,14 @@ public class JobInformation {
   private final String url;
   private final String revision;
   private final String credentialsId;
+  private final boolean pullRequest;
 
-  public JobInformation(String type, String url, String revision, String credentialsId) {
+  public JobInformation(String type, String url, String revision, String credentialsId, boolean pullRequest) {
     this.type = type;
     this.url = url;
     this.revision = revision;
     this.credentialsId = credentialsId;
+    this.pullRequest = pullRequest;
   }
 
   public String getType() {
@@ -28,5 +30,9 @@ public class JobInformation {
 
   public String getCredentialsId() {
     return credentialsId;
+  }
+
+  public boolean isPullRequest() {
+    return pullRequest;
   }
 }

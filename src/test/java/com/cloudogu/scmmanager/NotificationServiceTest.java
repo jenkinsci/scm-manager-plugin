@@ -48,7 +48,7 @@ public class NotificationServiceTest {
     );
     when(buildStatusFactory.create(rootUrl, run, Result.SUCCESS)).thenReturn(status);
 
-    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
+    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
     when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
     notificationService.notify(run, Result.SUCCESS);
 
@@ -68,7 +68,7 @@ public class NotificationServiceTest {
 
   @Test
   public void testNotifyWithoutBuildStatus() {
-    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core");
+    JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
     when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
 
     notificationService.notify(run, Result.SUCCESS);

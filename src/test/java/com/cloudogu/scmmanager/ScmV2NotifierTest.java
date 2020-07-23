@@ -19,9 +19,18 @@ public class ScmV2NotifierTest {
   public WireMockRule wireMockRule = new WireMockRule();
 
   @Test
-  public void testNotify() throws IOException, InterruptedException {
+  public void testNotifyForChangesets() throws IOException, InterruptedException {
+    testNotify(false, "/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold");
+  }
+
+  @Test
+  public void testNotifyForPullRequests() throws IOException, InterruptedException {
+    testNotify(true, "/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fheart-of-gold");
+  }
+
+  private void testNotify(boolean pullRequest, String notificationUrl) throws IOException, InterruptedException {
     stubFor(
-      put("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold")
+      put(notificationUrl)
         .willReturn(
           aResponse()
             .withStatus(200)
@@ -31,9 +40,11 @@ public class ScmV2NotifierTest {
     URL instanceURL = createInstanceURL();
     NamespaceAndName namespaceAndName = new NamespaceAndName("ns", "one");
 
-    ScmV2Notifier notifier = new ScmV2Notifier(instanceURL, namespaceAndName, (req) -> {
-      req.setHeader("Authenticated", "yes; awesome");
-    });
+    ScmV2Notifier notifier =
+      new ScmV2Notifier(
+        instanceURL,
+        namespaceAndName, req -> req.setHeader("Authenticated", "yes; awesome"),
+        pullRequest);
 
     CountDownLatch cdl = new CountDownLatch(1);
     try (AsyncHttpClient client = new AsyncHttpClient()) {
@@ -52,7 +63,7 @@ public class ScmV2NotifierTest {
     }
 
     verify(
-      putRequestedFor(urlMatching("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold"))
+      putRequestedFor(urlMatching(notificationUrl))
         .withHeader("Authenticated", equalTo("yes; awesome"))
         .withHeader("Content-Type", equalTo("application/vnd.scmm-cistatus+json;v=2"))
         .withRequestBody(

@@ -115,7 +115,7 @@ public class ScmMigratedV1NotifierTest {
     int port = wireMockRule.port();
     String url = String.format("http://localhost:%d/scm/git/some/old/repo", port);
 
-    JobInformation information = new JobInformation("git", url, "abc", "one");
+    JobInformation information = new JobInformation("git", url, "abc", "one", false);
     ScmMigratedV1Notifier v1Notifier = new ScmMigratedV1Notifier(authenticationFactory, run, information);
     v1Notifier.setV2NotifierProvider(v2NotifierProvider);
     return v1Notifier;

@@ -47,7 +47,7 @@ public class ScmV2SshNotifierProviderTest {
 
 
   private JobInformation createInformation(String s) {
-    return new JobInformation("sample", s, "abc", "one");
+    return new JobInformation("sample", s, "abc", "one", false);
   }
 
   private void applyAuthentication(SSHAuthentication sshAuthentication) {
