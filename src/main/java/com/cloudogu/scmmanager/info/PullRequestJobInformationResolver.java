@@ -34,7 +34,7 @@ public class PullRequestJobInformationResolver implements JobInformationResolver
     Branch branch = branchJobProperty.getBranch();
     SCM scm = branch.getScm();
     SCMHead scmHead = branch.getHead();
-    if (scm instanceof GitSCM) {
+    if (scm instanceof GitSCM && scmHead instanceof ScmManagerPullRequestHead) {
       return ((GitSCM) scm).getUserRemoteConfigs().stream().map(urc ->
         new JobInformation(
           "pr",
