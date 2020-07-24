@@ -1,21 +1,11 @@
 package com.cloudogu.scmmanager.info;
 
-import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import hudson.model.Job;
 import hudson.model.Run;
-import hudson.plugins.git.GitSCM;
-import hudson.scm.SCM;
-import jenkins.branch.Branch;
-import jenkins.scm.api.SCMHead;
-import jenkins.triggers.SCMTriggerItem;
-import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 public class ScmInformationService {
 

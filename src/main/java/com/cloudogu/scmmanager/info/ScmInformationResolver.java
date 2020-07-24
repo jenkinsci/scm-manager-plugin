@@ -5,11 +5,7 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import jenkins.triggers.SCMTriggerItem;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;

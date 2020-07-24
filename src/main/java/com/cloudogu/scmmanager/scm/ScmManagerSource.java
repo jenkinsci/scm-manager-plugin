@@ -105,10 +105,12 @@ public class ScmManagerSource extends SCMSource {
   }
 
   @NonNull
+  @Override
   public List<SCMSourceTrait> getTraits() {
     return Collections.unmodifiableList(traits);
   }
 
+  @Override
   @DataBoundSetter
   public void setTraits(@CheckForNull List<SCMSourceTrait> traits) {
     this.traits = new ArrayList<>(Util.fixNull(traits));

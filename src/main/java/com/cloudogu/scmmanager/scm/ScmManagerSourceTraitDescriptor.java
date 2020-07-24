@@ -1,12 +1,19 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.scm.api.Repository;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 
 public abstract class ScmManagerSourceTraitDescriptor extends SCMSourceTraitDescriptor {
 
-  public boolean isApplicableToRepository(Repository repository) {
-    return false;
+  @Override
+  public Class<? extends SCMSourceContext> getContextClass() {
+    return ScmManagerSourceContext.class;
+  }
+
+  @Override
+  public Class<? extends SCMSource> getSourceClass() {
+    return ScmManagerSource.class;
   }
 
 }

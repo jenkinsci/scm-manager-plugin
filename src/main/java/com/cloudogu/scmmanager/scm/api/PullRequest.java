@@ -20,9 +20,6 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
   private ScmManagerPullRequestHead head;
 
-  public PullRequest() {
-  }
-
   void setCloneInformation(CloneInformation cloneInformation) {
     this.cloneInformation = cloneInformation;
   }

@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 public final class ApiClient {
 
@@ -25,12 +25,7 @@ public final class ApiClient {
   private final AsyncHttpClient client;
   private final HttpAuthentication authentication;
   private final ObjectMapper objectMapper;
-  private final Function<String, String> urlModifier;
-
-  public ApiClient(String serverUrl) {
-    this(serverUrl, rb -> {
-    });
-  }
+  private final UnaryOperator<String> urlModifier;
 
   public ApiClient(String serverUrl, HttpAuthentication authentication) {
     this(AHC.instance(), serverUrl, authentication);
@@ -41,7 +36,7 @@ public final class ApiClient {
   }
 
   @VisibleForTesting
-  static Function<String, String> fixServerUrl(String serverUrl) {
+  static UnaryOperator<String> fixServerUrl(String serverUrl) {
     String trimmedServerUrl = serverUrl.trim();
     String fixedServerUrl;
     if (trimmedServerUrl.endsWith("/")) {
@@ -58,7 +53,7 @@ public final class ApiClient {
   }
 
   @VisibleForTesting
-  ApiClient(AsyncHttpClient client, HttpAuthentication authentication, Function<String, String> urlModifier) {
+  ApiClient(AsyncHttpClient client, HttpAuthentication authentication, UnaryOperator<String> urlModifier) {
     this.client = client;
     this.authentication = authentication;
     this.objectMapper = new ObjectMapper();
@@ -102,7 +97,6 @@ public final class ApiClient {
             future.completeExceptionally(ex);
           }
         } else {
-          // TODO more explicit exception
           future.completeExceptionally(new IllegalReturnStatusException(response.getStatusCode()));
         }
         return response;
@@ -117,6 +111,10 @@ public final class ApiClient {
 
     private IllegalReturnStatusException(int statusCode) {
       this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+      return statusCode;
     }
   }
 
