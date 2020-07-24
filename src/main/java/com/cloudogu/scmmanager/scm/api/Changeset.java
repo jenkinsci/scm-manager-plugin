@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class Changeset {
 
@@ -15,6 +16,20 @@ public class Changeset {
   }
 
   public Date getDate() {
-    return date;
+    return new Date(date.getTime());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Changeset changeset = (Changeset) o;
+    return Objects.equals(id, changeset.id) &&
+      Objects.equals(date, changeset.date);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, date);
   }
 }

@@ -15,6 +15,7 @@ import org.kohsuke.stapler.Stapler;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
 
@@ -31,7 +32,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
   }
 
   ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, String serverUrl) {
-    super(changeType, new TriggerPayload(), SCMEvent.originOf(Stapler.getCurrentRequest()));
+    super(changeType, new TriggerPayload(namespace, name), SCMEvent.originOf(Stapler.getCurrentRequest()));
     this.namespace = namespace;
     this.name = name;
     this.type = type;
@@ -78,7 +79,26 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
   }
 
   public static class TriggerPayload {
-    String namespace;
-    String name;
+    private final String namespace;
+    private final String name;
+
+    public TriggerPayload(String namespace, String name) {
+      this.namespace = namespace;
+      this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      TriggerPayload that = (TriggerPayload) o;
+      return Objects.equals(namespace, that.namespace) &&
+        Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(namespace, name);
+    }
   }
 }

@@ -2,22 +2,17 @@ package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 public class ScmManagerApi {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerApi.class);
 
   private final ApiClient client;
 
@@ -37,11 +32,7 @@ public class ScmManagerApi {
 
   public CompletableFuture<Repository> getRepository(String namespace, String name) {
     String url = String.format("/api/v2/repositories/%s/%s", namespace, name);
-    return client.get(url, "application/vnd.scmm-repository+json;v=2", Repository.class)
-      .thenApply(repository -> {
-        repository.setClient(client);
-        return repository;
-      });
+    return client.get(url, "application/vnd.scmm-repository+json;v=2", Repository.class);
   }
 
   public CompletableFuture<List<Branch>> getBranches(Repository repository) {
@@ -83,22 +74,6 @@ public class ScmManagerApi {
     return CompletableFuture.completedFuture(emptyList());
   }
 
-  private void setChangeset(Tag tag) {
-    CompletableFuture<Changeset> changeset = getChangeset(tag);
-    if (changeset == null) {
-      return;
-    }
-    changeset
-      .thenAccept(tag::setChangeset)
-      .join();
-  }
-
-  private CompletableFuture<Changeset> getChangeset(Tag tag) {
-    return tag.getLinks().getLinkBy("changeset")
-      .map(link -> client.get(link.getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class))
-      .orElse(null);
-  }
-
   public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
     Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
     if (pullRequestLink.isPresent()) {
@@ -137,6 +112,7 @@ public class ScmManagerApi {
   }
 
   private static class EmbeddedRepositories {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private List<Repository> repositories;
 
     public List<Repository> getRepositories() {
@@ -153,6 +129,7 @@ public class ScmManagerApi {
   }
 
   private static class EmbeddedBranches {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private List<Branch> branches;
 
     public List<Branch> getBranches() {
@@ -169,6 +146,7 @@ public class ScmManagerApi {
   }
 
   private static class EmbeddedTags {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private List<Tag> tags;
 
     public List<Tag> getTags() {
@@ -185,6 +163,7 @@ public class ScmManagerApi {
   }
 
   private static class EmbeddedPullRequests {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private List<PullRequest> pullRequests;
 
     public List<PullRequest> getPullRequests() {

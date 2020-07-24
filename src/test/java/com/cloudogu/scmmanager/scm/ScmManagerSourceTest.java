@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Repository;

@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class ApiClient {
@@ -121,87 +120,4 @@ public final class ApiClient {
     }
   }
 
-  public static class Promise<T> {
-
-    private final String url;
-    private final CompletableFuture<T> future;
-
-    public Promise(T value) {
-      this.url = "-";
-      this.future = CompletableFuture.completedFuture(value);
-    }
-
-    public Promise(String url, CompletableFuture<T> future) {
-      this.url = url;
-      this.future = future;
-    }
-
-    public <T2> Promise<T2> then(Function<T, T2> function) {
-      return new Promise<>(url, future.thenApply(function));
-    }
-
-    public T mapError(InterruptableFunction<ApiError, T> errorConsumer) throws InterruptedException {
-      try {
-        return future.get();
-      } catch (InterruptedException e) {
-        LOG.error("request got interrupted", e);
-        throw e;
-      } catch (ExecutionException e) {
-        Throwable cause = e.getCause();
-        ApiError error;
-        String exceptionMessage = e.getMessage();
-        if (cause instanceof JsonParseException || cause instanceof JsonMappingException) {
-          LOG.warn("could not parse response for request '{}", url, e);
-          error = new ApiError("could not parse response: " + exceptionMessage.substring(0, exceptionMessage.indexOf('\n')));
-        } else if (cause instanceof IllegalReturnStatusException) {
-          LOG.warn("got error in request '{}': {}", url, e.getMessage());
-          error = new ApiError(((IllegalReturnStatusException) cause).statusCode);
-        } else if (cause instanceof TimeoutException) {
-          LOG.warn("request '{}' timed out: {}", url, e.getMessage());
-          error = new ApiError("request timed out");
-        } else {
-          LOG.warn("got unknown exception in request {}", url, e);
-          error = new ApiError("unknown exception: " + exceptionMessage);
-        }
-        return errorConsumer.apply(error);
-      }
-    }
-
-    public T orElseThrow(Function<ApiError, RuntimeException> exceptionProvider) throws InterruptedException {
-      return mapError(error -> {
-        throw exceptionProvider.apply(error);
-      });
-    }
-
-    public Promise<Void> thenAccept(Consumer<T> setSourceBranch) {
-      return new Promise<>(url, future.thenAccept(setSourceBranch));
-    }
-  }
-
-  public static class ApiError {
-    private final int status;
-    private final String message;
-
-    public ApiError(String message) {
-      status = 200;
-      this.message = message;
-    }
-
-    public ApiError(int httpStatus) {
-      this.status = httpStatus;
-      message = "illegal http status code: " + httpStatus;
-    }
-
-    public int getStatus() {
-      return status;
-    }
-
-    public String getMessage() {
-      return message;
-    }
-  }
-
-  public interface InterruptableFunction<T, R> {
-    R apply(T value);
-  }
 }

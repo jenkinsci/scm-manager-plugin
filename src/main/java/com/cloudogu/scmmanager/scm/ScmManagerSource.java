@@ -5,7 +5,6 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
-import com.cloudogu.scmmanager.scm.api.ApiClient.Promise;
 import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
@@ -50,8 +49,6 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -70,8 +67,6 @@ import java.util.function.Function;
 import static java.util.Collections.emptyList;
 
 public class ScmManagerSource extends SCMSource {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
 
   private final String serverUrl;
   private final String namespace;
@@ -141,8 +136,6 @@ public class ScmManagerSource extends SCMSource {
       // TODO handle includes from criteria
 
       observe(observer, request);
-//    } catch (ExecutionException e) {
-//      throw new IOException("failed to get repository from api", e);
     }
   }
 
@@ -197,7 +190,7 @@ public class ScmManagerSource extends SCMSource {
         return new ScmManagerGitSCMBuilder(scmHead, revision, cloneInformation.getUrl(), credentialsId).build();
       }
     }
-    return null;
+    throw new IllegalArgumentException("Could not handle unknown SCMHead: " + head);
   }
 
   public String getServerUrl() {

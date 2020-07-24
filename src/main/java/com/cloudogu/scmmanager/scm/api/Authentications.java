@@ -18,10 +18,6 @@ public class Authentications {
     return new Authentications(owner).from(serverUrl, credentialsId);
   }
 
-  private static StandardUsernamePasswordCredentials credentials(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    return new Authentications(owner).credentials(serverUrl, credentialsId);
-  }
-
   public Authentications(SCMSourceOwner owner) {
     this.owner = owner;
   }
