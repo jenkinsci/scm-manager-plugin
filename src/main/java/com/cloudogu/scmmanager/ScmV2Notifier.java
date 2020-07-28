@@ -6,7 +6,6 @@ import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import jenkins.plugins.asynchttpclient.AHC;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.jsch.JSchConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
