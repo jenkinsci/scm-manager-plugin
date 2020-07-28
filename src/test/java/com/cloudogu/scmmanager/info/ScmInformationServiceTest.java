@@ -20,7 +20,9 @@ import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
@@ -36,7 +38,7 @@ public class ScmInformationServiceTest {
 
   @Test
   public void testResolveWithoutScmResolver() {
-    List<ScmInformation> informationList = informationService.resolve(run);
+    List<JobInformation> informationList = informationService.resolve(run);
     assertTrue(informationList.isEmpty());
   }
 
@@ -44,7 +46,7 @@ public class ScmInformationServiceTest {
   public void testResolveWithUnknownSCM() {
     applySCM(new UnknownSCM());
 
-    List<ScmInformation> informationList = informationService.resolve(run);
+    List<JobInformation> informationList = informationService.resolve(run);
     assertTrue(informationList.isEmpty());
   }
 
@@ -52,7 +54,7 @@ public class ScmInformationServiceTest {
   public void testResolve() {
     applySCM(new SampleSCM());
 
-    List<ScmInformation> informationList = informationService.resolve(run);
+    List<JobInformation> informationList = informationService.resolve(run);
     assertEquals(1, informationList.size());
     assertEquals("sample", informationList.get(0).getType());
   }
@@ -84,20 +86,20 @@ public class ScmInformationServiceTest {
   public static class SampleScmInformationResolver implements ScmInformationResolver {
 
     @Override
-    public Collection<ScmInformation> resolve(Run<?, ?> run, SCM scm) {
+    public Collection<JobInformation> resolve(Run<?, ?> run, SCM scm) {
       if (!(scm instanceof SampleSCM)) {
         return Collections.emptyList();
       }
       return Collections.singletonList(
-        new ScmInformation("sample", "https://scm.manager.org", "abc", "one")
+        new JobInformation("sample", "https://scm.manager.org", "abc", "one", false)
       );
     }
   }
 
   @Extension
-  public static class SampleScmInformationResolverProvider implements ScmInformationResolverProvider {
+  public static class SampleScmInformationResolverProvider implements JobInformationResolverProvider {
     @Override
-    public Optional<ScmInformationResolver> get() {
+    public Optional<JobInformationResolver> get() {
       return Optional.of(new SampleScmInformationResolver());
     }
   }

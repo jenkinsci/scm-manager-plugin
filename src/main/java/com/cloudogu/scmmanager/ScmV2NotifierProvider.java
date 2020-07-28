@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Run;
@@ -28,7 +28,7 @@ public class ScmV2NotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmV2Notifier> get(Run<?, ?> run, ScmInformation information) throws MalformedURLException {
+  public Optional<ScmV2Notifier> get(Run<?, ?> run, JobInformation information) throws MalformedURLException {
     String url = information.getUrl();
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
@@ -37,12 +37,12 @@ public class ScmV2NotifierProvider implements NotifierProvider {
     return empty();
   }
 
-  private ScmV2Notifier createNotifier(Run<?, ?> run, ScmInformation information, String url, Matcher matcher) throws MalformedURLException {
+  private ScmV2Notifier createNotifier(Run<?, ?> run, JobInformation information, String url, Matcher matcher) throws MalformedURLException {
     URL instance = createInstanceURL(url, matcher);
     NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
 
     HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, information.getCredentialsId());
-    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication);
+    return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication, information.isPullRequest());
   }
 
   private NamespaceAndName createNamespaceAndName(Matcher matcher) {

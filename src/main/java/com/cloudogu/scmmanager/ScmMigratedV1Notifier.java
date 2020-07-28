@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.ning.http.client.AsyncCompletionHandler;
@@ -19,12 +19,12 @@ public class ScmMigratedV1Notifier implements Notifier {
   private static final Logger LOG = LoggerFactory.getLogger(ScmMigratedV1Notifier.class);
   private final AuthenticationFactory authenticationFactory;
   private final Run<?, ?> run;
-  private final ScmInformation information;
+  private final JobInformation information;
 
   private AsyncHttpClient client;
   private ScmV2NotifierProvider v2NotifierProvider;
 
-  ScmMigratedV1Notifier(AuthenticationFactory authenticationFactory, Run<?, ?> run, ScmInformation information) {
+  ScmMigratedV1Notifier(AuthenticationFactory authenticationFactory, Run<?, ?> run, JobInformation information) {
     this.authenticationFactory = authenticationFactory;
     this.run = run;
     this.information = information;
@@ -87,12 +87,12 @@ public class ScmMigratedV1Notifier implements Notifier {
     ScmV2NotifierProvider provider = getV2NotifierProvider();
     provider.setAuthenticationFactory(authenticationFactory);
 
-    ScmInformation redirectedInformation = new ScmInformation(
+    JobInformation redirectedInformation = new JobInformation(
       information.getType(),
       location,
       revision,
-      information.getCredentialsId()
-    );
+      information.getCredentialsId(),
+      false);
 
     Optional<ScmV2Notifier> scmV2Notifier = provider.get(run, redirectedInformation);
     if (scmV2Notifier.isPresent()) {

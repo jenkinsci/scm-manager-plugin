@@ -31,7 +31,7 @@ public class HgScmInformationResolverTest {
   public void testResolveWithWrongSCM() {
     GitSCM git = Mockito.mock(GitSCM.class);
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
@@ -39,7 +39,7 @@ public class HgScmInformationResolverTest {
   public void testResolveWithoutSource() {
     applyRevision("abc42");
 
-    Collection<ScmInformation> information = resolver.resolve(run, hg);
+    Collection<JobInformation> information = resolver.resolve(run, hg);
     assertTrue(information.isEmpty());
   }
 
@@ -47,7 +47,7 @@ public class HgScmInformationResolverTest {
   public void testResolveWithoutRevision() {
     when(hg.getSource()).thenReturn("https://scm.scm-manager.org/repo/ns/one");
 
-    Collection<ScmInformation> information = resolver.resolve(run, hg);
+    Collection<JobInformation> information = resolver.resolve(run, hg);
     assertTrue(information.isEmpty());
   }
 
@@ -57,7 +57,7 @@ public class HgScmInformationResolverTest {
     applyRevision("42abc");
     when(hg.getCredentialsId()).thenReturn("scm-one");
 
-    Collection<ScmInformation> information = resolver.resolve(run, hg);
+    Collection<JobInformation> information = resolver.resolve(run, hg);
     assertEquals(1, information.size());
     Assertions.info(
       information.iterator().next(),

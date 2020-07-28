@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.model.Run;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ public class ScmV2SshNotifierProviderTest {
 
   @Test
   public void testGetWithoutMatchingNotifier() {
-    ScmInformation information = createInformation("sample://one");
+    JobInformation information = createInformation("sample://one");
     Optional<ScmV2SshNotifier> notifier = provider.get(run, information);
     assertFalse(notifier.isPresent());
   }
@@ -36,7 +36,7 @@ public class ScmV2SshNotifierProviderTest {
   @Test
   public void testCreateNotifier() {
     applyAuthentication(new SSHAuthentication(null));
-    ScmInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
+    JobInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
     ScmV2SshNotifier notifier = provider.get(run, information).get();
 
     assertEquals("ns", notifier.getNamespaceAndName().getNamespace());
@@ -46,8 +46,8 @@ public class ScmV2SshNotifierProviderTest {
   }
 
 
-  private ScmInformation createInformation(String s) {
-    return new ScmInformation("sample", s, "abc", "one");
+  private JobInformation createInformation(String s) {
+    return new JobInformation("sample", s, "abc", "one", false);
   }
 
   private void applyAuthentication(SSHAuthentication sshAuthentication) {

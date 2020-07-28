@@ -21,7 +21,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "git";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ? > run, SCM scm) {
+  public Collection<JobInformation> resolve(Run<?, ? > run, SCM scm) {
     if (!(scm instanceof GitSCM)) {
       return Collections.emptyList();
     }
@@ -36,16 +36,16 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     }
   }
 
-  private List<ScmInformation> createInformation(GitSCM git, String revision) {
-    List<ScmInformation> information = new ArrayList<>();
+  private List<JobInformation> createInformation(GitSCM git, String revision) {
+    List<JobInformation> information = new ArrayList<>();
     for (UserRemoteConfig urc : git.getUserRemoteConfigs()) {
       information.add(createInformation(urc, revision));
     }
     return Collections.unmodifiableList(information);
   }
 
-  private ScmInformation createInformation(UserRemoteConfig urc, String revision) {
-    return new ScmInformation(TYPE, urc.getUrl(), revision, urc.getCredentialsId());
+  private JobInformation createInformation(UserRemoteConfig urc, String revision) {
+    return new JobInformation(TYPE, urc.getUrl(), revision, urc.getCredentialsId(), false);
   }
 
   private Optional<String> getRevision(Run<?, ?> run, GitSCM git) {

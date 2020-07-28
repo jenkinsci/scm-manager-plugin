@@ -15,7 +15,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
   private static final String TYPE = "hg";
 
   @Override
-  public Collection<ScmInformation> resolve(Run<?, ?> run , SCM scm) {
+  public Collection<JobInformation> resolve(Run<?, ?> run , SCM scm) {
     if (!(scm instanceof MercurialSCM)) {
       return Collections.emptyList();
     }
@@ -29,7 +29,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
       return Collections.emptyList();
     }
 
-    ScmInformation config = new ScmInformation(TYPE, source, revision, hg.getCredentialsId());
+    JobInformation config = new JobInformation(TYPE, source, revision, hg.getCredentialsId(), false);
     return Collections.singleton(config);
   }
 

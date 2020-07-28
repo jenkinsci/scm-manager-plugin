@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager;
 
+import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.google.common.annotations.VisibleForTesting;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Realm;
@@ -13,6 +14,10 @@ public class BasicHttpAuthentication implements HttpAuthentication {
   BasicHttpAuthentication(String username, Secret password) {
     this.username = username;
     this.password = password;
+  }
+
+  public static BasicHttpAuthentication from(UsernamePasswordCredentials credentials) {
+    return new BasicHttpAuthentication(credentials.getUsername(), credentials.getPassword());
   }
 
   @VisibleForTesting

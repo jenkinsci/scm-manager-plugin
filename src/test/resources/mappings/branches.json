@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-branchCollection+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{ \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/\" }, \"create\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/\" } }, \"_embedded\": { \"branches\": [ { \"name\": \"develop\", \"revision\": \"a41666c19c7c868410b80a963a50e8a2a9b0a958\", \"defaultBranch\": false, \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop\" }, \"history\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop/changesets/\" }, \"changeset\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"source\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } } }, { \"name\": \"master\", \"revision\": \"b41666c19c7c868410b80a963a50e8a2a9b0a958\", \"defaultBranch\": true, \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master\" }, \"history\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master/changesets/\" }, \"changeset\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"source\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } } } ] } }",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-branchCollection+json;v=2"
+    }
+  }
+}

@@ -4,7 +4,7 @@ import jenkins.model.Jenkins;
 
 import java.util.Optional;
 
-abstract class AbstractScmInformationResolverProvider implements ScmInformationResolverProvider {
+abstract class AbstractScmInformationResolverProvider implements JobInformationResolverProvider {
 
   private final String plugin;
 
@@ -13,7 +13,7 @@ abstract class AbstractScmInformationResolverProvider implements ScmInformationR
   }
 
   @Override
-  public Optional<ScmInformationResolver> get() {
+  public Optional<JobInformationResolver> get() {
     if (Jenkins.get().getPlugin(plugin) != null) {
       return Optional.of(create());
     }

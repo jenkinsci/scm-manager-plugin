@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.ning.http.client.AsyncHttpClient;
 import hudson.model.Run;
@@ -19,7 +19,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,7 +55,7 @@ public class ScmMigratedV1NotifierTest {
     CountDownLatch cdl = new CountDownLatch(1);
 
     ScmMigratedV1Notifier notifier = createV1Notifier();
-    AtomicReference<ScmInformation> reference = applyV2Notifier(cdl, null);
+    AtomicReference<JobInformation> reference = applyV2Notifier(cdl, null);
 
     try (AsyncHttpClient client = new AsyncHttpClient()) {
       notifier.setClient(client);
@@ -73,7 +76,7 @@ public class ScmMigratedV1NotifierTest {
     ScmMigratedV1Notifier notifier = createV1Notifier();
 
     ScmV2Notifier v2Notifier = mock(ScmV2Notifier.class);
-    AtomicReference<ScmInformation> reference = applyV2Notifier(cdl, v2Notifier);
+    AtomicReference<JobInformation> reference = applyV2Notifier(cdl, v2Notifier);
 
     BuildStatus success = BuildStatus.success("old-repo", "Old-Repo",  "https://oss.cloudogu.com");
 
@@ -100,8 +103,8 @@ public class ScmMigratedV1NotifierTest {
     );
   }
 
-  private void assertInfo(AtomicReference<ScmInformation> reference) {
-    ScmInformation received = reference.get();
+  private void assertInfo(AtomicReference<JobInformation> reference) {
+    JobInformation received = reference.get();
     assertEquals("git", received.getType());
     assertEquals("https://scm.scm-manager.org/scm/old/repo", received.getUrl());
     assertEquals("abc123", received.getRevision());
@@ -112,15 +115,15 @@ public class ScmMigratedV1NotifierTest {
     int port = wireMockRule.port();
     String url = String.format("http://localhost:%d/scm/git/some/old/repo", port);
 
-    ScmInformation information = new ScmInformation("git", url, "abc", "one");
+    JobInformation information = new JobInformation("git", url, "abc", "one", false);
     ScmMigratedV1Notifier v1Notifier = new ScmMigratedV1Notifier(authenticationFactory, run, information);
     v1Notifier.setV2NotifierProvider(v2NotifierProvider);
     return v1Notifier;
   }
 
-  private AtomicReference<ScmInformation> applyV2Notifier(CountDownLatch cdl, ScmV2Notifier notifier) throws MalformedURLException {
-    AtomicReference<ScmInformation> reference = new AtomicReference<>();
-    when(v2NotifierProvider.get(Mockito.any(Run.class), Mockito.any(ScmInformation.class))).then(ic -> {
+  private AtomicReference<JobInformation> applyV2Notifier(CountDownLatch cdl, ScmV2Notifier notifier) throws MalformedURLException {
+    AtomicReference<JobInformation> reference = new AtomicReference<>();
+    when(v2NotifierProvider.get(Mockito.any(Run.class), Mockito.any(JobInformation.class))).then(ic -> {
       cdl.countDown();
       reference.set(ic.getArgument(1));
       return Optional.ofNullable(notifier);

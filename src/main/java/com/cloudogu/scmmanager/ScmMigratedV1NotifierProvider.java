@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.ScmInformation;
+import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.Extension;
 import hudson.model.Run;
 
@@ -25,7 +25,7 @@ public class ScmMigratedV1NotifierProvider implements NotifierProvider {
   }
 
   @Override
-  public Optional<ScmMigratedV1Notifier> get(Run<?, ?> run, ScmInformation information) {
+  public Optional<ScmMigratedV1Notifier> get(Run<?, ?> run, JobInformation information) {
     Matcher matcher = PATTERN.matcher(information.getUrl());
     if (matcher.matches()) {
       return of(new ScmMigratedV1Notifier(authenticationFactory, run, information));

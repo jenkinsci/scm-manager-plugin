@@ -34,13 +34,13 @@ public class GitScmInformationResolverTest {
   @Test
   public void testResolveNonGitSCM() {
     MercurialSCM scm = mock(MercurialSCM.class);
-    Collection<ScmInformation> information = resolver.resolve(run, scm);
+    Collection<JobInformation> information = resolver.resolve(run, scm);
     assertTrue(information.isEmpty());
   }
 
   @Test
   public void testResolveWithoutBuildData() {
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
@@ -49,7 +49,7 @@ public class GitScmInformationResolverTest {
     BuildData buildData = mock(BuildData.class);
     when(git.getBuildData(run)).thenReturn(buildData);
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
@@ -60,7 +60,7 @@ public class GitScmInformationResolverTest {
     when(buildData.getLastBuiltRevision()).thenReturn(revision);
     when(git.getBuildData(run)).thenReturn(buildData);
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
@@ -68,7 +68,7 @@ public class GitScmInformationResolverTest {
   public void testResolveWithoutUserRepositoryData() {
     applyRevision("abc42");
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
   }
 
@@ -80,10 +80,10 @@ public class GitScmInformationResolverTest {
       urc("https://scm.scm-manager.org/repo/ns/two", "scm-two")
     );
 
-    Collection<ScmInformation> information = resolver.resolve(run, git);
+    Collection<JobInformation> information = resolver.resolve(run, git);
     assertEquals(2, information.size());
 
-    Iterator<ScmInformation> it = information.iterator();
+    Iterator<JobInformation> it = information.iterator();
     Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
     Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
   }
