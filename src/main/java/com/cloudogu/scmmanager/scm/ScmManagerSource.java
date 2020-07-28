@@ -7,7 +7,6 @@ import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Branch;
-import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -63,6 +62,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static java.util.Collections.emptyList;
 
@@ -146,7 +146,7 @@ public class ScmManagerSource extends SCMSource {
     HttpAuthentication authentication = getAuthenticationsProvider().apply(getOwner()).from(serverUrl, credentialsId);
 
     ScmManagerApi api = getApiFactory().apply(serverUrl, authentication);
-    Repository repository = null;
+    Repository repository;
     try {
       repository = api.getRepository(namespace, name).get();
     } catch (ExecutionException e) {
@@ -185,12 +185,13 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   @Override
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
-    if (head instanceof ScmManagerHead) {
-      ScmManagerHead scmHead = (ScmManagerHead) head;
-      CloneInformation cloneInformation = (scmHead).getCloneInformation();
-      if (cloneInformation.getType().equals("git")) {
-        return new ScmManagerGitSCMBuilder(scmHead, revision, cloneInformation.getUrl(), credentialsId).build();
-      }
+    if (head instanceof ScmManagerHead ) {
+      SCMBuilderProvider.Context ctx = new SCMBuilderProvider.Context(
+        (ScmManagerHead) head,
+        revision,
+        credentialsId
+      );
+      return SCMBuilderProvider.from(ctx).build();
     }
     throw new IllegalArgumentException("Could not handle unknown SCMHead: " + head);
   }
@@ -226,13 +227,15 @@ public class ScmManagerSource extends SCMSource {
   public static class DescriptorImpl extends SCMSourceDescriptor {
 
     private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+    private final Predicate<Repository> repositoryPredicate;
 
     public DescriptorImpl() {
-      this(ScmManagerSource::createHttpClient);
+      this(ScmManagerSource::createHttpClient, SCMBuilderProvider::isSupported);
     }
 
-    public DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory) {
+    public DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory, Predicate<Repository> repositoryPredicate) {
       this.apiFactory = apiFactory;
+      this.repositoryPredicate = repositoryPredicate;
     }
 
     @Nonnull
@@ -333,17 +336,24 @@ public class ScmManagerSource extends SCMSource {
       ScmManagerApi api = apiFactory.apply(serverUrl, authentications.from(serverUrl, credentialsId));
       List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
       for (Repository repository : repositories) {
-        String displayName = String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
-        String v = String.format("%s/%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
-        model.add(displayName, v);
+        if (repositoryPredicate.test(repository)) {
+          String displayName = String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
+          String v = String.format("%s/%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
+          model.add(displayName, v);
+        }
       }
       return model;
     }
 
-    // need to implement this as the default filtering of form binding will not be specific enough
+    @SuppressWarnings("unused") // used By stapler
     public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
-      // Git builder ?? what about hg and svn?
-      return SCMSourceTrait._for(this, ScmManagerSourceContext.class, ScmManagerGitSCMBuilder.class);
+      List<SCMSourceTraitDescriptor> traitDescriptors = new ArrayList<>();
+      for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
+        traitDescriptors.addAll(
+          SCMSourceTrait._for(this, ScmManagerSourceContext.class, provider.getBuilderClass())
+        );
+      }
+      return traitDescriptors;
     }
 
     @Override
