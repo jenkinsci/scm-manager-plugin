@@ -23,7 +23,6 @@
     <jenkins.version>2.190.3</jenkins.version>
     <slf4j.version>1.7.26</slf4j.version>
     <java.level>8</java.level>
-    <powermock.version>1.6.5</powermock.version>
     <!-- Other properties you may want to use:
       ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
       ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
@@ -166,8 +165,6 @@
       <artifactId>slf4j-jdk14</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-
-    <!-- Test dependencies -->
 
     <dependency>
       <groupId>org.assertj</groupId>
