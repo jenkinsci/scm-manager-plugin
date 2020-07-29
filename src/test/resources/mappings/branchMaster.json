@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-branch+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"name\":\"master\",\"revision\":\"34d700f689770abee528986bf3e07f38e4807916\",\"defaultBranch\":true,\"_links\":{\"self\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master\"},\"history\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master/changesets/\"},\"changeset\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/34d700f689770abee528986bf3e07f38e4807916\"},\"source\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/34d700f689770abee528986bf3e07f38e4807916\"}}}",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-branch+json;v=2"
+    }
+  }
+}

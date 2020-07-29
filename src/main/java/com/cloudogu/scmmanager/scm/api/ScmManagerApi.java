@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -8,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
@@ -54,18 +56,7 @@ public class ScmManagerApi {
     if (tagsLink.isPresent()) {
       return client.get(tagsLink.get().getHref(), "application/vnd.scmm-tagCollection+json;v=2", TagCollection.class)
         .thenApply(tags -> tags.get_embedded().getTags().stream()
-          .map(tag -> {
-            Optional<Link> changesetLink = tag.getLinks().getLinkBy("changeset");
-            if (changesetLink.isPresent()) {
-              return client.get(changesetLink.get().getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class)
-                .thenApply(changeset -> {
-                  tag.setCloneInformation(repository.getCloneInformation());
-                  tag.setChangeset(changeset);
-                  return tag;
-                });
-            }
-            throw new IllegalStateException("could not find changeset link on tag " + tag.getName());
-          })
+          .map(prepareTag(repository))
           .collect(Collectors.toList()))
         .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
           .thenApply(future -> completableFutures.stream().filter(cf -> !cf.isCompletedExceptionally()).map(CompletableFuture::join)
@@ -74,21 +65,28 @@ public class ScmManagerApi {
     return CompletableFuture.completedFuture(emptyList());
   }
 
+  private Function<Tag, CompletableFuture<Tag>> prepareTag(Repository repository) {
+    return tag -> {
+      Optional<Link> changesetLink = tag.getLinks().getLinkBy("changeset");
+      if (changesetLink.isPresent()) {
+        return client.get(changesetLink.get().getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class)
+          .thenApply(changeset -> {
+            tag.setCloneInformation(repository.getCloneInformation());
+            tag.setChangeset(changeset);
+            return tag;
+          });
+      }
+      throw new IllegalStateException("could not find changeset link on tag " + tag.getName());
+    };
+  }
+
   public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
     Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
     if (pullRequestLink.isPresent()) {
       return client.get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequest+json;v=2", PullRequestCollection.class)
         .thenApply(
           pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
-            .map(pullRequest -> {
-              pullRequest.setCloneInformation(repository.getCloneInformation());
-              // TODO we need the information or the links on the pull request object
-
-              CompletableFuture<Void> source = client.get(getLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setSourceBranch);
-              CompletableFuture<Void> target = client.get(getLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setTargetBranch);
-
-              return CompletableFuture.allOf(source, target).thenApply(v -> pullRequest);
-            })
+            .map(preparePullRequest(repository))
             .collect(Collectors.toList()))
         .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
           .thenApply(future -> completableFutures.stream().filter(cf -> !cf.isCompletedExceptionally()).map(CompletableFuture::join)
@@ -97,10 +95,50 @@ public class ScmManagerApi {
     return CompletableFuture.completedFuture(Collections.emptyList());
   }
 
-  private String getLink(HalRepresentation hal, String linkName) {
+  private Function<PullRequest, CompletableFuture<PullRequest>> preparePullRequest(Repository repository) {
+    return pullRequest -> {
+      pullRequest.setCloneInformation(repository.getCloneInformation());
+
+      CompletableFuture<Void> source = client.get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setSourceBranch);
+      CompletableFuture<Void> target = client.get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setTargetBranch);
+
+      return CompletableFuture.allOf(source, target).thenApply(v -> pullRequest);
+    };
+  }
+
+  private String getPullRequestLink(HalRepresentation hal, String linkName) {
     return hal.getLinks().getLinkBy(linkName)
-      .orElseThrow(() -> new RuntimeException("could not find link '" + linkName + "'"))
+      .orElseThrow(() -> new PluginNotUpToDateException("could not find link '" + linkName + "', ensure the scm-review-plugin is up-to-date"))
       .getHref();
+  }
+
+  public CompletableFuture<Tag> getTag(Repository repository, String tagName) {
+    Optional<Link> link = repository.getLinks().getLinkBy("tags");
+    return link.map(value -> client.get(concat(value, tagName), "application/vnd.scmm-tag+json;v=2", Tag.class)
+      .thenCompose(prepareTag(repository))).orElse(null);
+  }
+
+  public CompletableFuture<PullRequest> getPullRequest(Repository repository, String id) {
+    Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
+    return pullRequestLink.map(link -> client.get(concat(link, id), "application/vnd.scmm-pullRequest+json;v=2", PullRequest.class)
+      .thenCompose(preparePullRequest(repository))).orElse(null);
+  }
+
+  public CompletableFuture<Branch> getBranch(Repository repository, String name) {
+    Optional<Link> link = repository.getLinks().getLinkBy("branches");
+    return link.map(value -> client.get(concat(value, name), "application/vnd.scmm-branch+json;v=2", Branch.class)
+      .thenApply(branch -> {
+        branch.setCloneInformation(repository.getCloneInformation());
+        return branch;
+      })).orElse(null);
+  }
+
+  private String concat(Link link, String suffix) {
+    String href = link.getHref();
+    if (!href.endsWith("/")) {
+      href += "/";
+    }
+    return href += suffix;
   }
 
   private static class RepositoryCollection {

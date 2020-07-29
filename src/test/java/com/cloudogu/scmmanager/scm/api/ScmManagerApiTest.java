@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static de.otto.edison.hal.Link.link;
@@ -70,5 +71,66 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     assertThat(tags).extracting("revision").containsExactly("a41666c19c7c868410b80a963a50e8a2a9b0a958");
     assertThat(tags).extracting("changeset").extracting("id").containsExactly("a41666c19c7c868410b80a963a50e8a2a9b0a958");
     assertThat(tags).extracting("cloneInformation").containsExactly(cloneInformation);
+  }
+
+  @Test
+  public void shouldLoadSingleTag() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("tags", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    Tag tag = api.getTag(repository, "1.0.0").get();
+    assertThat(tag.getName()).isEqualTo("1.0.0");
+    assertThat(tag.getRevision()).isEqualTo("a41666c19c7c868410b80a963a50e8a2a9b0a958");
+  }
+
+  @Test
+  public void shouldLoadSingleBranch() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("branches", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    Branch branch = api.getBranch(repository, "develop").get();
+    assertThat(branch.getName()).isEqualTo("develop");
+    assertThat(branch.getRevision()).isEqualTo("6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3");
+  }
+
+  @Test
+  public void shouldLoadPullRequests() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("pullRequest", "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    List<PullRequest> pullRequests = api.getPullRequests(repository).get();
+    assertThat(pullRequests).hasSize(1);
+
+    PullRequest pullRequest = pullRequests.get(0);
+    assertThat(pullRequest.getId()).isEqualTo("1");
+    assertThat(pullRequest.getSource()).isEqualTo("develop");
+    assertThat(pullRequest.getTarget()).isEqualTo("master");
+  }
+
+  @Test
+  public void shouldLoadSinglePullRequest() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("pullRequest", "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    PullRequest pullRequest = api.getPullRequest(repository, "1").get();
+    assertThat(pullRequest.getId()).isEqualTo("1");
+    assertThat(pullRequest.getSource()).isEqualTo("develop");
+    assertThat(pullRequest.getTarget()).isEqualTo("master");
   }
 }

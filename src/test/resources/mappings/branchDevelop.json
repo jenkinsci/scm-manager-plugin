@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-branch+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"name\":\"develop\",\"revision\":\"6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\",\"defaultBranch\":false,\"_links\":{\"self\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop\"},\"history\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop/changesets/\"},\"changeset\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"},\"source\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"}}}",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-branch+json;v=2"
+    }
+  }
+}
