@@ -11,10 +11,21 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
   private String name;
   @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
   private String revision;
+
   private Changeset changeset;
 
   private CloneInformation cloneInformation;
   private ScmManagerTag head;
+
+  Tag() {
+  }
+
+  public Tag(String name, String revision, Changeset changeset, CloneInformation cloneInformation) {
+    this.name = name;
+    this.revision = revision;
+    this.changeset = changeset;
+    this.cloneInformation = cloneInformation;
+  }
 
   public String getName() {
     return name;

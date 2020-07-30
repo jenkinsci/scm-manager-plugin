@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class ScmMigratedV1NotifierTest {
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule();
+  public WireMockRule wireMockRule = new WireMockRule(0);
 
   @Mock
   private AuthenticationFactory authenticationFactory;

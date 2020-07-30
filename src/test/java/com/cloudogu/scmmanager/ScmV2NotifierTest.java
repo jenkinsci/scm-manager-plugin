@@ -16,7 +16,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 public class ScmV2NotifierTest {
 
   @Rule
-  public WireMockRule wireMockRule = new WireMockRule();
+  public WireMockRule wireMockRule = new WireMockRule(0);
 
   @Test
   public void testNotifyForChangesets() throws IOException, InterruptedException {

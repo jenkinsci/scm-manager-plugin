@@ -15,8 +15,8 @@ import java.util.Arrays;
 
 public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuilder> {
 
-  public ScmManagerGitSCMBuilder(@NonNull ScmManagerHead head, SCMRevision revision, @NonNull String remote, String credentialsId) {
-    super(head, revision, remote, credentialsId);
+  public ScmManagerGitSCMBuilder(@NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
+    super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
     // clean up
     withoutRefSpecs();
 

@@ -11,6 +11,11 @@ public class Changeset {
   Changeset() {
   }
 
+  public Changeset(String id, Date date) {
+    this.id = id;
+    this.date = date;
+  }
+
   public String getId() {
     return id;
   }

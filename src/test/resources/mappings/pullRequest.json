@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-pullRequest+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"id\":\"1\",\"author\":{\"id\":\"sdorra\",\"displayName\":\"Sebastian Sdorra\",\"mail\":\"sebastian.sdorra@cloudogu.com\"},\"source\":\"develop\",\"target\":\"master\",\"title\":\"develop => master\",\"description\":null,\"creationDate\":\"2020-06-24T05:24:24.340Z\",\"lastModified\":null,\"status\":\"OPEN\",\"reviewer\":[],\"tasks\":{\"todo\":0,\"done\":0},\"sourceRevision\":null,\"targetRevision\":null,\"markedAsReviewed\":[],\"emergencyMerged\":false,\"ignoredMergeObstacles\":null,\"_links\":{\"self\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1\"},\"comments\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/comments/\"},\"events\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/events\"},\"approve\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/approve\"},\"subscription\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/subscription\"},\"update\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1\"},\"reject\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/reject\"},\"mergeCheck\":{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/merge-check\"},\"mergeConflicts\":{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/conflicts\"},\"defaultCommitMessage\":{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/commit-message\"},\"merge\":[{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1?strategy=MERGE_COMMIT\",\"name\":\"MERGE_COMMIT\"},{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1?strategy=FAST_FORWARD_IF_POSSIBLE\",\"name\":\"FAST_FORWARD_IF_POSSIBLE\"},{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1?strategy=SQUASH\",\"name\":\"SQUASH\"}],\"emergencyMerge\":[{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/emergency?strategy=MERGE_COMMIT\",\"name\":\"MERGE_COMMIT\"},{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/emergency?strategy=FAST_FORWARD_IF_POSSIBLE\",\"name\":\"FAST_FORWARD_IF_POSSIBLE\"},{\"href\":\"/scm/api/v2/merge/jenkins-plugin/hello-shell/1/emergency?strategy=SQUASH\",\"name\":\"SQUASH\"}],\"workflowResult\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/workflow/\"},\"reviewMark\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell/1/review-mark/{path}\",\"templated\":true},\"sourceBranch\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop\"},\"targetBranch\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master\"},\"ciStatus\":{\"href\":\"/scm/api/v2/ci/jenkins-plugin/hello-shell/pullrequest/1\"},\"teamscaleFindings\":{\"href\":\"/scm/api/v2/teamscale/pull-request/jenkins-plugin/hello-shell/1/findings\"}}}",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-pullRequest+json;v=2"
+    }
+  }
+}

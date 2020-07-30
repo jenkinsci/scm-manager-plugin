@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.info;
 
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
-import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.plugins.git.GitSCM;
@@ -15,7 +14,6 @@ import java.util.Collections;
 
 import static java.util.stream.Collectors.toList;
 
-@Extension(optional = true)
 public class PullRequestJobInformationResolver implements JobInformationResolver {
 
   public static final String TYPE = "pr";

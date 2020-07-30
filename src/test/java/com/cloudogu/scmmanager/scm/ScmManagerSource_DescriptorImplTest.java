@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -24,12 +23,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-import static com.cloudogu.scmmanager.scm.ScmManagerApiTestMocks.mockError;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,8 +50,13 @@ public class ScmManagerSource_DescriptorImplTest  {
 
   @Spy
   private BiFunction<String, HttpAuthentication, ScmManagerApi> apiClientFactory;
+
   @Mock
   private ScmManagerApi api;
+
+  @Mock
+  private Predicate<Repository> repositoryPredicate;
+
   @InjectMocks
   private ScmManagerSource.DescriptorImpl descriptor;
 
@@ -222,11 +227,26 @@ public class ScmManagerSource_DescriptorImplTest  {
 
   @Test
   public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
+    when(repositoryPredicate.test(any())).thenReturn(true);
     ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(new Repository("space", "X", "git"), new Repository("blue", "dragon", "hg")));
 
     ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null, authenticationsProvider);
 
     assertThat(model.stream()).extracting("name").containsExactly("space/X (git)", "blue/dragon (hg)");
+  }
+
+  @Test
+  public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
+    Repository spaceX = new Repository("space", "X", "git");
+    Repository dragon = new Repository("blue", "dragon", "hg");
+
+    when(repositoryPredicate.test(spaceX)).thenReturn(true);
+
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon));
+
+    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null, authenticationsProvider);
+
+    assertThat(model.stream()).extracting("name").containsExactly("space/X (git)");
   }
 
   void mockCorrectIndex() {

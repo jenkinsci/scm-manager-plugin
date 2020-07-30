@@ -20,6 +20,18 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
   private ScmManagerPullRequestHead head;
 
+  PullRequest() {
+  }
+
+  public PullRequest(String id, Branch targetBranch, Branch sourceBranch, CloneInformation cloneInformation) {
+    this.id = id;
+    this.targetBranch = targetBranch;
+    this.target = targetBranch.getName();
+    this.sourceBranch = sourceBranch;
+    this.source = sourceBranch.getName();
+    this.cloneInformation = cloneInformation;
+  }
+
   void setCloneInformation(CloneInformation cloneInformation) {
     this.cloneInformation = cloneInformation;
   }
