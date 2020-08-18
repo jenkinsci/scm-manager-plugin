@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/42a84101678bf08ff0f33556cf88db48e248587c/src",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.scmm-source+json;v=2"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"name\":\"src\",\"path\":\"src\",\"directory\":true,\"length\":null,\"revision\":\"42a84101678bf08ff0f33556cf88db48e248587c\",\"partialResult\":false,\"computationAborted\":false,\"truncated\":false,\"_links\":{\"self\":{\"href\":\"/api/v2/repositories/jenkins-plugin/hello-shell/sources/42a84101678bf08ff0f33556cf88db48e248587c/src\"},\"directLink\":{\"href\":\"/api/v2/plugins/directFileLink/jenkins-plugin/hello-shell/src\"}},\"_embedded\":{\"children\":[{\"name\":\"test.txt\",\"path\":\"src/test.txt\",\"directory\":false,\"description\":\"Add source directory\",\"length\":5,\"commitDate\":\"2020-08-18T05:50:09Z\",\"partialResult\":false,\"computationAborted\":false,\"truncated\":false,\"_links\":{\"self\":{\"href\":\"/api/v2/repositories/jenkins-plugin/hello-shell/content/42a84101678bf08ff0f33556cf88db48e248587c/src/test.txt\"},\"history\":{\"href\":\"/api/v2/repositories/jenkins-plugin/hello-shell/history/42a84101678bf08ff0f33556cf88db48e248587c/src/test.txt\"},\"annotate\":{\"href\":\"/api/v2/repositories/jenkins-plugin/hello-shell/annotate/42a84101678bf08ff0f33556cf88db48e248587c/src%2Ftest.txt\"},\"directLink\":{\"href\":\"/api/v2/plugins/directFileLink/jenkins-plugin/hello-shell/src%2Ftest.txt\"}}}]}}",
+    "headers": {
+      "Content-Type": "application/vnd.scmm-source+json;v=2"
+    }
+  }
+}

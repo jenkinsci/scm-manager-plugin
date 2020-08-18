@@ -106,11 +106,4 @@ public final class ApiClient {
     return future;
   }
 
-  private static class IllegalReturnStatusException extends Exception {
-
-    private IllegalReturnStatusException(int statusCode) {
-      super("illegal status code returned: " + statusCode);
-    }
-  }
-
 }

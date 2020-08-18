@@ -4,7 +4,7 @@
     "method": "GET",
     "headers": {
       "Accept": {
-        "equalTo": "application/vnd.scmm-pullRequest+json;v=2"
+        "equalTo": "application/vnd.scmm-pullRequestCollection+json;v=2"
       }
     }
   },

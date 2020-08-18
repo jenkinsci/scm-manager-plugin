@@ -4,6 +4,7 @@ import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jenkins.scm.api.SCMFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -80,10 +81,18 @@ public class ScmManagerApi {
     };
   }
 
+  public CompletableFuture<Changeset> getChangeset(Repository repository, String revision) {
+    Optional<Link> changesetsLink = repository.getLinks().getLinkBy("changesets");
+    if (changesetsLink.isPresent()) {
+      return client.get(concat(changesetsLink.get(), revision), "application/vnd.scmm-changeset+json;v=2", Changeset.class);
+    }
+    throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
+  }
+
   public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
     Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
     if (pullRequestLink.isPresent()) {
-      return client.get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequest+json;v=2", PullRequestCollection.class)
+      return client.get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequestCollection+json;v=2", PullRequestCollection.class)
         .thenApply(
           pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
             .map(preparePullRequest(repository))
@@ -133,12 +142,50 @@ public class ScmManagerApi {
       })).orElse(null);
   }
 
-  private String concat(Link link, String suffix) {
-    String href = link.getHref();
-    if (!href.endsWith("/")) {
-      href += "/";
+  public CompletableFuture<ScmManagerFile> getFileObject(Repository repository, String revision, String path) {
+    Optional<Link> sourcesLink = repository.getLinks().getLinkBy("sources");
+    if (sourcesLink.isPresent()) {
+
+      return client.get(concat(sourcesLink.get(), revision, path), "application/vnd.scmm-source+json;v=2", FileObject.class)
+        .thenApply(fo -> new ScmManagerFile(fo.getPath(), fo.isDirectory() ? SCMFile.Type.DIRECTORY : SCMFile.Type.REGULAR_FILE))
+        .exceptionally(ex -> {
+          if (ex.getCause() instanceof IllegalReturnStatusException) {
+            int statusCode = ((IllegalReturnStatusException) ex.getCause()).getStatusCode();
+            if (statusCode == 404) {
+              return new ScmManagerFile(path, SCMFile.Type.NONEXISTENT);
+            }
+          }
+          throw new IllegalStateException("failed to get file object", ex);
+        });
     }
-    return href += suffix;
+    throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
+  }
+
+  private String concat(Link link, String... suffix) {
+    StringBuilder builder = new StringBuilder();
+    String href = link.getHref();
+    if (href.endsWith("/")) {
+      href = href.substring(0, href.length() - 1);
+    }
+    builder.append(href);
+    for (String s : suffix) {
+      builder.append("/").append(s);
+    }
+    return builder.toString();
+  }
+
+  private static class FileObject {
+
+    private String path;
+    private boolean directory;
+
+    public String getPath() {
+      return path;
+    }
+
+    public boolean isDirectory() {
+      return directory;
+    }
   }
 
   private static class RepositoryCollection {

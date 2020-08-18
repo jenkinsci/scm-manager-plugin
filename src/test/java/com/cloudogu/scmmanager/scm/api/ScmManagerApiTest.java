@@ -1,8 +1,10 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import jenkins.scm.api.SCMFile;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.tools.FileObject;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -132,5 +134,61 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     assertThat(pullRequest.getId()).isEqualTo("1");
     assertThat(pullRequest.getSource()).isEqualTo("develop");
     assertThat(pullRequest.getTarget()).isEqualTo("master");
+  }
+
+  @Test
+  public void shouldLoadSingleChangeset() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("changesets", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    Changeset changeset = api.getChangeset(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958").get();
+    assertThat(changeset.getId()).isEqualTo("a41666c19c7c868410b80a963a50e8a2a9b0a958");
+    assertThat(changeset.getDate()).isEqualTo("2020-06-22T11:57:28Z");
+  }
+
+  @Test
+  public void shouldLoadSingleFile() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    ScmManagerFile fo = api.getFileObject(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958", "Jenkinsfile").get();
+    assertThat(fo.getPath()).isEqualTo("Jenkinsfile");
+    assertThat(fo.getType()).isEqualTo(SCMFile.Type.REGULAR_FILE);
+  }
+
+  @Test
+  public void shouldLoadSingleNonExistingFile() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    ScmManagerFile fo = api.getFileObject(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958", "FileDeJenkins").get();
+    assertThat(fo.getPath()).isEqualTo("FileDeJenkins");
+    assertThat(fo.getType()).isEqualTo(SCMFile.Type.NONEXISTENT);
+  }
+
+  @Test
+  public void shouldLoadSingleDirectory() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    ScmManagerFile fo = api.getFileObject(repository, "42a84101678bf08ff0f33556cf88db48e248587c", "src").get();
+    assertThat(fo.getPath()).isEqualTo("src");
+    assertThat(fo.getType()).isEqualTo(SCMFile.Type.DIRECTORY);
   }
 }
