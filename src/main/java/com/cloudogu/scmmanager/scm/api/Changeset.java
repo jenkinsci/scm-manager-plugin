@@ -13,7 +13,7 @@ public class Changeset {
 
   public Changeset(String id, Date date) {
     this.id = id;
-    this.date = date;
+    this.date = new Date(date.getTime());
   }
 
   public String getId() {

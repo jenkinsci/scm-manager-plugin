@@ -6,15 +6,10 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.Authentications;
-import com.cloudogu.scmmanager.scm.api.Branch;
-import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
-import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
-import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
-import com.cloudogu.scmmanager.scm.api.Tag;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
@@ -34,11 +29,13 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMProbe;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
@@ -54,7 +51,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -137,7 +134,6 @@ public class ScmManagerSource extends SCMSource {
     try (ScmManagerSourceRequest request = new ScmManagerSourceContext(criteria, observer)
       .withTraits(traits)
       .newRequest(this, listener)) {
-
       handleRequest(observer, event, request);
     }
   }
@@ -146,95 +142,41 @@ public class ScmManagerSource extends SCMSource {
   void handleRequest(@NonNull SCMHeadObserver observer, SCMHeadEvent<?> event, ScmManagerSourceRequest request) throws InterruptedException, IOException {
     Iterable<ScmManagerObservable> candidates = null;
 
+    ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(
+      createApi(),
+      namespace,
+      name
+    );
+
     // for now we trigger a full scan for deletions
     // TODO improve handling of deletions
     if (event == null || event.getType() != SCMEvent.Type.REMOVED) {
       Set<SCMHead> includes = observer.getIncludes();
       if (includes != null && includes.size() == 1) {
-        candidates = getSpecificCandidatesFromSourceControl(request, includes.iterator().next());
+        candidates = handler.getSpecificCandidatesFromSourceControl(request, includes.iterator().next());
       }
     }
 
     if (candidates == null) {
-      candidates = getAllCandidatesFromSourceControl(request);
+      candidates = handler.getAllCandidatesFromSourceControl(request);
     }
-    observe(observer, candidates);
+    for (ScmManagerObservable candidate : candidates) {
+      if (request.process(candidate.head(), candidate.revision(), handler::probe, new CriteriaWitness(request))) {
+        return;
+      }
+    }
   }
 
-
-  private Iterable<ScmManagerObservable> getSpecificCandidatesFromSourceControl(ScmManagerSourceRequest request, SCMHead head) throws InterruptedException {
-    try {
-      CompletableFuture<? extends ScmManagerObservable> candidate = getSpecificCandidateFromSourceControl(request, head);
-      if (candidate != null) {
-        return Collections.singleton(candidate.get());
-      }
-    } catch (ExecutionException e) {
-      ApiClient.handleException(e);
-      throw new UncheckedIOException(new IOException("failed to load repository"));
-    }
-
-    return Collections.emptySet();
-  }
-
-  private CompletableFuture<? extends ScmManagerObservable> getSpecificCandidateFromSourceControl(ScmManagerSourceRequest request, SCMHead head) throws ExecutionException, InterruptedException {
-    ScmManagerApi api = createApi();
-
-    Repository repository = api.getRepository(namespace, name).get();
-
-    if (head instanceof ScmManagerTag) {
-      if (request.isFetchTags()) {
-        return api.getTag(repository, head.getName());
-      }
-    } else if (head instanceof ScmManagerPullRequestHead) {
-      if (request.isFetchPullRequests()) {
-        return api.getPullRequest(repository, ((ScmManagerPullRequestHead) head).getId());
-      }
-    } else if (head instanceof ScmManagerHead && request.isFetchBranches()) {
-      return api.getBranch(repository, head.getName());
-    }
-
-    return null;
-  }
-
-
-  private Iterable<ScmManagerObservable> getAllCandidatesFromSourceControl(ScmManagerSourceRequest request) throws InterruptedException {
-    ScmManagerApi api = createApi();
-    Repository repository;
-    try {
-      repository = api.getRepository(namespace, name).get();
-
-      CompletableFuture<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : CompletableFuture.completedFuture(Collections.emptyList());
-      CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : CompletableFuture.completedFuture(Collections.emptyList());
-      CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : CompletableFuture.completedFuture(Collections.emptyList());
-
-      CompletableFuture.allOf(
-        branchesFuture,
-        tagsFuture,
-        pullRequestFuture
-      ).join();
-
-      List<ScmManagerObservable> observables = new ArrayList<>();
-
-      observables.addAll(branchesFuture.get());
-      observables.addAll(tagsFuture.get());
-      observables.addAll(pullRequestFuture.get());
-
-      return observables;
-    } catch (ExecutionException e) {
-      ApiClient.handleException(e);
-      throw new UncheckedIOException(new IOException("failed to load repository"));
-    }
+  @NonNull
+  @Override
+  protected SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
+    ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(createApi(), namespace, name);
+    return handler.probe(head, revision);
   }
 
   private ScmManagerApi createApi() {
     HttpAuthentication authentication = getAuthenticationsProvider().apply(getOwner()).from(serverUrl, credentialsId);
     return getApiFactory().apply(serverUrl, authentication);
-  }
-
-  private void observe(SCMHeadObserver observer, Iterable<ScmManagerObservable> observables) throws IOException, InterruptedException {
-    for (ScmManagerObservable observable : observables) {
-      observer.observe(observable.head(), observable.revision());
-    }
   }
 
   @NonNull
@@ -277,11 +219,16 @@ public class ScmManagerSource extends SCMSource {
     return authenticationsProvider;
   }
 
+  private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
+    return new ScmManagerApi(new ApiClient(value, authentication));
+  }
+
   @Extension
   @Symbol("scm-manager")
   public static class DescriptorImpl extends SCMSourceDescriptor {
 
     private final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+
     private final Predicate<Repository> repositoryPredicate;
 
     public DescriptorImpl() {
@@ -419,7 +366,6 @@ public class ScmManagerSource extends SCMSource {
         new PullRequestDiscoveryTrait()
       );
     }
-
     @NonNull
     @Override
     protected SCMHeadCategory[] createCategories() {
@@ -430,10 +376,31 @@ public class ScmManagerSource extends SCMSource {
         TagSCMHeadCategory.DEFAULT
       };
     }
+
   }
 
-  private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
-    return new ScmManagerApi(new ApiClient(value, authentication));
+  private static class CriteriaWitness implements SCMSourceRequest.Witness {
+
+    private final ScmManagerSourceRequest request;
+
+    public CriteriaWitness(ScmManagerSourceRequest request) {
+      this.request = request;
+    }
+    @Override
+    public void record(@NonNull SCMHead scmHead, SCMRevision revision, boolean isMatch) {
+      PrintStream logger = request.listener().getLogger();
+      logger.append("    ").append(scmHead.getName()).append(": ");
+      if (revision == null) {
+        logger.println("Skipped");
+      } else {
+        if (isMatch) {
+          logger.println("Met criteria");
+        } else {
+          logger.println("Does not meet criteria");
+        }
+      }
+    }
+
   }
 
 }

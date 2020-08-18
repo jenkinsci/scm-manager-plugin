@@ -2,9 +2,10 @@ package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Repository extends HalRepresentation {
+public class Repository extends HalRepresentation implements Serializable {
 
   private String namespace;
   private String name;

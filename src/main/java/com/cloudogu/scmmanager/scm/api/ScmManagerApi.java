@@ -6,10 +6,13 @@ import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -159,6 +162,36 @@ public class ScmManagerApi {
         });
     }
     throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
+  }
+
+  public static <T> T fetchChecked(CompletableFuture<T> future) throws IOException {
+    try {
+      return future.get();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw checked(e);
+    } catch (ExecutionException e) {
+      throw checked(e);
+    }
+  }
+
+  private static IOException checked(Exception e) {
+    return new IOException("failed to fetch", e);
+  }
+
+  public static <T> T fetchUnchecked(CompletableFuture<T> future) {
+    try {
+      return future.get();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw unchecked(e);
+    } catch (ExecutionException e) {
+      throw unchecked(e);
+    }
+  }
+
+  private static RuntimeException unchecked(Exception e) {
+    return new UncheckedIOException("failed to fetch", new IOException(e));
   }
 
   private String concat(Link link, String... suffix) {

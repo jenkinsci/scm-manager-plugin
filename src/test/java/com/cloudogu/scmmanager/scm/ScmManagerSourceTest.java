@@ -23,6 +23,7 @@ import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.trait.SCMSourceRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
-import static java.util.concurrent.CompletableFuture.anyOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -66,6 +66,7 @@ public class ScmManagerSourceTest {
 
   @Mock
   private SCMHeadObserver observer;
+
   @Mock
   private ScmManagerSourceRequest request;
 
@@ -89,7 +90,18 @@ public class ScmManagerSourceTest {
     when(mockedAuthentication.from("http://hithchiker.com/scm", "dent")).thenReturn(authentication);
     source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiClientFactory, authenticationsProvider);
     source.setOwner(scmSourceOwner);
-    doNothing().when(observer).observe(head.capture(), revision.capture());
+    captureProcess();
+  }
+
+  private void captureProcess() throws IOException, InterruptedException {
+    when(
+      request.process(
+        head.capture(),
+        revision.capture(),
+        any(SCMSourceRequest.ProbeLambda.class),
+        any(SCMSourceRequest.Witness.class)
+      )
+    ).thenReturn(false);
   }
 
   @Test
@@ -125,7 +137,7 @@ public class ScmManagerSourceTest {
   }
 
   @Test
-  public void shouldObserverTagsRequests() throws IOException, InterruptedException {
+  public void shouldProcessTagRequests() throws IOException, InterruptedException {
     when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
     when(api.getTags(REPOSITORY)).thenReturn(completedFuture(asList(createTag())));
     when(request.isFetchTags()).thenReturn(true);
@@ -155,8 +167,17 @@ public class ScmManagerSourceTest {
 
     source.handleRequest(observer, null, request);
 
-    verify(observer, never()).observe(any(), any());
+    verifyThatNothingIsProcessed();
     verify(api, never()).getBranches(REPOSITORY);
+  }
+
+  private void verifyThatNothingIsProcessed() throws IOException, InterruptedException {
+    verify(request, never()).process(
+      any(SCMHead.class),
+      any(SCMRevision.class),
+      any(SCMSourceRequest.ProbeLambda.class),
+      any(SCMSourceRequest.Witness.class)
+    );
   }
 
   @Test
@@ -179,7 +200,7 @@ public class ScmManagerSourceTest {
 
     source.handleRequest(observer, null, request);
 
-    verify(observer, never()).observe(any(), any());
+    verifyThatNothingIsProcessed();
     verify(api, never()).getTags(REPOSITORY);
   }
 
@@ -230,7 +251,7 @@ public class ScmManagerSourceTest {
 
     source.handleRequest(observer, null, request);
 
-    verify(observer, never()).observe(any(), any());
+    verifyThatNothingIsProcessed();
     verify(api, never()).getPullRequests(REPOSITORY);
   }
 
