@@ -15,7 +15,7 @@ final class ScmTestData {
 
   static final Repository REPOSITORY = new Repository(NAMESPACE, NAME, TYPE);
 
-  static final CloneInformation cloneInfo = new CloneInformation(
+  static final CloneInformation CLONE_INFORMATION = new CloneInformation(
     "git", "https://hitchhiker.com/scm/repo/hitchhiker/hog"
   );
 
@@ -24,7 +24,7 @@ final class ScmTestData {
 
 
   public static ScmManagerPullRequestHead pullRequest(String id, ScmManagerHead target, ScmManagerHead source) {
-    return new ScmManagerPullRequestHead(cloneInfo, id, target, source);
+    return new ScmManagerPullRequestHead(CLONE_INFORMATION, id, target, source);
   }
 
   public static ScmManagerPullRequestRevision pullRequestRevision(ScmManagerPullRequestHead pullRequest, String targetRev, String sourceRev) {
@@ -40,7 +40,7 @@ final class ScmTestData {
   }
 
   public static ScmManagerHead branch(String name) {
-    return new ScmManagerHead(cloneInfo, name);
+    return new ScmManagerHead(CLONE_INFORMATION, name);
   }
 
 }

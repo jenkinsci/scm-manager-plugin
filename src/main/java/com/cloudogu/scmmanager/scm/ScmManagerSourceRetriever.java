@@ -93,10 +93,7 @@ public class ScmManagerSourceRetriever {
   public ScmManagerApiProbe probe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
     ScmManagerRevision rev = null;
 
-    // TODO handle revision = null
-    if (revision == null) {
-      throw new IllegalArgumentException("revision is required at the moment");
-    } else if (revision instanceof ScmManagerPullRequestRevision) {
+    if (revision instanceof ScmManagerPullRequestRevision) {
       rev = ((ScmManagerPullRequestRevision) revision).getSourceRevision();
     } else if (revision instanceof ScmManagerRevision) {
       rev = (ScmManagerRevision) revision;

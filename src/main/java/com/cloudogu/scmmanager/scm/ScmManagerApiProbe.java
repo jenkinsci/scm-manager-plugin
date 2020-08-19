@@ -1,11 +1,16 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Changeset;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerFile;
+import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
+import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
+import com.cloudogu.scmmanager.scm.api.Tag;
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMProbe;
@@ -22,20 +27,26 @@ public class ScmManagerApiProbe extends SCMProbe {
   private final transient ScmManagerApi api;
   private final Repository repository;
   private final SCMHead head;
-  private final ScmManagerRevision revision;
+
+  private transient CompletableFuture<ScmManagerRevision> revision;
 
   private Date lastModified;
 
-  public ScmManagerApiProbe(@NonNull ScmManagerApi api, @NonNull Repository repository, @NonNull SCMHead head, @NonNull ScmManagerRevision revision) {
+  public ScmManagerApiProbe(@NonNull ScmManagerApi api, @NonNull Repository repository, @NonNull SCMHead head, @CheckForNull ScmManagerRevision revision) {
     this.api = api;
     this.repository = repository;
     this.head = head;
-    this.revision = revision;
+    if (revision != null) {
+      this.revision = CompletableFuture.completedFuture(revision);
+    }
   }
 
   @VisibleForTesting
-  ScmManagerRevision getRevision() {
-    return revision;
+  CompletableFuture<String> revision() {
+    if (revision == null) {
+      revision = new HeadResolver(api, repository).resolve(head);
+    }
+    return revision.thenApply(ScmManagerRevision::getRevision);
   }
 
   @Override
@@ -48,7 +59,7 @@ public class ScmManagerApiProbe extends SCMProbe {
     if (lastModified != null) {
       return lastModified.getTime();
     }
-    CompletableFuture<Changeset> future = api.getChangeset(repository, revision.getRevision());
+    CompletableFuture<Changeset> future = revision().thenCompose(r -> api.getChangeset(repository, r));
     Changeset changeset = ScmManagerApi.fetchUnchecked(future);
     lastModified = changeset.getDate();
     return lastModified.getTime();
@@ -57,7 +68,7 @@ public class ScmManagerApiProbe extends SCMProbe {
   @NonNull
   @Override
   public SCMProbeStat stat(@NonNull String path) throws IOException {
-    CompletableFuture<ScmManagerFile> future = api.getFileObject(repository, revision.getRevision(), path);
+    CompletableFuture<ScmManagerFile> future = revision().thenCompose(r -> api.getFileObject(repository, r, path));
     ScmManagerFile file = ScmManagerApi.fetchChecked(future);
     return SCMProbeStat.fromType(file.getType());
   }

@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static com.cloudogu.scmmanager.scm.ScmTestData.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,19 +38,19 @@ public class ScmManagerSourceRetrieverTest {
   }
 
   @Test
-  public void shouldCreateProbeForBranch() {
+  public void shouldCreateProbeForBranch() throws ExecutionException, InterruptedException {
     ScmManagerHead head = branch("main");
     ScmManagerRevision revision = revision(head, "abc42");
     ScmManagerApiProbe probe = handler.probe(head, revision);
-    assertThat(probe.getRevision().getRevision()).isEqualTo("abc42");
+    assertThat(probe.revision().get()).isEqualTo("abc42");
   }
 
   @Test
-  public void shouldCreateProbeForPullRequest() {
+  public void shouldCreateProbeForPullRequest() throws ExecutionException, InterruptedException {
     ScmManagerPullRequestHead head = pullRequest("PR-42", branch("main"), branch("develop"));
     ScmManagerPullRequestRevision revision = pullRequestRevision(head, "abc21", "cde42");
     ScmManagerApiProbe probe = handler.probe(head, revision);
-    assertThat(probe.getRevision().getRevision()).isEqualTo("cde42");
+    assertThat(probe.revision().get()).isEqualTo("cde42");
   }
 
   @Test(expected = IllegalArgumentException.class)
