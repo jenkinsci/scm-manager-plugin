@@ -1,14 +1,11 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Changeset;
+import com.cloudogu.scmmanager.scm.api.Futures;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerFile;
-import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
-import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
-import com.cloudogu.scmmanager.scm.api.Tag;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -60,7 +57,7 @@ public class ScmManagerApiProbe extends SCMProbe {
       return lastModified.getTime();
     }
     CompletableFuture<Changeset> future = revision().thenCompose(r -> api.getChangeset(repository, r));
-    Changeset changeset = ScmManagerApi.fetchUnchecked(future);
+    Changeset changeset = Futures.resolveUnchecked(future);
     lastModified = changeset.getDate();
     return lastModified.getTime();
   }
@@ -69,7 +66,7 @@ public class ScmManagerApiProbe extends SCMProbe {
   @Override
   public SCMProbeStat stat(@NonNull String path) throws IOException {
     CompletableFuture<ScmManagerFile> future = revision().thenCompose(r -> api.getFileObject(repository, r, path));
-    ScmManagerFile file = ScmManagerApi.fetchChecked(future);
+    ScmManagerFile file = Futures.resolveChecked(future);
     return SCMProbeStat.fromType(file.getType());
   }
 

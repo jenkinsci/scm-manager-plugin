@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.Branch;
+import com.cloudogu.scmmanager.scm.api.Futures;
 import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -105,7 +106,7 @@ public class ScmManagerSourceRetriever {
   }
 
   static ScmManagerSourceRetriever create(ScmManagerApi api, String namespace, String name) {
-    return new ScmManagerSourceRetriever(api, ScmManagerApi.fetchUnchecked(api.getRepository(namespace, name)));
+    return new ScmManagerSourceRetriever(api, Futures.resolveUnchecked(api.getRepository(namespace, name)));
   }
 
 }

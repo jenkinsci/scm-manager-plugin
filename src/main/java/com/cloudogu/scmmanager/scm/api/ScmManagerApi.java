@@ -150,7 +150,7 @@ public class ScmManagerApi {
     if (sourcesLink.isPresent()) {
 
       return client.get(concat(sourcesLink.get(), revision, path), "application/vnd.scmm-source+json;v=2", FileObject.class)
-        .thenApply(fo -> new ScmManagerFile(fo.getPath(), fo.isDirectory() ? SCMFile.Type.DIRECTORY : SCMFile.Type.REGULAR_FILE))
+        .thenApply(fileObject -> new ScmManagerFile(fileObject.getPath(), fileObject.isDirectory() ? SCMFile.Type.DIRECTORY : SCMFile.Type.REGULAR_FILE))
         .exceptionally(ex -> {
           if (ex.getCause() instanceof IllegalReturnStatusException) {
             int statusCode = ((IllegalReturnStatusException) ex.getCause()).getStatusCode();
@@ -162,36 +162,6 @@ public class ScmManagerApi {
         });
     }
     throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
-  }
-
-  public static <T> T fetchChecked(CompletableFuture<T> future) throws IOException {
-    try {
-      return future.get();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw checked(e);
-    } catch (ExecutionException e) {
-      throw checked(e);
-    }
-  }
-
-  private static IOException checked(Exception e) {
-    return new IOException("failed to fetch", e);
-  }
-
-  public static <T> T fetchUnchecked(CompletableFuture<T> future) {
-    try {
-      return future.get();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw unchecked(e);
-    } catch (ExecutionException e) {
-      throw unchecked(e);
-    }
-  }
-
-  private static RuntimeException unchecked(Exception e) {
-    return new UncheckedIOException("failed to fetch", new IOException(e));
   }
 
   private String concat(Link link, String... suffix) {
