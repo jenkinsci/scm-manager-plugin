@@ -377,6 +377,15 @@ public class ScmManagerSource extends SCMSource {
       };
     }
 
+    static {
+      Icons.register("icon-scm-manager-source");
+    }
+
+    @Override
+    public String getIconClassName() {
+      return "icon-scm-manager-source";
+    }
+
   }
 
   private static class CriteriaWitness implements SCMSourceRequest.Witness {
