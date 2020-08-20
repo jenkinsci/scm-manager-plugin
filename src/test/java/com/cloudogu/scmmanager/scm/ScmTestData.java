@@ -6,6 +6,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
+import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 
 final class ScmTestData {
 
@@ -37,6 +38,10 @@ final class ScmTestData {
 
   public static ScmManagerRevision revision(ScmManagerHead head, String rev) {
     return new ScmManagerRevision(head, rev);
+  }
+
+  public static ScmManagerHead tag(String tag) {
+    return new ScmManagerTag(CLONE_INFORMATION, tag, 0L);
   }
 
   public static ScmManagerHead branch(String name) {

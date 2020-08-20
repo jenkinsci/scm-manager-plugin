@@ -37,7 +37,6 @@ import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.SCMSourceOwner;
-import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
@@ -78,6 +77,8 @@ public class ScmManagerSource extends SCMSource {
   private final String type;
   private final String credentialsId;
 
+  private final LinkBuilder linkBuilder;
+
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
 
@@ -106,6 +107,8 @@ public class ScmManagerSource extends SCMSource {
 
     this.apiFactory = apiFactory;
     this.authenticationsProvider = authenticationsProvider;
+
+    this.linkBuilder = new LinkBuilder(serverUrl, namespace, name);
   }
 
   @NonNull
@@ -232,29 +235,25 @@ public class ScmManagerSource extends SCMSource {
 
   @NonNull
   @Override
-  protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) throws IOException, InterruptedException {
-    ObjectMetadataAction as;
-    String url = serverUrl + "/repo/" + namespace + "/" + name;
+  protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", url)
+      new ScmManagerLink("icon-scm-manager-link", linkBuilder.create(revision))
     );
   }
 
   @NonNull
   @Override
-  protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) throws IOException, InterruptedException {
-    String url = serverUrl + "/repo/" + namespace + "/" + name;
+  protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", url)
+      new ScmManagerLink("icon-scm-manager-link", linkBuilder.create(head))
     );
   }
 
   @NonNull
   @Override
   protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
-    String url = serverUrl + "/repo/" + namespace + "/" + name;
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", url)
+      new ScmManagerLink("icon-scm-manager-link", linkBuilder.repo())
     );
   }
 

@@ -14,8 +14,10 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 import com.cloudogu.scmmanager.scm.api.Tag;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
+import hudson.util.StreamTaskListener;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -34,11 +36,15 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.branch;
+import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -273,5 +279,34 @@ public class ScmManagerSourceTest {
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionForNonScmManagerHeads() {
     source.build(new SCMHead("throw-it"));
+  }
+
+  @Test
+  public void shouldRetrieveScmManagerRepoLink() {
+    List<Action> actions = source.retrieveActions(null, listener());
+    assertScmManagerLink(actions);
+  }
+
+  @Test
+  public void shouldRetrieveScmManagerHeadLink() {
+    List<Action> actions = source.retrieveActions(branch("develop"), null, listener());
+    assertScmManagerLink(actions);
+  }
+
+  @Test
+  public void shouldRetrieveScmManagerRevisionLink() {
+    List<Action> actions = source.retrieveActions(revision(branch("develop"), "abc42"), null, listener());
+    assertScmManagerLink(actions);
+  }
+
+  private void assertScmManagerLink(List<Action> actions) {
+    assertThat(actions).hasSize(1);
+    Action action = actions.get(0);
+    assertThat(action).isInstanceOf(ScmManagerLink.class);
+  }
+
+  @NonNull
+  private StreamTaskListener listener() {
+    return new StreamTaskListener(System.out, StandardCharsets.UTF_8);
   }
 }
