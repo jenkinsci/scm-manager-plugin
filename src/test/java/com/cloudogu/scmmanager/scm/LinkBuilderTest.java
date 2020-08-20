@@ -63,18 +63,18 @@ public class LinkBuilderTest {
   }
 
   @Test
-  public void shouldReturnChangesetUrl() {
+  public void shouldReturnRevisionSourcesLink() {
     ScmManagerRevision revision = revision(branch("develop"), "1adb99ba6c7ca1fe5ffc8c4fe5feb809bf0d26c5");
     String link = builder.create(revision);
-    assertThat(link).isEqualTo(PREFIX + "/code/changeset/1adb99ba6c7ca1fe5ffc8c4fe5feb809bf0d26c5");
+    assertThat(link).isEqualTo(PREFIX + "/code/sources/1adb99ba6c7ca1fe5ffc8c4fe5feb809bf0d26c5");
   }
 
   @Test
-  public void shouldReturnPullRequestChangesetUrl() {
+  public void shouldReturnSourceRevisionSourcesLink() {
     ScmManagerPullRequestHead head = pullRequest("42", branch("main"), branch("develop"));
     ScmManagerPullRequestRevision revision = pullRequestRevision(head, "abc21", "cde42");
     String link = builder.create(revision);
-    assertThat(link).isEqualTo(PREFIX + "/code/changeset/cde42");
+    assertThat(link).isEqualTo(PREFIX + "/code/sources/cde42");
   }
 
   @Test(expected = IllegalArgumentException.class)

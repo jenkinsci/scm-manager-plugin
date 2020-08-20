@@ -18,6 +18,7 @@ public class LinkBuilder {
   }
 
   @VisibleForTesting
+  @SuppressWarnings("java:S1643") // we concat only up to 4 items together this is ok even in a for loop
   String concat(String base, String... parts) {
     String link = base;
     for (String part : parts) {
@@ -40,7 +41,7 @@ public class LinkBuilder {
     if (head instanceof ScmManagerPullRequestHead) {
       return concat(url, "pull-request", ((ScmManagerPullRequestHead) head).getId());
     } else if (head instanceof ScmManagerHead) {
-      return concat(url, "code/sources", head.getName());
+      return sources(head.getName());
     } else {
       throw new IllegalArgumentException("unknown type of head " + head);
     }
@@ -48,12 +49,16 @@ public class LinkBuilder {
 
   public String create(@NonNull SCMRevision revision) {
     if (revision instanceof ScmManagerPullRequestRevision) {
-      return concat(url, "code/changeset/", ((ScmManagerPullRequestRevision) revision).getSourceRevision().getRevision());
+      return sources(((ScmManagerPullRequestRevision) revision).getSourceRevision().getRevision());
     } else if (revision instanceof ScmManagerRevision) {
-      return concat(url, "code/changeset/", ((ScmManagerRevision) revision).getRevision());
+      return sources(((ScmManagerRevision) revision).getRevision());
     } else {
       throw new IllegalArgumentException("unknown type of revision " + revision);
     }
+  }
+
+  private String sources(String revision) {
+    return concat(url, "code/sources", revision);
   }
 
 }
