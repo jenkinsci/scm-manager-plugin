@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
+import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.TaskListener;
@@ -34,7 +35,9 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
+import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
@@ -221,6 +224,38 @@ public class ScmManagerSource extends SCMSource {
 
   private static ScmManagerApi createHttpClient(String value, HttpAuthentication authentication) {
     return new ScmManagerApi(new ApiClient(value, authentication));
+  }
+
+  static {
+    Icons.register("icon-scm-manager-link");
+  }
+
+  @NonNull
+  @Override
+  protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) throws IOException, InterruptedException {
+    ObjectMetadataAction as;
+    String url = serverUrl + "/repo/" + namespace + "/" + name;
+    return Collections.singletonList(
+      new ScmManagerLink("icon-scm-manager-link", url)
+    );
+  }
+
+  @NonNull
+  @Override
+  protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) throws IOException, InterruptedException {
+    String url = serverUrl + "/repo/" + namespace + "/" + name;
+    return Collections.singletonList(
+      new ScmManagerLink("icon-scm-manager-link", url)
+    );
+  }
+
+  @NonNull
+  @Override
+  protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
+    String url = serverUrl + "/repo/" + namespace + "/" + name;
+    return Collections.singletonList(
+      new ScmManagerLink("icon-scm-manager-link", url)
+    );
   }
 
   @Extension
