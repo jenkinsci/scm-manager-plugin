@@ -59,6 +59,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -384,13 +385,13 @@ public class ScmManagerSource extends SCMSource {
 
     @SuppressWarnings("unused") // used By stapler
     public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
-      List<SCMSourceTraitDescriptor> traitDescriptors = new ArrayList<>();
+      // we use a LinkedHashSet to deduplicate and keep order
+      Set<SCMSourceTraitDescriptor> traitDescriptors = new LinkedHashSet<>();
+      traitDescriptors.addAll(SCMSourceTrait._for(this, ScmManagerSourceContext.class, null));
       for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
-        traitDescriptors.addAll(
-          SCMSourceTrait._for(this, ScmManagerSourceContext.class, provider.getBuilderClass())
-        );
+        traitDescriptors.addAll(provider.getTraitDescriptors(this));
       }
-      return traitDescriptors;
+      return new ArrayList<>(traitDescriptors);
     }
 
     @Override

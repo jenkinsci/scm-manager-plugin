@@ -7,25 +7,25 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.trait.SCMBuilder;
+import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+
+import java.util.Collection;
 
 abstract class SCMBuilderProvider implements ExtensionPoint {
 
   private final String type;
-  private final Class<? extends SCMBuilder<?,?>> builderClass;
 
-  protected SCMBuilderProvider(String type, Class<? extends SCMBuilder<?,?>> builderClass) {
+  protected SCMBuilderProvider(String type) {
     this.type = type;
-    this.builderClass = builderClass;
   }
 
   public String getType() {
     return type;
   }
 
-  public Class<? extends SCMBuilder<?,?>> getBuilderClass() {
-    return builderClass;
-  }
+  public abstract Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor);
 
   public static SCMBuilder<?, ?> from(Context context) {
     CloneInformation cloneInformation = context.getHead().getCloneInformation();
