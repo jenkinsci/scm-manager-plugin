@@ -39,6 +39,7 @@ public class SCMBuilderProviderTest {
     CloneInformation cloneInformation = new CloneInformation(type, "https://scm-manager.org/repos/hitchhiker/heartOfGold");
     ScmManagerHead develop = new ScmManagerHead(cloneInformation, "develop");
     return new SCMBuilderProvider.Context(
+      new LinkBuilder("https://scm-manager.org", "hitchhiker", "heartOfGold"),
       develop,
       new ScmManagerRevision(develop, "f572d396fae9206628714fb2ce00f72e94f2258f"),
       "creds4scm"

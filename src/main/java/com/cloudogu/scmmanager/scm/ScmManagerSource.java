@@ -190,6 +190,7 @@ public class ScmManagerSource extends SCMSource {
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
     if (head instanceof ScmManagerHead) {
       SCMBuilderProvider.Context ctx = new SCMBuilderProvider.Context(
+        linkBuilder,
         (ScmManagerHead) head,
         revision,
         credentialsId

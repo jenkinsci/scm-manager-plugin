@@ -56,11 +56,13 @@ abstract class SCMBuilderProvider implements ExtensionPoint {
 
   static class Context {
 
+    private final LinkBuilder linkBuilder;
     private final ScmManagerHead head;
     private final SCMRevision revision;
     private final String credentialsId;
 
-    public Context(ScmManagerHead head, SCMRevision revision, String credentialsId) {
+    public Context(LinkBuilder linkBuilder, ScmManagerHead head, SCMRevision revision, String credentialsId) {
+      this.linkBuilder = linkBuilder;
       this.head = head;
       this.revision = revision;
       this.credentialsId = credentialsId;
@@ -76,6 +78,10 @@ abstract class SCMBuilderProvider implements ExtensionPoint {
 
     public String getCredentialsId() {
       return credentialsId;
+    }
+
+    public LinkBuilder getLinkBuilder() {
+      return linkBuilder;
     }
   }
 

@@ -9,9 +9,17 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
-public class LinkBuilder {
+import java.io.Serializable;
+
+public class LinkBuilder implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private final String url;
+
+  public LinkBuilder(String url) {
+    this.url = url;
+  }
 
   public LinkBuilder(String serverUrl, String namespace, String name) {
     this.url = concat(serverUrl, "repo", namespace, name);
@@ -57,8 +65,19 @@ public class LinkBuilder {
     }
   }
 
+  public String changeset(String revision) {
+    return concat(url, "code/changeset", revision);
+  }
+
+  public String diff(String revision, String path) {
+    return changeset(revision) + "#diff-" + path;
+  }
+
+  public String source(String revision, String path) {
+    return concat(sources(revision), path);
+  }
+
   private String sources(String revision) {
     return concat(url, "code/sources", revision);
   }
-
 }

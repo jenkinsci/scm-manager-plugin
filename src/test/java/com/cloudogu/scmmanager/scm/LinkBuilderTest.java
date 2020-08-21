@@ -77,6 +77,24 @@ public class LinkBuilderTest {
     assertThat(link).isEqualTo(PREFIX + "/code/sources/cde42");
   }
 
+  @Test
+  public void shouldReturnChangesetLink() {
+    String link = builder.changeset("cde42");
+    assertThat(link).isEqualTo(PREFIX + "/code/changeset/cde42");
+  }
+
+  @Test
+  public void shouldReturnDiffLink() {
+    String link = builder.diff("cde42", "a/b/c");
+    assertThat(link).isEqualTo(PREFIX + "/code/changeset/cde42#diff-a/b/c");
+  }
+
+  @Test
+  public void shouldReturnSourceLink() {
+    String link = builder.source("cde42", "a/b/c");
+    assertThat(link).isEqualTo(PREFIX + "/code/sources/cde42/a/b/c");
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void shouldFailForUnknownRevision() {
     builder.create(new SCMRevision(branch("develop")) {

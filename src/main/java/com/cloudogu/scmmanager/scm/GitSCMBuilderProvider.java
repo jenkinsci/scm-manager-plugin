@@ -14,6 +14,11 @@ public class GitSCMBuilderProvider extends SCMBuilderProvider {
 
   @Override
   protected SCMBuilder<?, ?> create(Context context) {
-    return new ScmManagerGitSCMBuilder(context.getHead(), context.getRevision(), context.getCredentialsId());
+    return new ScmManagerGitSCMBuilder(
+      context.getLinkBuilder(),
+      context.getHead(),
+      context.getRevision(),
+      context.getCredentialsId()
+    );
   }
 }

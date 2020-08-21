@@ -15,10 +15,12 @@ import java.util.Arrays;
 
 public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuilder> {
 
-  public ScmManagerGitSCMBuilder(@NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
+  public ScmManagerGitSCMBuilder(@NonNull LinkBuilder linkBuilder, @NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
     super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
     // clean up
     withoutRefSpecs();
+
+    withBrowser(new ScmManagerGitRepositoryBrowser(linkBuilder));
 
     if (head instanceof ScmManagerTag) {
       withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
