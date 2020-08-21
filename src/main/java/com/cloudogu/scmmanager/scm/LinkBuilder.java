@@ -26,19 +26,22 @@ public class LinkBuilder implements Serializable {
   }
 
   @VisibleForTesting
-  @SuppressWarnings("java:S1643") // we concat only up to 4 items together this is ok even in a for loop
   String concat(String base, String... parts) {
-    String link = base;
+    StringBuilder link = new StringBuilder(base);
     for (String part : parts) {
-      if (!link.endsWith("/") && !part.startsWith("/")) {
-        link += "/" + part;
-      } else if (link.endsWith("/") && part.startsWith("/")) {
-        link += part.substring(1);
+      if (!endsWith(link, '/') && !part.startsWith("/")) {
+        link.append("/").append(part);
+      } else if (endsWith(link, '/') && part.startsWith("/")) {
+        link.append(part.substring(1));
       } else {
-        link += part;
+        link.append(part);
       }
     }
-    return link;
+    return link.toString();
+  }
+
+  private boolean endsWith(CharSequence sequence, char c) {
+    return sequence.charAt(sequence.length() - 1) == c;
   }
 
   public String repo() {
