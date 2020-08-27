@@ -3,6 +3,7 @@ package com.cloudogu.scmmanager.scm.api;
 import de.otto.edison.hal.HalRepresentation;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.util.Date;
 import java.util.Objects;
 
 public class Tag extends HalRepresentation implements ScmManagerObservable {
@@ -12,7 +13,7 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
   @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
   private String revision;
 
-  private Changeset changeset;
+  private Date date;
 
   private CloneInformation cloneInformation;
   private ScmManagerTag head;
@@ -23,7 +24,7 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
   public Tag(String name, String revision, Changeset changeset, CloneInformation cloneInformation) {
     this.name = name;
     this.revision = revision;
-    this.changeset = changeset;
+    this.date = changeset.getDate();
     this.cloneInformation = cloneInformation;
   }
 
@@ -35,23 +36,27 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
     return revision;
   }
 
+  public Date getDate() {
+    return date == null? null: new Date(date.getTime());
+  }
+
+  CloneInformation getCloneInformation() {
+    return cloneInformation;
+  }
+
   // TODO can this setter be avoided?
   void setCloneInformation(CloneInformation cloneInformation) {
     this.cloneInformation = cloneInformation;
   }
 
   void setChangeset(Changeset changeset) {
-    this.changeset = changeset;
-  }
-
-  public Changeset getChangeset() {
-    return changeset;
+    this.date = changeset.getDate();
   }
 
   @Override
   public ScmManagerTag head() {
     if (head == null) {
-      head = new ScmManagerTag(cloneInformation, name, changeset.getDate().getTime());
+      head = new ScmManagerTag(cloneInformation, name, date.getTime());
     }
     return head;
   }
@@ -69,13 +74,13 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
     Tag tag = (Tag) o;
     return Objects.equals(name, tag.name) &&
       Objects.equals(revision, tag.revision) &&
-      Objects.equals(changeset, tag.changeset) &&
+      Objects.equals(date, tag.date) &&
       Objects.equals(cloneInformation, tag.cloneInformation) &&
       Objects.equals(head, tag.head);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), name, revision, changeset, cloneInformation, head);
+    return Objects.hash(super.hashCode(), name, revision, date, cloneInformation, head);
   }
 }
