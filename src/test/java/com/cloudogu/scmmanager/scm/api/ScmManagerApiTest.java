@@ -58,7 +58,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
   }
 
   @Test
-  public void shouldLoadTags() throws InterruptedException, ExecutionException {
+  public void shouldLoadTagsWithChangesetsIfDateMissing() throws InterruptedException, ExecutionException {
     ScmManagerApi api = new ScmManagerApi(apiClient());
 
     Repository repository = Mockito.mock(Repository.class);
@@ -69,10 +69,30 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     List<Tag> tags = api.getTags(repository).get();
 
     assertThat(tags).hasSize(1);
-    assertThat(tags).extracting("name").containsExactly("1.0.0");
-    assertThat(tags).extracting("revision").containsExactly("a41666c19c7c868410b80a963a50e8a2a9b0a958");
-    assertThat(tags).extracting("changeset").extracting("id").containsExactly("a41666c19c7c868410b80a963a50e8a2a9b0a958");
-    assertThat(tags).extracting("cloneInformation").containsExactly(cloneInformation);
+    Tag tag = tags.get(0);
+    assertThat(tag.getName()).isEqualTo("1.0.0");
+    assertThat(tag.getRevision()).isEqualTo("a41666c19c7c868410b80a963a50e8a2a9b0a958");
+    assertThat(tag.getDate()).isEqualTo("2020-06-22T11:57:28Z");
+    assertThat(tag.getCloneInformation()).isEqualTo(cloneInformation);
+  }
+
+  @Test
+  public void shouldLoadTagsWithoutChangesetsWhenTagHasDate() throws InterruptedException, ExecutionException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("tags", "/scm/api/v2/repositories/jenkins-plugin/hello-shell-with-date/tags/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    List<Tag> tags = api.getTags(repository).get();
+
+    assertThat(tags).hasSize(1);
+    Tag tag = tags.get(0);
+    assertThat(tag.getName()).isEqualTo("1.0.0");
+    assertThat(tag.getRevision()).isEqualTo("a41666c19c7c868410b80a963a50e8a2a9b0a958");
+    assertThat(tag.getDate()).isEqualTo("2020-06-27T09:46:38Z");
+    assertThat(tag.getCloneInformation()).isEqualTo(cloneInformation);
   }
 
   @Test

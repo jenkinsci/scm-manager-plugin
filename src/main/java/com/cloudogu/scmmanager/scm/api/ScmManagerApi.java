@@ -72,10 +72,12 @@ public class ScmManagerApi {
   private Function<Tag, CompletableFuture<Tag>> prepareTag(Repository repository) {
     return tag -> {
       Optional<Link> changesetLink = tag.getLinks().getLinkBy("changeset");
-      if (changesetLink.isPresent()) {
+      tag.setCloneInformation(repository.getCloneInformation());
+      if (tag.getDate() != null) {
+        return CompletableFuture.completedFuture(tag);
+      } else if (changesetLink.isPresent()) {
         return client.get(changesetLink.get().getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class)
           .thenApply(changeset -> {
-            tag.setCloneInformation(repository.getCloneInformation());
             tag.setChangeset(changeset);
             return tag;
           });
