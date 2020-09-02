@@ -37,6 +37,13 @@ public class ScmManagerGitRepositoryBrowserTest {
   }
 
   @Test
+  public void shouldReturnDequotedFileURL() throws IOException {
+    GitChangeSet.Path path = mockPath("sw42", "\"people/Padm\\303\\251 Amidala.json\"", EditType.EDIT);
+
+    assertThat(browser.getFileLink(path)).hasPath("/code/sources/sw42/people/Padmé Amidala.json");
+  }
+
+  @Test
   public void shouldReturnDiffLinkForDeletedFiles() throws IOException {
     GitChangeSet.Path path = mockPath("cde42", "README.md", EditType.DELETE);
 
@@ -52,6 +59,17 @@ public class ScmManagerGitRepositoryBrowserTest {
     when(path.getChangeSet().getParentCommit()).thenReturn("cde42");
 
     assertThat(browser.getDiffLink(path)).hasPath("/code/changeset/abc21").hasAnchor("diff-" + pathName);
+  }
+
+  @Test
+  public void shouldReturnDequotedDiffLink() throws IOException {
+    String pathName = "\"people/Padm\\303\\251 Amidala.json\"";
+    GitChangeSet.Path path = mockPath("sw21", pathName, EditType.EDIT);
+    when(path.getSrc()).thenReturn(pathName);
+    when(path.getDst()).thenReturn(pathName);
+    when(path.getChangeSet().getParentCommit()).thenReturn("sw21");
+
+    assertThat(browser.getDiffLink(path)).hasPath("/code/changeset/sw21").hasAnchor("diff-people/Padmé Amidala.json");
   }
 
   @Test

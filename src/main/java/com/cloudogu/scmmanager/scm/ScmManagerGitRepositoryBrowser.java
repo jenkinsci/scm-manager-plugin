@@ -8,6 +8,7 @@ import hudson.plugins.git.browser.GitRepositoryBrowser;
 import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
 import net.sf.json.JSONObject;
+import org.eclipse.jgit.util.QuotedString;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -50,16 +51,24 @@ public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser  {
     if (path.getEditType() != EditType.EDIT || path.getSrc() == null || path.getDst() == null || path.getChangeSet().getParentCommit() == null) {
       return null;
     }
-    return new URL(linkBuilder.diff(path.getChangeSet().getId(), path.getPath()));
+    return new URL(linkBuilder.diff(path.getChangeSet().getId(), dequote(path)));
+  }
+
+  private String dequote(GitChangeSet.Path path) {
+    String p = path.getPath();
+    if (p != null && p.startsWith("\"")) {
+      return QuotedString.GIT_PATH.dequote(p);
+    }
+    return p;
   }
 
   @Override
   public URL getFileLink(GitChangeSet.Path path) throws IOException {
     // we have no source link for deleted files, we return diff link instead
     if (path.getEditType().equals(EditType.DELETE)) {
-      return new URL(linkBuilder.diff(path.getChangeSet().getId(), path.getPath()));
+      return new URL(linkBuilder.diff(path.getChangeSet().getId(), dequote(path)));
     }
-    return new URL(linkBuilder.source(path.getChangeSet().getId(), path.getPath()));
+    return new URL(linkBuilder.source(path.getChangeSet().getId(), dequote(path)));
   }
 
   @Extension
