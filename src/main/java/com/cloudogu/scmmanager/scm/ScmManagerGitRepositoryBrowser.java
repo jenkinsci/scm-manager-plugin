@@ -71,7 +71,7 @@ public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser  {
     return new URL(linkBuilder.source(path.getChangeSet().getId(), dequote(path)));
   }
 
-  @Extension
+  @Extension(optional = true)
   public static class ScmManagerGitRepositoryBrowserDescriptor extends Descriptor<RepositoryBrowser<?>> {
 
     @NonNull
