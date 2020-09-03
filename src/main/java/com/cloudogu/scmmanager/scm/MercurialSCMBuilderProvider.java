@@ -28,7 +28,7 @@ public class MercurialSCMBuilderProvider extends SCMBuilderProvider {
 
   @Override
   public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
-    return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerHgSCMBuilder.class)
+    return SCMSourceTrait._for(null, null, ScmManagerHgSCMBuilder.class)
       .stream()
       .filter(desc -> !(desc instanceof MercurialBrowserSCMSourceTrait.DescriptorImpl))
       .collect(Collectors.toList());
