@@ -16,13 +16,13 @@ final class ScmTestData {
 
   static final Repository REPOSITORY = new Repository(NAMESPACE, NAME, TYPE);
 
+  static final String URL = "https://hitchhiker.com/scm/repo/hitchhiker/hog";
+
   static final CloneInformation CLONE_INFORMATION = new CloneInformation(
-    "git", "https://hitchhiker.com/scm/repo/hitchhiker/hog"
+    TYPE, URL
   );
 
-
   private ScmTestData() {}
-
 
   public static ScmManagerPullRequestHead pullRequest(String id, ScmManagerHead target, ScmManagerHead source) {
     return new ScmManagerPullRequestHead(CLONE_INFORMATION, id, target, source);
@@ -46,6 +46,21 @@ final class ScmTestData {
 
   public static ScmManagerHead branch(String name) {
     return new ScmManagerHead(CLONE_INFORMATION, name);
+  }
+
+  public static SCMBuilderProvider.Context context() {
+    return context(TYPE);
+  }
+
+  public static SCMBuilderProvider.Context context(String type) {
+    CloneInformation cloneInformation = new CloneInformation(type, URL);
+    ScmManagerHead develop = new ScmManagerHead(cloneInformation, "develop");
+    return new SCMBuilderProvider.Context(
+      new LinkBuilder("https://scm-manager.org", NAMESPACE, NAME),
+      develop,
+      new ScmManagerRevision(develop, "f572d396fae9206628714fb2ce00f72e94f2258f"),
+      "creds4scm"
+    );
   }
 
 }

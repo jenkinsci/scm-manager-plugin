@@ -259,6 +259,30 @@ public class ScmManagerSource extends SCMSource {
     );
   }
 
+  @Override
+  protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
+    return isCategoryTraitEnabled(category) && SCMBuilderProvider.byType(type).isSupported(category);
+  }
+
+  @VisibleForTesting
+  boolean isCategoryTraitEnabled(@NonNull SCMHeadCategory category) {
+    Class<? extends SCMSourceTrait> traitClass = getTraitForCategory(category);
+    return isTraitEnabled(traitClass);
+  }
+
+  private boolean isTraitEnabled(Class<? extends SCMSourceTrait> traitClass) {
+    return getTraits().stream().anyMatch(t -> traitClass.isAssignableFrom(t.getClass()));
+  }
+
+  private Class<? extends SCMSourceTrait> getTraitForCategory(SCMHeadCategory category) {
+    if (category instanceof TagSCMHeadCategory) {
+      return TagDiscoveryTrait.class;
+    } else if (category instanceof ChangeRequestSCMHeadCategory) {
+      return PullRequestDiscoveryTrait.class;
+    }
+    return BranchDiscoveryTrait.class;
+  }
+
   @Extension
   @Symbol("scm-manager")
   public static class DescriptorImpl extends SCMSourceDescriptor {
@@ -402,6 +426,7 @@ public class ScmManagerSource extends SCMSource {
         new PullRequestDiscoveryTrait()
       );
     }
+
     @NonNull
     @Override
     protected SCMHeadCategory[] createCategories() {

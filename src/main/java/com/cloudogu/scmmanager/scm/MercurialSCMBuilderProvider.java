@@ -2,7 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import jenkins.plugins.git.traits.GitBrowserSCMSourceTrait;
+import hudson.plugins.mercurial.traits.MercurialBrowserSCMSourceTrait;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.trait.SCMBuilder;
@@ -13,31 +13,30 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Extension(optional = true)
-public class GitSCMBuilderProvider extends SCMBuilderProvider {
+public class MercurialSCMBuilderProvider extends SCMBuilderProvider {
 
-  private static final String TYPE = "git";
+  private static final String TYPE = "hg";
 
-  public GitSCMBuilderProvider() {
+  public MercurialSCMBuilderProvider() {
     super(TYPE);
   }
 
   @Override
   public boolean isSupported(@NonNull SCMHeadCategory category) {
-    return true;
+    return category.isUncategorized();
   }
 
   @Override
   public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
-    return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerGitSCMBuilder.class)
+    return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerHgSCMBuilder.class)
       .stream()
-      .filter(desc -> !(desc instanceof GitBrowserSCMSourceTrait.DescriptorImpl))
+      .filter(desc -> !(desc instanceof MercurialBrowserSCMSourceTrait.DescriptorImpl))
       .collect(Collectors.toList());
   }
 
   @Override
   protected SCMBuilder<?, ?> create(Context context) {
-    return new ScmManagerGitSCMBuilder(
-      context.getLinkBuilder(),
+    return new ScmManagerHgSCMBuilder(
       context.getHead(),
       context.getRevision(),
       context.getCredentialsId()

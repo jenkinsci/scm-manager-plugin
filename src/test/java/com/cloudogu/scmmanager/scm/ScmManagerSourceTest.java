@@ -26,6 +26,10 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.api.trait.SCMSourceRequest;
+import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
+import jenkins.scm.impl.TagSCMHeadCategory;
+import jenkins.scm.impl.UncategorizedSCMHeadCategory;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -309,4 +313,23 @@ public class ScmManagerSourceTest {
   private StreamTaskListener listener() {
     return new StreamTaskListener(System.out, StandardCharsets.UTF_8);
   }
+
+  @Test
+  public void shouldSupportTagCategory() {
+    source.setTraits(Collections.singletonList(new TagDiscoveryTrait()));
+    assertThat(source.isCategoryTraitEnabled(TagSCMHeadCategory.DEFAULT));
+  }
+
+  @Test
+  public void shouldSupportChangeRequestCategory() {
+    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new PullRequestDiscoveryTrait()));
+    assertThat(source.isCategoryTraitEnabled(ChangeRequestSCMHeadCategory.DEFAULT));
+  }
+
+  @Test
+  public void shouldSupportBranchCategory() {
+    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new BranchDiscoveryTrait()));
+    assertThat(source.isCategoryTraitEnabled(UncategorizedSCMHeadCategory.DEFAULT));
+  }
+
 }
