@@ -8,10 +8,16 @@ import hudson.plugins.mercurial.MercurialSCMSource;
 import jenkins.scm.api.SCMRevision;
 
 public class ScmManagerHgSCMBuilder extends MercurialSCMBuilder<ScmManagerHgSCMBuilder> {
+
   public ScmManagerHgSCMBuilder(@NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
     super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
+
+    // https://github.com/jenkinsci/mercurial-plugin/pull/146
+    // withBrowser(new ScmManager(head.getCloneInformation().getUrl());
+
     if (revision instanceof ScmManagerRevision) {
       withRevision(new MercurialSCMSource.MercurialRevision(head, ((ScmManagerRevision) revision).getRevision()));
     }
   }
+
 }
