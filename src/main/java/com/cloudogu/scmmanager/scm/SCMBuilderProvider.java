@@ -6,6 +6,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMRevision;
@@ -18,14 +19,22 @@ import java.util.Collection;
 abstract class SCMBuilderProvider implements ExtensionPoint {
 
   private final String type;
+  private final String displayName;
 
-  protected SCMBuilderProvider(String type) {
+  protected SCMBuilderProvider(String type, String displayName) {
     this.type = type;
+    this.displayName = displayName;
   }
 
   public String getType() {
     return type;
   }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public abstract Class<? extends SCM> getScmClass();
 
   public abstract boolean isSupported(@NonNull SCMHeadCategory category);
 

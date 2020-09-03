@@ -2,6 +2,8 @@ package com.cloudogu.scmmanager.scm;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.plugins.git.GitSCM;
+import hudson.scm.SCM;
 import jenkins.plugins.git.traits.GitBrowserSCMSourceTrait;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSourceDescriptor;
@@ -16,14 +18,20 @@ import java.util.stream.Collectors;
 public class GitSCMBuilderProvider extends SCMBuilderProvider {
 
   private static final String TYPE = "git";
+  private static final String DISPLAY_NAME = "Git";
 
   public GitSCMBuilderProvider() {
-    super(TYPE);
+    super(TYPE, DISPLAY_NAME);
   }
 
   @Override
   public boolean isSupported(@NonNull SCMHeadCategory category) {
     return true;
+  }
+
+  @Override
+  public Class<? extends SCM> getScmClass() {
+    return GitSCM.class;
   }
 
   @Override

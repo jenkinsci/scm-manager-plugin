@@ -43,6 +43,9 @@ import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
+import jenkins.scm.impl.form.NamedArrayList;
+import jenkins.scm.impl.trait.Discovery;
+import jenkins.scm.impl.trait.Selection;
 import jenkins.util.NonLocalizable;
 import org.acegisecurity.Authentication;
 import org.jenkinsci.Symbol;
@@ -408,14 +411,33 @@ public class ScmManagerSource extends SCMSource {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public List<SCMSourceTraitDescriptor> getTraitsDescriptors() {
+    public List<NamedArrayList<? extends SCMSourceTraitDescriptor>> getTraitsDescriptorLists() {
       // we use a LinkedHashSet to deduplicate and keep order
-      Set<SCMSourceTraitDescriptor> traitDescriptors = new LinkedHashSet<>();
-      traitDescriptors.addAll(SCMSourceTrait._for(this, ScmManagerSourceContext.class, null));
+      List<SCMSourceTraitDescriptor> all = findAllAvailableTraits();
+      List<NamedArrayList<? extends SCMSourceTraitDescriptor>> result = new ArrayList<>();
+      NamedArrayList.select(
+        all,
+        "Within repository",
+        NamedArrayList.anyOf(NamedArrayList.withAnnotation(Discovery.class), NamedArrayList.withAnnotation(Selection.class)),
+        true,
+        result
+      );
+      int insertionPoint = result.size();
       for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
-        traitDescriptors.addAll(provider.getTraitDescriptors(this));
+        NamedArrayList.select(all, provider.getDisplayName(), it -> provider.getScmClass().isAssignableFrom(it.getScmClass()), true, result);
       }
-      return new ArrayList<>(traitDescriptors);
+      NamedArrayList.select(all, "General", null, true, result, insertionPoint);
+      return result;
+    }
+
+    @NonNull
+    private List<SCMSourceTraitDescriptor> findAllAvailableTraits() {
+      Set<SCMSourceTraitDescriptor> dedup = new LinkedHashSet<>();
+      dedup.addAll(SCMSourceTrait._for(this, ScmManagerSourceContext.class, null));
+      for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
+        dedup.addAll(provider.getTraitDescriptors(this));
+      }
+      return new ArrayList<>(dedup);
     }
 
     @Override
