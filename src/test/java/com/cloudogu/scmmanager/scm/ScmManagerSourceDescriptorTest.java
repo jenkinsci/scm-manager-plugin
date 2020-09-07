@@ -6,8 +6,16 @@ import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import de.otto.edison.hal.HalRepresentation;
+import hudson.model.TaskListener;
+import hudson.scm.SCM;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMHeadEvent;
+import jenkins.scm.api.SCMHeadObserver;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,8 +41,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 @RunWith(MockitoJUnitRunner.class)
-public class ScmManagerSource_DescriptorImplTest  {
+public class ScmManagerSourceDescriptorTest {
 
   @Mock
   private SCMSourceOwner scmSourceOwner;
@@ -58,7 +67,7 @@ public class ScmManagerSource_DescriptorImplTest  {
   private Predicate<Repository> repositoryPredicate;
 
   @InjectMocks
-  private ScmManagerSource.DescriptorImpl descriptor;
+  private TestingScmManagerSource.DescriptorImpl descriptor;
 
   @Before
   public void mockApiClient() {
@@ -252,5 +261,27 @@ public class ScmManagerSource_DescriptorImplTest  {
   void mockCorrectIndex() {
     HalRepresentation index = new HalRepresentation(linkingTo().single(link("login", "http://example.com/")).build());
     ScmManagerApiTestMocks.mockResult(when(api.index()), index);
+  }
+
+  /**
+   * We need an outer class to proper test a Descriptor.
+   */
+  public static class TestingScmManagerSource extends SCMSource {
+
+    @Override
+    protected void retrieve(SCMSourceCriteria criteria, SCMHeadObserver observer, SCMHeadEvent<?> event,  TaskListener listener) {
+
+    }
+
+    @Override
+    public SCM build(SCMHead head, SCMRevision revision) {
+      return null;
+    }
+
+    public static class DescriptorImpl extends ScmManagerSourceDescriptor {
+      DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory, Predicate<Repository> repositoryPredicate) {
+        super(apiFactory, repositoryPredicate);
+      }
+    }
   }
 }
