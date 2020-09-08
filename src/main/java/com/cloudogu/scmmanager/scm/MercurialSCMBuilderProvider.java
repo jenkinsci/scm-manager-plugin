@@ -2,9 +2,9 @@ package com.cloudogu.scmmanager.scm;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.plugins.git.GitSCM;
+import hudson.plugins.mercurial.MercurialSCM;
+import hudson.plugins.mercurial.traits.MercurialBrowserSCMSourceTrait;
 import hudson.scm.SCM;
-import jenkins.plugins.git.traits.GitBrowserSCMSourceTrait;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.trait.SCMBuilder;
@@ -15,37 +15,36 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Extension(optional = true)
-public class GitSCMBuilderProvider extends SCMBuilderProvider {
+public class MercurialSCMBuilderProvider extends SCMBuilderProvider {
 
-  private static final String TYPE = "git";
-  private static final String DISPLAY_NAME = "Git";
+  private static final String TYPE = "hg";
+  private static final String DISPLAY_NAME = "Mercurial";
 
-  public GitSCMBuilderProvider() {
+  public MercurialSCMBuilderProvider() {
     super(TYPE, DISPLAY_NAME);
   }
 
   @Override
-  public boolean isSupported(@NonNull SCMHeadCategory category) {
-    return true;
+  public Class<? extends SCM> getScmClass() {
+    return MercurialSCM.class;
   }
 
   @Override
-  public Class<? extends SCM> getScmClass() {
-    return GitSCM.class;
+  public boolean isSupported(@NonNull SCMHeadCategory category) {
+    return category.isUncategorized();
   }
 
   @Override
   public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
-    return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerGitSCMBuilder.class)
+    return SCMSourceTrait._for(null, null, ScmManagerHgSCMBuilder.class)
       .stream()
-      .filter(desc -> !(desc instanceof GitBrowserSCMSourceTrait.DescriptorImpl))
+      .filter(desc -> !(desc instanceof MercurialBrowserSCMSourceTrait.DescriptorImpl))
       .collect(Collectors.toList());
   }
 
   @Override
   protected SCMBuilder<?, ?> create(Context context) {
-    return new ScmManagerGitSCMBuilder(
-      context.getLinkBuilder(),
+    return new ScmManagerHgSCMBuilder(
       context.getHead(),
       context.getRevision(),
       context.getCredentialsId()
