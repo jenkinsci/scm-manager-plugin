@@ -124,6 +124,20 @@ public class ScmManagerApiTest extends ApiClientTestBase {
   }
 
   @Test
+  public void shouldLoadSingleBranchWithSlashInName() throws ExecutionException, InterruptedException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Repository repository = Mockito.mock(Repository.class);
+    when(repository.getLinks()).thenReturn(linkingTo().single(link("branches", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/")).build());
+    CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+
+    Branch branch = api.getBranch(repository, "feature/readme").get();
+    assertThat(branch.getName()).isEqualTo("feature/readme");
+    assertThat(branch.getRevision()).isEqualTo("1d56c86c55170e71e16bc3bba82bb28e9328ce47");
+  }
+
+  @Test
   public void shouldLoadPullRequests() throws ExecutionException, InterruptedException {
     ScmManagerApi api = new ScmManagerApi(apiClient());
 

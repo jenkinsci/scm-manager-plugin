@@ -6,13 +6,13 @@ import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMFile;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -128,7 +128,7 @@ public class ScmManagerApi {
 
   public CompletableFuture<Tag> getTag(Repository repository, String tagName) {
     Optional<Link> link = repository.getLinks().getLinkBy("tags");
-    return link.map(value -> client.get(concat(value, tagName), "application/vnd.scmm-tag+json;v=2", Tag.class)
+    return link.map(value -> client.get(concat(value, encode(tagName)), "application/vnd.scmm-tag+json;v=2", Tag.class)
       .thenCompose(prepareTag(repository))).orElse(null);
   }
 
@@ -140,11 +140,19 @@ public class ScmManagerApi {
 
   public CompletableFuture<Branch> getBranch(Repository repository, String name) {
     Optional<Link> link = repository.getLinks().getLinkBy("branches");
-    return link.map(value -> client.get(concat(value, name), "application/vnd.scmm-branch+json;v=2", Branch.class)
+    return link.map(value -> client.get(concat(value, encode(name)), "application/vnd.scmm-branch+json;v=2", Branch.class)
       .thenApply(branch -> {
         branch.setCloneInformation(repository.getCloneInformation());
         return branch;
       })).orElse(null);
+  }
+
+  private String encode(String value) {
+    try {
+      return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException("UTF-8 is not supported", e);
+    }
   }
 
   public CompletableFuture<ScmManagerFile> getFileObject(Repository repository, String revision, String path) {
