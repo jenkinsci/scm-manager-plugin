@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
@@ -24,6 +25,10 @@ public class ScmManagerApi {
 
   public ScmManagerApi(ApiClient client) {
     this.client = client;
+  }
+
+  public static ScmManagerApi create(String url, HttpAuthentication authentication) {
+    return new ScmManagerApi(new ApiClient(url, authentication));
   }
 
   public CompletableFuture<HalRepresentation> index() {
