@@ -5,6 +5,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.api.Authentications;
+import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.google.common.annotations.VisibleForTesting;
@@ -72,7 +73,12 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         }
         return FormValidation.error("api has no login link");
       })
-      .exceptionally(e -> FormValidation.error(e.getMessage()))
+      .exceptionally(e -> {
+        if (e.getCause() instanceof IllegalReturnStatusException && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
+          return FormValidation.ok("Credentials needed");
+        }
+        return FormValidation.error(e.getMessage());
+      })
       .get();
   }
 
