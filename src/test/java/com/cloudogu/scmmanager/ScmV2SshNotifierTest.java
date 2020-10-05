@@ -31,9 +31,15 @@ public class ScmV2SshNotifierTest {
     when(connection.openSession()).thenReturn(sessionMock);
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     when(sessionMock.getStdin()).thenReturn(out);
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connection, authentication);
+
+    ScmV2SshNotifier scmV2SshNotifier = createNotifier();
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(true));
     verify(sessionMock).execCommand(any());
+  }
+
+  private ScmV2SshNotifier createNotifier() {
+    SshConnection sshConnection = new SshConnection(connection, new NamespaceAndName("space", "name"));
+    return new ScmV2SshNotifier(sshConnection, authentication);
   }
 
   @Test
@@ -43,7 +49,7 @@ public class ScmV2SshNotifierTest {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     when(sessionMock.getStdin()).thenReturn(out);
 
-    ScmV2SshNotifier scmV2SshNotifier = new ScmV2SshNotifier(new NamespaceAndName("space", "name"), connection, authentication);
+    ScmV2SshNotifier scmV2SshNotifier = createNotifier();
     scmV2SshNotifier.notify("1a2b3c4d5e6f", createBuildStatus(false));
 
     assertTrue(out.toString().contains("jenkins"));

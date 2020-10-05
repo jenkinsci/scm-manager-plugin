@@ -25,7 +25,7 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
 
   private ScmV2SshNotifier createNotifier(Run<?, ?> run, JobInformation information, SshConnection connection)  {
     SSHAuthentication authentication = authenticationFactory.createSSH(run, information.getCredentialsId());
-    return new ScmV2SshNotifier(connection.getRepository(), connection.getConnection(), authentication);
+    return new ScmV2SshNotifier(connection, authentication);
   }
 
 }
