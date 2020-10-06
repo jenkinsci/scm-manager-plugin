@@ -12,6 +12,10 @@ public class BearerHttpAuthentication implements HttpAuthentication {
 
   @Override
   public void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder) {
+    authenticate(requestBuilder, accessToken);
+  }
+
+  public static void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder, String accessToken) {
     requestBuilder.addHeader("Authorization", "Bearer ".concat(accessToken));
   }
 }

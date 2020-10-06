@@ -19,6 +19,10 @@ public class SSHAuthentication {
     this.credentials = credentials;
   }
 
+  public static SSHAuthentication from(StandardUsernameCredentials credentials) {
+    return new SSHAuthentication(credentials);
+  }
+
   void authenticate(Connection connection) throws IOException {
     try {
       SSHAuthenticator<Connection, StandardUsernameCredentials> authenticator = SSHAuthenticator.newInstance(
