@@ -101,7 +101,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("Only http or https urls accepted");
+    assertThat(formValidation.getMessage()).isEqualTo("Only http, https or ssh urls accepted");
   }
 
   @Test
