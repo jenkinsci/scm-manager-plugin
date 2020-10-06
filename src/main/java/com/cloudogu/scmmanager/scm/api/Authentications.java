@@ -10,7 +10,7 @@ import hudson.model.Queue;
 import hudson.security.ACL;
 import jenkins.scm.api.SCMSourceOwner;
 
-public class Authentications {
+class Authentications {
 
   private SCMSourceOwner owner;
 

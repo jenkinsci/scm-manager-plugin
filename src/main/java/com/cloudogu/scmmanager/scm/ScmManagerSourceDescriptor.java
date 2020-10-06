@@ -3,10 +3,9 @@ package com.cloudogu.scmmanager.scm;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
-import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
@@ -26,7 +25,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -34,11 +32,11 @@ import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
-  protected final BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
+  protected final ScmManagerApiFactory apiFactory;
   private final Predicate<Repository> repositoryPredicate;
 
   @VisibleForTesting
-  ScmManagerSourceDescriptor(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory, Predicate<Repository> repositoryPredicate) {
+  ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
     this.apiFactory = apiFactory;
     this.repositoryPredicate = repositoryPredicate;
   }
@@ -54,6 +52,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       if (!uri.isAbsolute()) {
         return FormValidation.error("illegal URL format");
       }
+      // TODO ssh
       if (!uri.getScheme().startsWith("http")) {
         return FormValidation.error("Only http or https urls accepted");
       }
@@ -61,9 +60,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       return FormValidation.error("illegal URL format");
     }
 
+    // TODO we can only do this check for http
 
-    ScmManagerApi api = apiFactory.apply(value, x -> {
-    });
+    ScmManagerApi api = apiFactory.anonymous(value);
     CompletableFuture<HalRepresentation> future = api.index();
     return future
       .thenApply(index -> {
@@ -78,19 +77,18 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   @SuppressWarnings("unused") // used By stapler
   public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    return validateCredentialsId(context, serverUrl, value, Authentications::new);
+    return validateCredentialsId(context, serverUrl, value);
   }
 
   @VisibleForTesting
-  FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException, ExecutionException {
+  FormValidation validateCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException, ExecutionException {
     if (doCheckServerUrl(serverUrl).kind != FormValidation.Kind.OK) {
       return FormValidation.error("server url is required");
     }
     if (Strings.isNullOrEmpty(value)) {
       return FormValidation.error("credentials are required");
     }
-    Authentications authentications = authenticationsProvider.apply(context);
-    ScmManagerApi client = apiFactory.apply(serverUrl, authentications.from(serverUrl, value));
+    ScmManagerApi client = apiFactory.create(context, serverUrl, value);
     CompletableFuture<HalRepresentation> future = client.index();
     return future
       .thenApply(index -> {
@@ -119,10 +117,10 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   @SuppressWarnings("unused") // used By stapler
   public ListBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    return fillRepositoryItems(context, serverUrl, credentialsId, value, Authentications::new);
+    return fillRepositoryItems(context, serverUrl, credentialsId, value);
   }
 
-  public ListBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value, Function<SCMSourceOwner, Authentications> authenticationsProvider) throws InterruptedException, ExecutionException {
+  public ListBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
     ListBoxModel model = new ListBoxModel();
     if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
       if (!Strings.isNullOrEmpty(value)) {
@@ -131,8 +129,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       return model;
     }
 
-    Authentications authentications = authenticationsProvider.apply(context);
-    ScmManagerApi api = apiFactory.apply(serverUrl, authentications.from(serverUrl, credentialsId));
+    ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
     List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
     for (Repository repository : repositories) {
       if (repositoryPredicate.test(repository)) {

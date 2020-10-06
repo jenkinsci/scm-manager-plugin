@@ -30,7 +30,7 @@ public class ApiClientTestBase {
 
   protected ApiClient apiClient() {
     HttpAuthentication noAuthentication = requestBuilder -> {};
-    return new ApiClient(client, noAuthentication, this::serverUrl);
+    return new HttpApiClient(client, noAuthentication, this::serverUrl);
   }
 
   protected void injectPath(String... pathInjection) {

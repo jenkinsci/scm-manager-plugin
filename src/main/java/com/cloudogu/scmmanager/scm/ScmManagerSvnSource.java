@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.Repository;
-import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -86,7 +86,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     public static final String DEFAULT_EXCLUDES = "";
 
     public DescriptorImpl() {
-      super(ScmManagerApi::create, r -> "svn".equals(r.getType()));
+      super(new ScmManagerApiFactory(), r -> "svn".equals(r.getType()));
     }
 
 

@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.scm.api.ApiClient;
 import com.cloudogu.scmmanager.scm.api.Branch;
+import com.cloudogu.scmmanager.scm.api.ExecutionExceptions;
 import com.cloudogu.scmmanager.scm.api.Futures;
 import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
@@ -43,7 +43,7 @@ public class ScmManagerSourceRetriever {
         return Collections.singleton(candidate.get());
       }
     } catch (ExecutionException e) {
-      ApiClient.handleException(e);
+      ExecutionExceptions.log(e);
       throw new UncheckedIOException(new IOException("failed to load repository"));
     }
 
@@ -86,7 +86,7 @@ public class ScmManagerSourceRetriever {
 
       return observables;
     } catch (ExecutionException e) {
-      ApiClient.handleException(e);
+      ExecutionExceptions.log(e);
       throw new UncheckedIOException(new IOException("failed to load repository"));
     }
   }
