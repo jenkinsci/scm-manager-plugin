@@ -1,9 +1,13 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Repository extends HalRepresentation implements Serializable {
 
@@ -22,6 +26,14 @@ public class Repository extends HalRepresentation implements Serializable {
     this.type = type;
   }
 
+  @VisibleForTesting
+  public Repository(String namespace, String name, String type, Links links) {
+    super(links);
+    this.namespace = namespace;
+    this.name = name;
+    this.type = type;
+  }
+
   public String getType() {
     return type;
   }
@@ -34,16 +46,20 @@ public class Repository extends HalRepresentation implements Serializable {
     return name;
   }
 
-  public String getUrl(String protocol) {
+  public Optional<String> getUrl(String protocol) {
     return getLinks()
       .getLinkBy("protocol", l -> protocol.equals(l.getName()))
-      .orElseThrow(() -> new IllegalStateException("could not find protocol link of type " + protocol))
-      .getHref();
+      .map(Link::getHref);
+  }
+
+  public String mustGetUrl(String protocol) {
+    return getUrl(protocol)
+      .orElseThrow(() -> new IllegalStateException("could not find protocol link of type " + protocol));
   }
 
   public CloneInformation getCloneInformation(String protocol) {
     if (cloneInformation == null) {
-      cloneInformation = new CloneInformation(type, getUrl(protocol));
+      cloneInformation = new CloneInformation(type, mustGetUrl(protocol));
     }
     return cloneInformation;
   }

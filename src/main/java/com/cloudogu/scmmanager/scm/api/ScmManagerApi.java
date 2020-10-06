@@ -27,8 +27,8 @@ public class ScmManagerApi {
     this.client = client;
   }
 
-  public static ScmManagerApi create(String url, HttpAuthentication authentication) {
-    return new ScmManagerApi(new HttpApiClient(url, authentication));
+  public String getProtocol() {
+    return client.getProtocol();
   }
 
   public CompletableFuture<HalRepresentation> index() {

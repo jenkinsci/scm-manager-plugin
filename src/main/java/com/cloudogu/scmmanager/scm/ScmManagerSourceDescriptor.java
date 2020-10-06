@@ -132,9 +132,12 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     }
 
     ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
+    // filter all repositories, which does not support the protocol
+    Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();
+    Predicate<Repository> predicate = protocolPredicate.and(repositoryPredicate);
     List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
     for (Repository repository : repositories) {
-      if (repositoryPredicate.test(repository)) {
+      if (predicate.test(repository)) {
         ListBoxModel.Option option = createRepositoryOption(repository);
         if (option != null) {
           model.add(option);

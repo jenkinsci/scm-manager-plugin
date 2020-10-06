@@ -5,6 +5,8 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.FormValidation;
@@ -30,10 +32,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import static de.otto.edison.hal.Link.link;
+import static de.otto.edison.hal.Link.linkBuilder;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 
@@ -42,7 +46,6 @@ public class ScmManagerSourceDescriptorTest {
 
   @Mock
   private SCMSourceOwner scmSourceOwner;
-
 
   @Captor
   private ArgumentCaptor<String> requestedUrl;
@@ -66,6 +69,8 @@ public class ScmManagerSourceDescriptorTest {
   public void mockApiClient() {
     when(apiFactory.create(any(), requestedUrl.capture(), requestedCredentials.capture())).thenReturn(api);
     when(apiFactory.anonymous(requestedUrl.capture())).thenReturn(api);
+
+    when(api.getProtocol()).thenReturn("http");
   }
 
   @Test
@@ -218,7 +223,7 @@ public class ScmManagerSourceDescriptorTest {
   @Test
   public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
     when(repositoryPredicate.test(any())).thenReturn(true);
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(new Repository("space", "X", "git"), new Repository("blue", "dragon", "hg")));
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
     ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
@@ -227,16 +232,52 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
-    Repository spaceX = new Repository("space", "X", "git");
-    Repository dragon = new Repository("blue", "dragon", "hg");
+    Repository spaceX = createSpaceX();
+    Repository dragon = createDragon();
+    Repository hog = createHoG();
 
-    when(repositoryPredicate.test(spaceX)).thenReturn(true);
+    when(repositoryPredicate.test(spaceX)).thenAnswer(ic -> {
+      Repository repository = ic.getArgument(0);
+      return "git".equals(repository.getType());
+    });
 
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon));
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
     ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
     assertThat(model.stream()).extracting("name").containsExactly("space/X (git)");
+  }
+
+  private Repository createHoG() {
+    return new Repository("hitchhiker", "hog", "git", sshLinks());
+  }
+
+  private Repository createDragon() {
+    return new Repository("blue", "dragon", "hg", httpLinks());
+  }
+
+  private Repository createSpaceX() {
+    return new Repository("space", "X", "git", bothLinks());
+  }
+
+  private Links bothLinks() {
+    return linkingTo().array(httpLink(), sshLink()).build();
+  }
+
+  private Links httpLinks() {
+    return linkingTo().single(httpLink()).build();
+  }
+
+  private Links sshLinks() {
+    return linkingTo().single(sshLink()).build();
+  }
+
+  private Link httpLink() {
+    return linkBuilder("protocol", "https://hitchhiker.com/scm").withName("http").build();
+  }
+
+  private Link sshLink() {
+    return linkBuilder("protocol", "ssh://hitchhiker.com/scm").withName("ssh").build();
   }
 
   void mockCorrectIndex() {
