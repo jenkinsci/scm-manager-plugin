@@ -6,6 +6,7 @@ import com.cloudogu.scmmanager.SshConnection;
 import com.cloudogu.scmmanager.SshConnectionFactory;
 import com.cloudogu.scmmanager.SshConnectionFailedException;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.ning.http.client.AsyncHttpClient;
 import de.otto.edison.hal.HalRepresentation;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class SshApiClient extends ApiClient {
 
