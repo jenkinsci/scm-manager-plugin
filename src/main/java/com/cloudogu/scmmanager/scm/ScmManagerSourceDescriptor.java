@@ -25,7 +25,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.Collections.emptyList;
@@ -52,15 +51,18 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       if (!uri.isAbsolute()) {
         return FormValidation.error("illegal URL format");
       }
-      // TODO ssh
-      if (!uri.getScheme().startsWith("http")) {
-        return FormValidation.error("Only http or https urls accepted");
+      String scheme = uri.getScheme();
+      if (!scheme.startsWith("http") && !scheme.startsWith("ssh")) {
+        return FormValidation.error("Only http, https or ssh urls accepted");
       }
     } catch (URISyntaxException e) {
       return FormValidation.error("illegal URL format");
     }
 
-    // TODO we can only do this check for http
+    // only http allows anonymous check, so we skip the check for all other supported schemes
+    if (!value.startsWith("http")) {
+      return FormValidation.ok();
+    }
 
     ScmManagerApi api = apiFactory.anonymous(value);
     CompletableFuture<HalRepresentation> future = api.index();
