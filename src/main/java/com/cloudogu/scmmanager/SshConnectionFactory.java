@@ -12,7 +12,7 @@ import static java.util.Optional.of;
 
 public final class SshConnectionFactory {
 
-  private static final Pattern PATTERN = Pattern.compile("^ssh://(.*@)?([^:]+)(:[0-9]*)?/repo/(.+)/(.+)$");
+  private static final Pattern PATTERN = Pattern.compile("^ssh://(.*@)?([^/:]+)(:[0-9]*)?(:?/repo/([^/]+)/([^/]+))?/?$");
 
   private SshConnectionFactory() {
   }
@@ -45,9 +45,13 @@ public final class SshConnectionFactory {
   }
 
   private static NamespaceAndName createRepository(Matcher matcher) {
-    String namespace = matcher.group(4);
-    String name = matcher.group(5);
-    if (name.endsWith(".git")) {
+    String namespace = matcher.group(5);
+    String name = matcher.group(6);
+
+    // ssh connection url without repository suffix
+    if (namespace == null && name == null) {
+      return null;
+    } else if (name.endsWith(".git")) {
       return new NamespaceAndName(namespace, name.substring(0, name.length() - ".git".length()));
     } else {
       return new NamespaceAndName(namespace, name);

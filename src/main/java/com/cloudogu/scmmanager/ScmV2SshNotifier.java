@@ -26,25 +26,26 @@ public class ScmV2SshNotifier implements Notifier {
 
   @Override
   public void notify(String revision, BuildStatus buildStatus) throws IOException {
-    LOG.info("set rev {} of {} to {}", revision, connection.getRepository(), buildStatus.getStatus());
+    NamespaceAndName repository = connection.mustGetRepository();
+    LOG.info("set rev {} of {} to {}", revision, repository, buildStatus.getStatus());
     try {
       connection.connect(authentication);
-      executeStatusUpdateCommand(revision, buildStatus);
+      executeStatusUpdateCommand(repository, revision, buildStatus);
     } finally {
       connection.close();
     }
   }
 
-  private void executeStatusUpdateCommand(String revision, BuildStatus buildStatus) throws IOException {
-    String cmd = createCommand(revision);
+  private void executeStatusUpdateCommand(NamespaceAndName repository, String revision, BuildStatus buildStatus) throws IOException {
+    String cmd = createCommand(repository, revision);
     setBuildStatusTypeIfNull(buildStatus);
     connection.command(cmd)
       .withInput(buildStatus).xml()
       .exec();
   }
 
-  private String createCommand(String revision) {
-    return String.format(SSH_COMMAND, connection.getRepository().getNamespace(), connection.getRepository().getName(), revision);
+  private String createCommand(NamespaceAndName repository, String revision) {
+    return String.format(SSH_COMMAND, repository.getNamespace(), repository.getName(), revision);
   }
 
   private void setBuildStatusTypeIfNull(BuildStatus buildStatus) {

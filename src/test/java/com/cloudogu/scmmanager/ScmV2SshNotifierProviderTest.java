@@ -39,8 +39,9 @@ public class ScmV2SshNotifierProviderTest {
     JobInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
     ScmV2SshNotifier notifier = provider.get(run, information).get();
 
-    assertEquals("ns", notifier.getConnection().getRepository().getNamespace());
-    assertEquals("one", notifier.getConnection().getRepository().getName());
+    NamespaceAndName repository = notifier.getConnection().mustGetRepository();
+    assertEquals("ns", repository.getNamespace());
+    assertEquals("one", repository.getName());
     assertEquals(notifier.getConnection().getConnection().getHostname(), "scm-manager.org");
     assertEquals(notifier.getConnection().getConnection().getPort(), 8889);
   }

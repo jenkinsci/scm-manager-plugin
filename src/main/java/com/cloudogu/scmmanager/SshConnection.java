@@ -8,6 +8,7 @@ import javax.xml.bind.JAXB;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
 
 public class SshConnection implements AutoCloseable {
 
@@ -25,8 +26,15 @@ public class SshConnection implements AutoCloseable {
     return connection;
   }
 
-  public NamespaceAndName getRepository() {
+  public NamespaceAndName mustGetRepository() {
+    if (repository == null) {
+      throw new IllegalStateException("ssh connection is not bound to a repository");
+    }
     return repository;
+  }
+
+  public Optional<NamespaceAndName> getRepository() {
+    return Optional.ofNullable(repository);
   }
 
   public void connect(SSHAuthentication authentication) {

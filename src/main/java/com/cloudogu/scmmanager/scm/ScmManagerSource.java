@@ -61,7 +61,10 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
 
-  private final ScmManagerApiFactory apiFactory;
+  // older versions do not have an api factory, if they are unmarshalled from disk
+  // in order to support older versions we have to create the factory on demand
+  @CheckForNull
+  private ScmManagerApiFactory apiFactory;
 
   @DataBoundConstructor
   public ScmManagerSource(String serverUrl, String repository, String credentialsId) {
@@ -155,6 +158,9 @@ public class ScmManagerSource extends SCMSource {
   }
 
   private ScmManagerApi createApi() {
+    if (apiFactory == null) {
+      apiFactory = new ScmManagerApiFactory();
+    }
     return apiFactory.create(getOwner(), serverUrl, credentialsId);
   }
 
