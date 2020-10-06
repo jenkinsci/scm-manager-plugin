@@ -44,7 +44,15 @@ public class SshApiClient extends ApiClient {
   public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
     LOG.info("get {} from {}", type.getName(), url);
 
-    AccessToken token = fetcher.get();
+    // TODO chain fetcher as part of future
+    AccessToken token;
+    try {
+       token = fetcher.get();
+    } catch (Exception ex) {
+      CompletableFuture<T> future = new CompletableFuture<>();
+      future.completeExceptionally(ex);
+      return future;
+    }
     String apiUrl = createApiUrl(token.getApiUrl(), url);
 
     AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(apiUrl);
