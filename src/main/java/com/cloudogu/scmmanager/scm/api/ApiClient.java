@@ -12,9 +12,16 @@ public abstract class ApiClient {
 
   private final ObjectMapper objectMapper;
 
-  public ApiClient() {
+  private final String protocol;
+
+  protected ApiClient(String protocol) {
+    this.protocol = protocol;
     objectMapper = new ObjectMapper();
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  }
+
+  public String getProtocol() {
+    return protocol;
   }
 
   public abstract <T> CompletableFuture<T> get(String url, String contentType, Class<T> type);

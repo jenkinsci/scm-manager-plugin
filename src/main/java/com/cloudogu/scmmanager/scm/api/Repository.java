@@ -34,16 +34,16 @@ public class Repository extends HalRepresentation implements Serializable {
     return name;
   }
 
-  public String getUrl() {
+  public String getUrl(String protocol) {
     return getLinks()
-      .getLinkBy("protocol", l -> "http".equals(l.getName()))
-      .orElseThrow(() -> new IllegalStateException("no http url"))
+      .getLinkBy("protocol", l -> protocol.equals(l.getName()))
+      .orElseThrow(() -> new IllegalStateException("could not find protocol link of type " + protocol))
       .getHref();
   }
 
-  public CloneInformation getCloneInformation() {
+  public CloneInformation getCloneInformation(String protocol) {
     if (cloneInformation == null) {
-      cloneInformation = new CloneInformation(type, getUrl());
+      cloneInformation = new CloneInformation(type, getUrl(protocol));
     }
     return cloneInformation;
   }

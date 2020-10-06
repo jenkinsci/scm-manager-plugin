@@ -34,6 +34,7 @@ public class SshApiClient extends ApiClient {
   }
 
   public SshApiClient(AsyncHttpClient client, String sshUrl, SSHAuthentication authentication) {
+    super("ssh");
     this.client = client;
     this.sshUrl = sshUrl;
     this.authentication = authentication;

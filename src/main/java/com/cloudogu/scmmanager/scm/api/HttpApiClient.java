@@ -45,6 +45,7 @@ public class HttpApiClient extends ApiClient {
 
   @VisibleForTesting
   HttpApiClient(AsyncHttpClient client, HttpAuthentication authentication, UnaryOperator<String> urlModifier) {
+    super("http");
     this.client = client;
     this.authentication = authentication;
     this.urlModifier = urlModifier;
