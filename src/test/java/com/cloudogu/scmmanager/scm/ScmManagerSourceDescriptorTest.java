@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -28,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
@@ -37,7 +39,6 @@ import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 
@@ -121,29 +122,29 @@ public class ScmManagerSourceDescriptorTest {
     assertThat(formValidation.getMessage()).isEqualTo("api has no login link");
   }
 
-//  @Test
-//  public void shouldRejectServerUrlWithIllegalResponse() throws InterruptedException, ExecutionException {
-//    mockError(new ApiClient.ApiError("could not parse response"), when(api.index()));
-//
-//    FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
-//
-//    assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
-//    assertThat(formValidation).isNotNull();
-//    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-//    assertThat(formValidation.getMessage()).startsWith("could not parse response");
-//  }
-//
-//  @Test
-//  public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException, ExecutionException {
-//    ScmManagerApiTestMocks.mockError(new ApiClient.ApiError(404), when(api.index()));
-//
-//    FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
-//
-//    assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
-//    assertThat(formValidation).isNotNull();
-//    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-//    assertThat(formValidation.getMessage()).isEqualTo("illegal http status code: 404");
-//  }
+  @Test
+  public void shouldHandleRedirectResponseForIndexRequest() throws InterruptedException, ExecutionException {
+        ScmManagerApiTestMocks.mockError(new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
+
+    FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+
+    assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    assertThat(formValidation.getMessage()).isEqualTo("Credentials needed");
+  }
+
+  @Test
+  public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException, ExecutionException {
+    ScmManagerApiTestMocks.mockError(new NotFoundException("not found"), when(api.index()));
+
+    FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+
+    assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
+    assertThat(formValidation).isNotNull();
+    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    assertThat(formValidation.getMessage()).isEqualTo("not found");
+  }
 
   @Test
   public void shouldAcceptServerUrl() throws InterruptedException, ExecutionException {
