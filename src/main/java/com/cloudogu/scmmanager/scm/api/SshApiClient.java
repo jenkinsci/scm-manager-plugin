@@ -12,6 +12,7 @@ import com.ning.http.client.AsyncHttpClient;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.plugins.asynchttpclient.AHC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +105,7 @@ public class SshApiClient extends ApiClient {
       .orElseThrow(() -> new IllegalStateException("could not create ssh connection"));
   }
 
+  @SuppressFBWarnings("EQ_DOESNT_OVERRIDE_EQUALS") // we do not need equality checks
   static class AccessToken extends HalRepresentation {
 
     private String accessToken;
