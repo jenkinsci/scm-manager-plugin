@@ -10,14 +10,14 @@ import java.util.regex.Pattern;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-public final class SshConnectionFactory {
+public class SshConnectionFactory {
 
   private static final Pattern PATTERN = Pattern.compile("^ssh://(.*@)?([^/:]+)(:[0-9]*)?(:?/repo/([^/]+)/([^/]+))?/?$");
 
-  private SshConnectionFactory() {
+  public SshConnectionFactory() {
   }
 
-  public static Optional<SshConnection> create(String url) {
+  public Optional<SshConnection> create(String url) {
     Matcher matcher = PATTERN.matcher(url);
     if (matcher.matches()) {
       return of(createSshConnection(matcher));
@@ -25,18 +25,18 @@ public final class SshConnectionFactory {
     return empty();
   }
 
-  private static SshConnection createSshConnection(Matcher matcher) {
+  private SshConnection createSshConnection(Matcher matcher) {
     return new SshConnection(
       createConnection(matcher),
       createRepository(matcher)
     );
   }
 
-  private static Connection createConnection(Matcher matcher) {
+  private Connection createConnection(Matcher matcher) {
     return new Connection(matcher.group(2), getPort(matcher));
   }
 
-  private static Integer getPort(Matcher matcher) {
+  private Integer getPort(Matcher matcher) {
     String group = matcher.group(3);
     if (Strings.isNullOrEmpty(group)) {
       return 22;
@@ -44,7 +44,7 @@ public final class SshConnectionFactory {
     return Integer.valueOf(group.substring(1));
   }
 
-  private static NamespaceAndName createRepository(Matcher matcher) {
+  private NamespaceAndName createRepository(Matcher matcher) {
     String namespace = matcher.group(5);
     String name = matcher.group(6);
 

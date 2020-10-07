@@ -10,6 +10,7 @@ import java.util.Optional;
 @Extension
 public class ScmV2SshNotifierProvider implements NotifierProvider {
 
+  private final SshConnectionFactory connectionFactory = new SshConnectionFactory();
   private AuthenticationFactory authenticationFactory;
 
   @Inject
@@ -19,7 +20,7 @@ public class ScmV2SshNotifierProvider implements NotifierProvider {
 
   @Override
   public Optional<ScmV2SshNotifier> get(Run<?, ?> run, JobInformation information) {
-    return SshConnectionFactory.create(information.getUrl())
+    return connectionFactory.create(information.getUrl())
       .map(sshConnection -> createNotifier(run, information, sshConnection));
   }
 

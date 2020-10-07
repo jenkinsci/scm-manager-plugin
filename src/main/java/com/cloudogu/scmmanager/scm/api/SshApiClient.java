@@ -11,6 +11,7 @@ import com.google.common.base.Suppliers;
 import com.ning.http.client.AsyncHttpClient;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
 import jenkins.plugins.asynchttpclient.AHC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,22 +21,29 @@ import java.util.concurrent.CompletableFuture;
 
 public class SshApiClient extends ApiClient {
 
+  @VisibleForTesting
+  static final String ACCESS_TOKEN_COMMAND = "scm-access-token";
+
   private static final Logger LOG = LoggerFactory.getLogger(SshApiClient.class);
   private static final String API_PATH = "/api/v2";
 
+  // memoize access token, we only want a fresh access token if a new SshApiClient is created
+  @SuppressWarnings("squid:4738") // jenkins provides an old guava version, so we can't use java.util.Supplier
   private final Supplier<AccessToken> fetcher = Suppliers.memoize(this::fetchAccessTokenFromSsh);
 
   private final AsyncHttpClient client;
+  private final SshConnectionFactory connectionFactory;
   private final String sshUrl;
   private final SSHAuthentication authentication;
 
   public SshApiClient(String sshUrl, SSHAuthentication authentication) {
-    this(AHC.instance(), sshUrl, authentication);
+    this(AHC.instance(), new SshConnectionFactory(), sshUrl, authentication);
   }
 
-  public SshApiClient(AsyncHttpClient client, String sshUrl, SSHAuthentication authentication) {
+  public SshApiClient(AsyncHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
     super("ssh");
     this.client = client;
+    this.connectionFactory = connectionFactory;
     this.sshUrl = sshUrl;
     this.authentication = authentication;
   }
@@ -44,22 +52,18 @@ public class SshApiClient extends ApiClient {
   public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
     LOG.info("get {} from {}", type.getName(), url);
 
-    // TODO chain fetcher as part of future
-    AccessToken token;
-    try {
-       token = fetcher.get();
-    } catch (Exception ex) {
-      CompletableFuture<T> future = new CompletableFuture<>();
-      future.completeExceptionally(ex);
-      return future;
-    }
-    String apiUrl = createApiUrl(token.getApiUrl(), url);
+    // we can not use the supplier directly, the guava version which is provided by jenkins
+    // does not yet implement the java.util.Supplier
+    return CompletableFuture.supplyAsync(() -> fetcher.get())
+      .thenCompose(token -> {
+        String apiUrl = createApiUrl(token.getApiUrl(), url);
 
-    AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(apiUrl);
-    BearerHttpAuthentication.authenticate(requestBuilder, token.getAccessToken());
-    requestBuilder.addHeader("Accept", contentType);
+        AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(apiUrl);
+        BearerHttpAuthentication.authenticate(requestBuilder, token.getAccessToken());
+        requestBuilder.addHeader("Accept", contentType);
 
-    return execute(requestBuilder, type);
+        return execute(requestBuilder, type);
+      });
   }
 
   @VisibleForTesting
@@ -87,7 +91,7 @@ public class SshApiClient extends ApiClient {
     LOG.info("connect to {} in order to fetch access token", sshUrl);
     try (SshConnection connection = createConnection()) {
       connection.connect(authentication);
-      return connection.command("scm-access-token")
+      return connection.command(ACCESS_TOKEN_COMMAND)
         .withOutput(AccessToken.class)
         .json();
     } catch (IOException ex) {
@@ -96,13 +100,21 @@ public class SshApiClient extends ApiClient {
   }
 
   private SshConnection createConnection() {
-    return SshConnectionFactory.create(sshUrl)
+    return connectionFactory.create(sshUrl)
       .orElseThrow(() -> new IllegalStateException("could not create ssh connection"));
   }
 
-  public static class AccessToken extends HalRepresentation {
+  static class AccessToken extends HalRepresentation {
 
     private String accessToken;
+
+    public AccessToken() {
+    }
+
+    AccessToken(Links links, String accessToken) {
+      super(links);
+      this.accessToken = accessToken;
+    }
 
     public String getAccessToken() {
       return accessToken;
