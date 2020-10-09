@@ -141,7 +141,7 @@ public class SshConnection implements AutoCloseable {
     private final Command command;
     private final Class<T> type;
 
-    public Output(Command command, Class<T> type) {
+    private Output(Command command, Class<T> type) {
       this.command = command;
       this.type = type;
     }
