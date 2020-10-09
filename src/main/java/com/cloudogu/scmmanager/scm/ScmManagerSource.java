@@ -178,7 +178,7 @@ public class ScmManagerSource extends SCMSource {
         revision,
         credentialsId
       );
-      return SCMBuilderProvider.from(ctx).build();
+      return SCMBuilderProvider.from(ctx).withTraits(traits).build();
     }
     throw new IllegalArgumentException("Could not handle unknown SCMHead: " + head);
   }
