@@ -19,12 +19,18 @@ public class SSHAuthentication {
     this.credentials = credentials;
   }
 
+  public static SSHAuthentication from(StandardUsernameCredentials credentials) {
+    return new SSHAuthentication(credentials);
+  }
+
   void authenticate(Connection connection) throws IOException {
     try {
       SSHAuthenticator<Connection, StandardUsernameCredentials> authenticator = SSHAuthenticator.newInstance(
         connection, credentials, credentials.getUsername()
       );
-      authenticator.authenticate(new LogTaskListener(LOG, Level.INFO));
+      if (!authenticator.authenticate(new LogTaskListener(LOG, Level.INFO))) {
+        throw new SshConnectionFailedException("ssh authentication failed");
+      }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new SshConnectionFailedException("failed to authenticate", e);

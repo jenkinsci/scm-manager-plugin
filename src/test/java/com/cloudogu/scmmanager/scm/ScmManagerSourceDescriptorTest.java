@@ -1,13 +1,13 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.ApiClient;
-import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.FormValidation;
@@ -27,21 +27,18 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static de.otto.edison.hal.Link.link;
+import static de.otto.edison.hal.Link.linkBuilder;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -50,18 +47,15 @@ public class ScmManagerSourceDescriptorTest {
 
   @Mock
   private SCMSourceOwner scmSourceOwner;
-  @Mock
-  private Authentications mockedAuthentication;
-  @Mock
-  private Function<SCMSourceOwner, Authentications> authenticationsProvider;
 
   @Captor
   private ArgumentCaptor<String> requestedUrl;
-  @Captor
-  private ArgumentCaptor<HttpAuthentication> requestedAuthentication;
 
-  @Spy
-  private BiFunction<String, HttpAuthentication, ScmManagerApi> apiClientFactory;
+  @Captor
+  private ArgumentCaptor<String> requestedCredentials;
+
+  @Mock
+  private ScmManagerApiFactory apiFactory;
 
   @Mock
   private ScmManagerApi api;
@@ -74,12 +68,10 @@ public class ScmManagerSourceDescriptorTest {
 
   @Before
   public void mockApiClient() {
-    when(apiClientFactory.apply(requestedUrl.capture(), requestedAuthentication.capture())).thenReturn(api);
-  }
+    when(apiFactory.create(any(), requestedUrl.capture(), requestedCredentials.capture())).thenReturn(api);
+    when(apiFactory.anonymous(requestedUrl.capture())).thenReturn(api);
 
-  @Before
-  public void mockAuthentications() {
-    when(authenticationsProvider.apply(scmSourceOwner)).thenReturn(mockedAuthentication);
+    when(api.getProtocol()).thenReturn("http");
   }
 
   @Test
@@ -115,7 +107,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("Only http or https urls accepted");
+    assertThat(formValidation.getMessage()).isEqualTo("Only http, https or ssh urls accepted");
   }
 
   @Test
@@ -167,7 +159,7 @@ public class ScmManagerSourceDescriptorTest {
   @Test
   public void shouldRejectEmptyCredentials() throws InterruptedException, ExecutionException {
     mockCorrectIndex();
-    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "", u -> mockedAuthentication);
+    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "");
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -181,26 +173,18 @@ public class ScmManagerSourceDescriptorTest {
     ScmManagerApiTestMocks.mockResult(when(api.index()), index, indexWithLogIn);
 
     SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
-    Authentications mockedAuthentication = Mockito.mock(Authentications.class);
-    HttpAuthentication authentication = x -> {};
-    when(mockedAuthentication.from("http://example.com", "myAuth")).thenReturn(authentication);
-    Function<SCMSourceOwner, Authentications> authenticationsProvider = mock(Function.class);
-    when(authenticationsProvider.apply(scmSourceOwner)).thenReturn(mockedAuthentication);
-
-    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth", authenticationsProvider);
+    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
-    assertThat(requestedAuthentication.getValue()).isSameAs(authentication);
+    assertThat(requestedCredentials.getValue()).isEqualTo("myAuth");
   }
 
   @Test
   public void shouldRejectWrongCredentials() throws InterruptedException, ExecutionException {
     mockCorrectIndex();
-    HttpAuthentication authentication = x -> {};
-    when(mockedAuthentication.from("http://example.com", "myAuth")).thenReturn(authentication);
 
-    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth", authenticationsProvider);
+    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -232,7 +216,7 @@ public class ScmManagerSourceDescriptorTest {
   public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
     ScmManagerApiTestMocks.mockError(new NotFoundException("not found"), when(api.getRepositories()));
 
-    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null, authenticationsProvider);
+    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
     assertThat(model.stream()).isEmpty();
   }
@@ -240,25 +224,61 @@ public class ScmManagerSourceDescriptorTest {
   @Test
   public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
     when(repositoryPredicate.test(any())).thenReturn(true);
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(new Repository("space", "X", "git"), new Repository("blue", "dragon", "hg")));
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
-    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null, authenticationsProvider);
+    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
     assertThat(model.stream()).extracting("name").containsExactly("space/X (git)", "blue/dragon (hg)");
   }
 
   @Test
   public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
-    Repository spaceX = new Repository("space", "X", "git");
-    Repository dragon = new Repository("blue", "dragon", "hg");
+    Repository spaceX = createSpaceX();
+    Repository dragon = createDragon();
+    Repository hog = createHoG();
 
-    when(repositoryPredicate.test(spaceX)).thenReturn(true);
+    when(repositoryPredicate.test(spaceX)).thenAnswer(ic -> {
+      Repository repository = ic.getArgument(0);
+      return "git".equals(repository.getType());
+    });
 
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon));
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null, authenticationsProvider);
+    ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
     assertThat(model.stream()).extracting("name").containsExactly("space/X (git)");
+  }
+
+  private Repository createHoG() {
+    return new Repository("hitchhiker", "hog", "git", sshLinks());
+  }
+
+  private Repository createDragon() {
+    return new Repository("blue", "dragon", "hg", httpLinks());
+  }
+
+  private Repository createSpaceX() {
+    return new Repository("space", "X", "git", bothLinks());
+  }
+
+  private Links bothLinks() {
+    return linkingTo().array(httpLink(), sshLink()).build();
+  }
+
+  private Links httpLinks() {
+    return linkingTo().single(httpLink()).build();
+  }
+
+  private Links sshLinks() {
+    return linkingTo().single(sshLink()).build();
+  }
+
+  private Link httpLink() {
+    return linkBuilder("protocol", "https://hitchhiker.com/scm").withName("http").build();
+  }
+
+  private Link sshLink() {
+    return linkBuilder("protocol", "ssh://hitchhiker.com/scm").withName("ssh").build();
   }
 
   void mockCorrectIndex() {
@@ -282,7 +302,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     public static class DescriptorImpl extends ScmManagerSourceDescriptor {
-      DescriptorImpl(BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory, Predicate<Repository> repositoryPredicate) {
+      DescriptorImpl(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
         super(apiFactory, repositoryPredicate);
       }
     }

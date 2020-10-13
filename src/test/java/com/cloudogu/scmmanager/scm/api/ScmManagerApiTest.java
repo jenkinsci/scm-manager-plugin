@@ -47,7 +47,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("branches", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     List<Branch> branches = api.getBranches(repository).get();
 
@@ -64,7 +64,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("tags", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     List<Tag> tags = api.getTags(repository).get();
 
@@ -83,7 +83,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("tags", "/scm/api/v2/repositories/jenkins-plugin/hello-shell-with-date/tags/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     List<Tag> tags = api.getTags(repository).get();
 
@@ -102,7 +102,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("tags", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     Tag tag = api.getTag(repository, "1.0.0").get();
     assertThat(tag.getName()).isEqualTo("1.0.0");
@@ -116,7 +116,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("branches", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     Branch branch = api.getBranch(repository, "develop").get();
     assertThat(branch.getName()).isEqualTo("develop");
@@ -130,7 +130,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("branches", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     Branch branch = api.getBranch(repository, "feature/readme").get();
     assertThat(branch.getName()).isEqualTo("feature/readme");
@@ -144,7 +144,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("pullRequest", "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     List<PullRequest> pullRequests = api.getPullRequests(repository).get();
     assertThat(pullRequests).hasSize(1);
@@ -162,7 +162,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("pullRequest", "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     PullRequest pullRequest = api.getPullRequest(repository, "1").get();
     assertThat(pullRequest.getId()).isEqualTo("1");
@@ -177,7 +177,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("changesets", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     Changeset changeset = api.getChangeset(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958").get();
     assertThat(changeset.getId()).isEqualTo("a41666c19c7c868410b80a963a50e8a2a9b0a958");
@@ -191,7 +191,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     ScmManagerFile fo = api.getFileObject(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958", "Jenkinsfile").get();
     assertThat(fo.getPath()).isEqualTo("Jenkinsfile");
@@ -205,7 +205,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     ScmManagerFile fo = api.getFileObject(repository, "a41666c19c7c868410b80a963a50e8a2a9b0a958", "FileDeJenkins").get();
     assertThat(fo.getPath()).isEqualTo("FileDeJenkins");
@@ -219,7 +219,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     Repository repository = Mockito.mock(Repository.class);
     when(repository.getLinks()).thenReturn(linkingTo().single(link("sources", "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/")).build());
     CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
-    when(repository.getCloneInformation()).thenReturn(cloneInformation);
+    when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
     ScmManagerFile fo = api.getFileObject(repository, "42a84101678bf08ff0f33556cf88db48e248587c", "src").get();
     assertThat(fo.getPath()).isEqualTo("src");

@@ -1,13 +1,12 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Changeset;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.PullRequest;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
@@ -16,7 +15,6 @@ import com.cloudogu.scmmanager.scm.api.Tag;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.TaskListener;
-import hudson.scm.SCM;
 import hudson.util.StreamTaskListener;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMHead;
@@ -36,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
@@ -44,8 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static com.cloudogu.scmmanager.scm.ScmTestData.branch;
 import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
@@ -62,15 +57,10 @@ public class ScmManagerSourceTest {
 
   @Mock
   private SCMSourceOwner scmSourceOwner;
-  @Mock
-  private Authentications mockedAuthentication;
-  @Mock
-  private HttpAuthentication authentication;
-  @Mock
-  private Function<SCMSourceOwner, Authentications> authenticationsProvider;
 
   @Captor
   private ArgumentCaptor<SCMHead> head;
+
   @Captor
   private ArgumentCaptor<SCMRevision> revision;
 
@@ -80,8 +70,8 @@ public class ScmManagerSourceTest {
   @Mock
   private ScmManagerSourceRequest request;
 
-  @Spy
-  private BiFunction<String, HttpAuthentication, ScmManagerApi> apiClientFactory;
+  @Mock
+  private ScmManagerApiFactory apiFactory;
 
   @Mock
   private SCMSourceCriteria criteria;
@@ -95,10 +85,8 @@ public class ScmManagerSourceTest {
 
   @Before
   public void initMocks() throws IOException, InterruptedException {
-    when(apiClientFactory.apply("http://hithchiker.com/scm", authentication)).thenReturn(api);
-    when(authenticationsProvider.apply(scmSourceOwner)).thenReturn(mockedAuthentication);
-    when(mockedAuthentication.from("http://hithchiker.com/scm", "dent")).thenReturn(authentication);
-    source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiClientFactory, authenticationsProvider);
+    when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent")).thenReturn(api);
+    source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiFactory);
     source.setOwner(scmSourceOwner);
     captureProcess();
   }
@@ -120,7 +108,7 @@ public class ScmManagerSourceTest {
 
     source.retrieve(criteria, observer, null, listener);
 
-    verify(apiClientFactory).apply("http://hithchiker.com/scm", authentication);
+    verify(apiFactory).create(scmSourceOwner, "http://hithchiker.com/scm", "dent");
   }
 
   @Test

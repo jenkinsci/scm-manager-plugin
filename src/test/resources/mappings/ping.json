@@ -1,0 +1,21 @@
+{
+  "request": {
+    "url": "/api/v2/ping",
+    "method": "GET",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/json"
+      },
+      "Authorization": {
+        "equalTo": "Bearer ac-42"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "{\"response\": \"pong\"}",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

@@ -27,8 +27,8 @@ public class ScmManagerApi {
     this.client = client;
   }
 
-  public static ScmManagerApi create(String url, HttpAuthentication authentication) {
-    return new ScmManagerApi(new ApiClient(url, authentication));
+  public String getProtocol() {
+    return client.getProtocol();
   }
 
   public CompletableFuture<HalRepresentation> index() {
@@ -52,7 +52,7 @@ public class ScmManagerApi {
       return client.get(branchesLink.get().getHref(), "application/vnd.scmm-branchCollection+json;v=2", BranchCollection.class)
         .thenApply(branchCollection -> branchCollection.get_embedded().getBranches())
         .thenApply(branches -> {
-            branches.forEach(branch -> branch.setCloneInformation(repository.getCloneInformation()));
+            branches.forEach(branch -> branch.setCloneInformation(repository.getCloneInformation(client.getProtocol())));
             return branches;
           }
         );
@@ -77,7 +77,7 @@ public class ScmManagerApi {
   private Function<Tag, CompletableFuture<Tag>> prepareTag(Repository repository) {
     return tag -> {
       Optional<Link> changesetLink = tag.getLinks().getLinkBy("changeset");
-      tag.setCloneInformation(repository.getCloneInformation());
+      tag.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
       if (tag.getDate() != null) {
         return CompletableFuture.completedFuture(tag);
       } else if (changesetLink.isPresent()) {
@@ -116,7 +116,7 @@ public class ScmManagerApi {
 
   private Function<PullRequest, CompletableFuture<PullRequest>> preparePullRequest(Repository repository) {
     return pullRequest -> {
-      pullRequest.setCloneInformation(repository.getCloneInformation());
+      pullRequest.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
 
       CompletableFuture<Void> source = client.get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setSourceBranch);
       CompletableFuture<Void> target = client.get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setTargetBranch);
@@ -147,7 +147,7 @@ public class ScmManagerApi {
     Optional<Link> link = repository.getLinks().getLinkBy("branches");
     return link.map(value -> client.get(concat(value, encode(name)), "application/vnd.scmm-branch+json;v=2", Branch.class)
       .thenApply(branch -> {
-        branch.setCloneInformation(repository.getCloneInformation());
+        branch.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
         return branch;
       })).orElse(null);
   }

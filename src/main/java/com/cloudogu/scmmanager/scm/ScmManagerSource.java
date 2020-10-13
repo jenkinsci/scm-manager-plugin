@@ -1,8 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
-import com.cloudogu.scmmanager.HttpAuthentication;
-import com.cloudogu.scmmanager.scm.api.Authentications;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
+import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
 import com.google.common.annotations.VisibleForTesting;
@@ -24,7 +23,6 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceEvent;
-import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
@@ -48,8 +46,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ScmManagerSource extends SCMSource {
@@ -65,20 +61,21 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
 
-  private BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory;
-  private Function<SCMSourceOwner, Authentications> authenticationsProvider;
+  // older versions do not have an api factory, if they are unmarshalled from disk
+  // in order to support older versions we have to create the factory on demand
+  @CheckForNull
+  private ScmManagerApiFactory apiFactory;
 
   @DataBoundConstructor
   public ScmManagerSource(String serverUrl, String repository, String credentialsId) {
-    this(serverUrl, repository, credentialsId, ScmManagerApi::create, Authentications::new);
+    this(serverUrl, repository, credentialsId, new ScmManagerApiFactory());
   }
 
   ScmManagerSource(
     String serverUrl,
     String repository,
     String credentialsId,
-    BiFunction<String, HttpAuthentication, ScmManagerApi> apiFactory,
-    Function<SCMSourceOwner, Authentications> authenticationsProvider
+    ScmManagerApiFactory apiFactory
   ) {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
@@ -87,10 +84,7 @@ public class ScmManagerSource extends SCMSource {
     this.namespace = parts[0];
     this.name = parts[1];
     this.type = parts[2];
-
     this.apiFactory = apiFactory;
-    this.authenticationsProvider = authenticationsProvider;
-
     this.linkBuilder = new LinkBuilder(serverUrl, namespace, name);
   }
 
@@ -164,8 +158,10 @@ public class ScmManagerSource extends SCMSource {
   }
 
   private ScmManagerApi createApi() {
-    HttpAuthentication authentication = getAuthenticationsProvider().apply(getOwner()).from(serverUrl, credentialsId);
-    return getApiFactory().apply(serverUrl, authentication);
+    if (apiFactory == null) {
+      apiFactory = new ScmManagerApiFactory();
+    }
+    return apiFactory.create(getOwner(), serverUrl, credentialsId);
   }
 
   @NonNull
@@ -193,20 +189,6 @@ public class ScmManagerSource extends SCMSource {
 
   public String getCredentialsId() {
     return credentialsId;
-  }
-
-  private BiFunction<String, HttpAuthentication, ScmManagerApi> getApiFactory() {
-    if (apiFactory == null) {
-      apiFactory = ScmManagerApi::create;
-    }
-    return apiFactory;
-  }
-
-  private Function<SCMSourceOwner, Authentications> getAuthenticationsProvider() {
-    if (authenticationsProvider == null) {
-      authenticationsProvider = Authentications::new;
-    }
-    return authenticationsProvider;
   }
 
   static {
@@ -266,7 +248,7 @@ public class ScmManagerSource extends SCMSource {
   public static class DescriptorImpl extends ScmManagerSourceDescriptor {
 
     public DescriptorImpl() {
-      super(ScmManagerApi::create, SCMBuilderProvider::isSupported);
+      super(new ScmManagerApiFactory(), SCMBuilderProvider::isSupported);
     }
 
     @Nonnull

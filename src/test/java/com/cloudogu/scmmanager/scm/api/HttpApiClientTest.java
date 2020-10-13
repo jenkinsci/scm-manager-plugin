@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ApiClientTest extends ApiClientTestBase {
+public class HttpApiClientTest extends ApiClientTestBase {
 
   @Test
   public void shouldReturnMockedData() throws InterruptedException, ExecutionException {
@@ -67,21 +67,21 @@ public class ApiClientTest extends ApiClientTestBase {
 
   @Test
   public void shouldTrimServerUrl() {
-    String fixedUrl = ApiClient.fixServerUrl("  http://hitchhiker.com/scm\t").apply("/api");
+    String fixedUrl = HttpApiClient.fixServerUrl("  http://hitchhiker.com/scm\t").apply("/api");
 
     assertThat(fixedUrl).isEqualTo("http://hitchhiker.com/scm/api");
   }
 
   @Test
   public void shouldRemoveTrailingSlashFromServerUrl() {
-    String fixedUrl = ApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("/api");
+    String fixedUrl = HttpApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("/api");
 
     assertThat(fixedUrl).isEqualTo("http://hitchhiker.com/scm/api");
   }
 
   @Test
   public void shouldNotChangeAbsoluteUrl() {
-    String fixedUrl = ApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("http://vogon.vo/destroy");
+    String fixedUrl = HttpApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("http://vogon.vo/destroy");
 
     assertThat(fixedUrl).isEqualTo("http://vogon.vo/destroy");
 
