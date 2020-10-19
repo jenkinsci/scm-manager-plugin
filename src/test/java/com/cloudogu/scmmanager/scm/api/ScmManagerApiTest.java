@@ -46,9 +46,24 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     ScmManagerApi api = new ScmManagerApi(apiClient());
 
     Namespace namespace = new Namespace(
-      linkingTo().single(link("repositories", "/api/v2/repositories/hitchhiker/")).build(),
+      linkingTo().single(link("repositories", "/api/v2/repositories/hitchhiker")).build(),
       "hitchhiker");
     List<Repository> repositories = api.getRepositories(namespace).get();
+
+    assertThat(repositories).hasSize(2);
+    assertThat(repositories)
+      .extracting("namespace")
+      .containsExactly("hitchhiker", "hitchhiker");
+    assertThat(repositories)
+      .extracting("name")
+      .containsExactly("hello-shell", "scm-editor-plugin");
+  }
+
+  @Test
+  public void shouldLoadAllRepositoriesForSingleNamespaceAsString() throws InterruptedException, ExecutionException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    List<Repository> repositories = api.getRepositories("hitchhiker").get();
 
     assertThat(repositories).hasSize(2);
     assertThat(repositories)

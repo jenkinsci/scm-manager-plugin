@@ -45,6 +45,13 @@ public class ScmManagerApi {
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
+  public CompletableFuture<List<Repository>> getRepositories(String namespace) {
+    String url = String.format("/api/v2/repositories/%s", namespace);
+    // TODO pageSize?
+    return client.get(url + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+      .thenApply(collection -> collection.get_embedded().getRepositories());
+  }
+
   public CompletableFuture<List<Repository>> getRepositories(Namespace namespace) {
     Optional<Link> repositoriesLink = namespace.getLinks().getLinkBy("repositories");
     if (repositoriesLink.isPresent()) {

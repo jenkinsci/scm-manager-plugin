@@ -1,6 +1,6 @@
 {
   "request": {
-    "url": "/api/v2/repositories/hitchhiker/?pageSize=2000&sortBy=namespace&sortBy=name",
+    "url": "/api/v2/repositories/hitchhiker?pageSize=2000&sortBy=namespace&sortBy=name",
     "method": "GET",
     "headers": {
       "Accept": {
