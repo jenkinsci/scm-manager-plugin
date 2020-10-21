@@ -82,13 +82,12 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
   @Symbol("scm-manager-svn")
   public static class DescriptorImpl extends ScmManagerSourceDescriptor {
 
-    public static final String DEFAULT_INCLUDES = "trunk,branches/*,tags/*,sandbox/*";
-    public static final String DEFAULT_EXCLUDES = "";
+    public static final String DEFAULT_INCLUDES = Subversion.DEFAULT_INCLUDES;
+    public static final String DEFAULT_EXCLUDES = Subversion.DEFAULT_EXCLUDES;
 
     public DescriptorImpl() {
       super(new ScmManagerApiFactory(), r -> "svn".equals(r.getType()));
     }
-
 
     @Override
     protected ListBoxModel.Option createRepositoryOption(Repository repository) {
