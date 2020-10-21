@@ -52,6 +52,8 @@ public class ScmManagerNavigator extends SCMNavigator {
   private final String serverUrl;
   private final String namespace;
   private final String credentialsId;
+  private final Predicate<String> dependencyChecker;
+  private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
 
   @NonNull
   private List<SCMTrait<? extends SCMTrait<?>>> traits = new ArrayList<>();
@@ -65,14 +67,15 @@ public class ScmManagerNavigator extends SCMNavigator {
 
   @DataBoundConstructor
   public ScmManagerNavigator(String projectName, String serverUrl, String namespace, String credentialsId) {
-    this(projectName, serverUrl, namespace, credentialsId, new ScmManagerApiFactory());
+    this(projectName, serverUrl, namespace, credentialsId, DEFAULT_DEPENDENCY_CHECKER, new ScmManagerApiFactory());
   }
 
-  public ScmManagerNavigator(String projectName, String serverUrl, String namespace, String credentialsId, ScmManagerApiFactory apiFactory) {
+  public ScmManagerNavigator(String projectName, String serverUrl, String namespace, String credentialsId, Predicate<String> dependencyChecker, ScmManagerApiFactory apiFactory) {
     this.projectName = projectName;
     this.serverUrl = serverUrl;
     this.namespace = namespace;
     this.credentialsId = credentialsId;
+    this.dependencyChecker = dependencyChecker;
     this.apiFactory = apiFactory;
   }
 
@@ -135,22 +138,16 @@ public class ScmManagerNavigator extends SCMNavigator {
 
   private List<String> supportedTypes() {
     List<String> types = new ArrayList<>();
-    Jenkins jenkins = Jenkins.get();
-    if (jenkins.getPlugin("git") != null) {
+    if (dependencyChecker.test("git")) {
       types.add("git");
     }
-    if (jenkins.getPlugin("mercurial") != null) {
+    if (dependencyChecker.test("mercurial")) {
       types.add("hg");
     }
-    if (isSubversionEnabled()) {
+    if (dependencyChecker.test("subversion") && isSubversionTraitEnabled()) {
       types.add("svn");
     }
     return Collections.unmodifiableList(types);
-  }
-
-  private boolean isSubversionEnabled() {
-    return Subversion.isSupported()
-      && isSubversionTraitEnabled();
   }
 
   private boolean isSubversionTraitEnabled() {
@@ -263,10 +260,6 @@ public class ScmManagerNavigator extends SCMNavigator {
         .sorted()
         .forEach(n -> model.add(new ListBoxModel.Option(n, n)));
       return model;
-    }
-
-    protected ListBoxModel.Option createNamespaceOption(Namespace namespace) {
-      return new ListBoxModel.Option(namespace.getNamespace(), namespace.getNamespace());
     }
 
     @SuppressWarnings({"unused", "rawtypes"}) // used By stapler, generic hell
