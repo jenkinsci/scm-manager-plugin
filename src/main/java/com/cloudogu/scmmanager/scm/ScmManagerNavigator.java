@@ -218,6 +218,15 @@ public class ScmManagerNavigator extends SCMNavigator {
       return "Namespace";
     }
 
+    static {
+      Icons.register("icon-scm-manager-navigator");
+    }
+
+    @Override
+    public String getIconClassName() {
+      return "icon-scm-manager-navigator";
+    }
+
     @Override
     public ScmManagerNavigator newInstance(String projectName) {
       ScmManagerNavigator scmManagerNavigator = new ScmManagerNavigator(projectName);
