@@ -47,7 +47,7 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
   @NonNull
   @Override
   public String getOriginName() {
-    return getTarget().getName();
+    return getSource().getName();
   }
 
   @NonNull
