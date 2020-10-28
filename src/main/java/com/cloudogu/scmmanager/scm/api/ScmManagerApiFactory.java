@@ -5,12 +5,24 @@ import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredenti
 import com.cloudogu.scmmanager.BasicHttpAuthentication;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.SSHAuthentication;
+import com.google.common.annotations.VisibleForTesting;
 import jenkins.scm.api.SCMSourceOwner;
 
 public class ScmManagerApiFactory {
 
   private static final HttpAuthentication ANONYMOUS_AUTHENTICATION = requestBuilder -> {
   };
+
+  private final CredentialsLookup credentialsLookup;
+
+  public ScmManagerApiFactory() {
+    this(new CredentialsLookup());
+  }
+
+  @VisibleForTesting
+  ScmManagerApiFactory(CredentialsLookup credentialsLookup) {
+    this.credentialsLookup = credentialsLookup;
+  }
 
   public ScmManagerApi anonymous(String serverUrl) {
     return new ScmManagerApi(new HttpApiClient(serverUrl, ANONYMOUS_AUTHENTICATION));
@@ -31,12 +43,12 @@ public class ScmManagerApiFactory {
   }
 
   private ApiClient createHttpApiClient(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    StandardUsernamePasswordCredentials credentials = Credentials.findHttpCredentials(owner, serverUrl, credentialsId);
+    StandardUsernamePasswordCredentials credentials = credentialsLookup.http(owner, serverUrl, credentialsId);
     return new HttpApiClient(serverUrl, BasicHttpAuthentication.from(credentials));
   }
 
   private ApiClient createSshApiClient(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    StandardUsernameCredentials credentials = Credentials.findSshCredentials(owner, serverUrl, credentialsId);
+    StandardUsernameCredentials credentials = credentialsLookup.ssh(owner, serverUrl, credentialsId);
     return new SshApiClient(serverUrl, SSHAuthentication.from(credentials));
   }
 
