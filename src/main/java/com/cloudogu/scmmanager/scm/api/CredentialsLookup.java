@@ -17,13 +17,16 @@ class CredentialsLookup {
   }
 
   public StandardUsernameCredentials ssh(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    Preconditions.checkArgument(serverUrl.startsWith("ssh"), "ssh url is required, receive %s instead", serverUrl);
+    if (!serverUrl.startsWith("ssh")) {
+      throw new IllegalArgumentException(String.format("ssh url is required, receive %s instead", serverUrl));
+    }
     return lookup(StandardUsernameCredentials.class, owner, serverUrl, credentialsId);
   }
 
   public StandardUsernamePasswordCredentials http(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    Preconditions.checkArgument(serverUrl.startsWith("http"), "http url is required, receive %s instead", serverUrl);
-    return lookup(StandardUsernamePasswordCredentials.class, owner, serverUrl, credentialsId);
+    if (!serverUrl.startsWith("http")) {
+      throw new IllegalArgumentException(String.format("http url is required, received %s instead", serverUrl));
+    }    return lookup(StandardUsernamePasswordCredentials.class, owner, serverUrl, credentialsId);
   }
 
   private static <C extends com.cloudbees.plugins.credentials.Credentials> C lookup(Class<C> credentialsType, SCMSourceOwner owner, String serverUrl, String credentialsId) {
