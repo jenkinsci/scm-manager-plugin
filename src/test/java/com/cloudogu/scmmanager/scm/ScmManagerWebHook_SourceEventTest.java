@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,6 +80,27 @@ public class ScmManagerWebHook_SourceEventTest {
       assertThat(argument.isMatch(mockSource("http://localhost/scm", "X"))).isTrue();
       assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isTrue();
       assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+      return true;
+    }));
+  }
+
+  @Test
+  public void shouldDetectEventWithSsh() throws ServletException, IOException {
+    JSONArray identifications = new JSONArray();
+    JSONObject identification = new JSONObject();
+    identification.put("name", "ssh");
+    identification.put("value", "hitchhiker.com:2222");
+    identifications.add(identification);
+    form.put("identifications", identifications);
+
+    HttpResponse httpResponse = hook.doNotify(request);
+
+    httpResponse.generateResponse(request, response, null);
+    verify(response).setStatus(200);
+    verify(hook).fireNow(sourceEventThat(argument -> {
+      assertThat(argument.getPayload().isGlobal()).isTrue();
+      assertThat(argument.isMatch(mockNavigator("ssh://hitchhiker.com:2222/", "hog"))).isTrue();
+      assertThat(argument.isMatch(mockNavigator("http://hitchhiker.com/scm", "hog"))).isFalse();
       return true;
     }));
   }

@@ -8,7 +8,7 @@ import net.sf.json.JSONObject;
 
 public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSourceEvent.Payload> {
 
-  private final String serverUrl;
+  private final ServerIdentification identification;
 
   public static ScmManagerSourceEvent from(JSONObject form) {
     if (form.containsKey("namespace") && form.containsKey("name")) {
@@ -19,12 +19,12 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
   }
 
   ScmManagerSourceEvent(JSONObject form, Payload payload) {
-    this(form.getString("server"), payload);
+    this(new ServerIdentification(form), payload);
   }
 
-  ScmManagerSourceEvent(String serverUrl, Payload payload) {
-    super(Type.CREATED, payload, serverUrl);
-    this.serverUrl = serverUrl;
+  ScmManagerSourceEvent(ServerIdentification identification, Payload payload) {
+    super(Type.CREATED, payload, identification.getServerUrl());
+    this.identification = identification;
   }
 
   @Override
@@ -33,7 +33,7 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
   }
 
   private boolean isMatch(ScmManagerNavigator navigator) {
-    return navigator.getServerUrl().startsWith(serverUrl) && isSpecificMatch(navigator);
+    return identification.matches(navigator.getServerUrl()) && isSpecificMatch(navigator);
   }
 
   abstract boolean isSpecificMatch(ScmManagerNavigator navigator);
@@ -44,9 +44,7 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
   }
 
   private boolean isMatch(@NonNull ScmManagerSource source){
-    return
-      // TODO SSH URLs?
-      source.getServerUrl().startsWith(serverUrl) && isSpecificMatch(source);
+    return identification.matches(source.getServerUrl()) && isSpecificMatch(source);
   }
 
   abstract boolean isSpecificMatch(ScmManagerSource source);

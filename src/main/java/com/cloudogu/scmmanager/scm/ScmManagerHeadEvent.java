@@ -22,21 +22,21 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
   private final String namespace;
   private final String name;
   private final String type;
-  private final String serverUrl;
+  private final ServerIdentification identification;
 
   ScmManagerHeadEvent(Type changeType, JSONObject form) {
     this(changeType, form.getString("namespace"),
       form.getString("name"),
       form.getString("type"),
-      form.getString("server"));
+      new ServerIdentification(form));
   }
 
-  ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, String serverUrl) {
+  ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, ServerIdentification identification) {
     super(changeType, new TriggerPayload(namespace, name), SCMEvent.originOf(Stapler.getCurrentRequest()));
     this.namespace = namespace;
     this.name = name;
     this.type = type;
-    this.serverUrl = serverUrl;
+    this.identification = identification;
   }
 
   @Override
@@ -71,8 +71,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
 
   private boolean isMatch(@NonNull ScmManagerSource source) {
     return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
-    // TODO SSH URLs?
-      && source.getServerUrl().startsWith(serverUrl);
+      && identification.matches(source.getServerUrl());
   }
 
   @Override
