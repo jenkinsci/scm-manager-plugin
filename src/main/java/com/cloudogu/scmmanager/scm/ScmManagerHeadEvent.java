@@ -65,11 +65,13 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
 
   @Override
   public boolean isMatch(@NonNull SCMSource source) {
+    // TODO SVN?
     return source instanceof ScmManagerSource && isMatch((ScmManagerSource) source);
   }
 
   private boolean isMatch(@NonNull ScmManagerSource source) {
     return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
+    // TODO SSH URLs?
       && source.getServerUrl().startsWith(serverUrl);
   }
 

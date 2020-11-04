@@ -18,6 +18,7 @@ import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCategory;
+import jenkins.scm.api.SCMSourceEvent;
 import jenkins.scm.api.SCMSourceObserver;
 import jenkins.scm.api.SCMSourceOwner;
 import jenkins.scm.api.trait.SCMNavigatorRequest;
@@ -45,15 +46,16 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 
 public class ScmManagerNavigator extends SCMNavigator {
 
+  private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
   private final String projectName;
   private final String serverUrl;
   private final String namespace;
   private final String credentialsId;
-  private final Predicate<String> dependencyChecker;
-  private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
+  private Predicate<String> dependencyChecker = DEFAULT_DEPENDENCY_CHECKER;
 
   @NonNull
   private List<SCMTrait<? extends SCMTrait<?>>> traits = new ArrayList<>();
@@ -131,6 +133,15 @@ public class ScmManagerNavigator extends SCMNavigator {
     }
   }
 
+  @Override
+  public void visitSources(SCMSourceObserver observer, SCMSourceEvent<?> event) throws IOException, InterruptedException {
+    if (event instanceof ScmManagerSourceEvent && ((ScmManagerSourceEvent) event).getPayload().isGlobal()) {
+      visitSources(observer);
+    } else {
+      super.visitSources(observer, event);
+    }
+  }
+
   private Predicate<Repository> filterUnsupportedRepositories() {
     List<String> supportedTypes = supportedTypes();
     return repository -> supportedTypes.contains(repository.getType());
@@ -138,16 +149,20 @@ public class ScmManagerNavigator extends SCMNavigator {
 
   private List<String> supportedTypes() {
     List<String> types = new ArrayList<>();
-    if (dependencyChecker.test("git")) {
+    if (getDependencyChecker().test("git")) {
       types.add("git");
     }
-    if (dependencyChecker.test("mercurial")) {
+    if (getDependencyChecker().test("mercurial")) {
       types.add("hg");
     }
-    if (dependencyChecker.test("subversion") && isSubversionTraitEnabled()) {
+    if (getDependencyChecker().test("subversion") && isSubversionTraitEnabled()) {
       types.add("svn");
     }
     return Collections.unmodifiableList(types);
+  }
+
+  private Predicate<String> getDependencyChecker() {
+    return ofNullable(dependencyChecker).orElse(DEFAULT_DEPENDENCY_CHECKER);
   }
 
   private boolean isSubversionTraitEnabled() {

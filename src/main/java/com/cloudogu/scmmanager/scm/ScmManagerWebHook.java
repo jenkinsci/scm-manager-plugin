@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jenkins.scm.api.SCMHeadEvent;
+import jenkins.scm.api.SCMSourceEvent;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
@@ -49,16 +50,38 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   @RequirePOST
   public HttpResponse doNotify(StaplerRequest request) throws ServletException {
     JSONObject form = request.getSubmittedForm();
-    if (!verifyParameters(form, "namespace", "name", "type", "server")) {
-      return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type', 'server'");
+    if (!verifyParameters(form, "server")) {
+      return HttpResponses.errorWithoutStack(400, "requires values for 'server'");
     }
-    fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
-    fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
-    fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
-    fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
-    fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
-    fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
+    if (isNavigatorEvent(form)) {
+      fireSourceEvent(form);
+    } else {
+      if (!verifyParameters(form, "namespace", "name", "type")) {
+        return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type'");
+      }
+      fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
+      fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
+      fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
+      fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
+      fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
+      fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
+
+      if (form.containsKey("createdOrModifiedBranches")) {
+        // the creation or the change of a branch can also lead to a new source for navigators
+        // when a Jenkinsfile has been added. Therefore we have to fire a source event, too
+        fireSourceEvent(form);
+      }
+    }
     return HttpResponses.ok();
+  }
+
+  private boolean isNavigatorEvent(JSONObject form) {
+    return form.containsKey("eventTarget") && "NAVIGATOR".equals(form.getString("eventTarget"));
+  }
+
+  private void fireSourceEvent(JSONObject form) {
+    ScmManagerSourceEvent event = ScmManagerSourceEvent.from(form);
+    fireNow(event);
   }
 
   void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
@@ -77,6 +100,11 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   @VisibleForTesting
   void fireNow(ScmManagerHeadEvent event) {
     SCMHeadEvent.fireNow(event);
+  }
+
+  @VisibleForTesting
+  void fireNow(ScmManagerSourceEvent event) {
+    SCMSourceEvent.fireNow(event);
   }
 
   private boolean verifyParameters(JSONObject form, String... keys) {
