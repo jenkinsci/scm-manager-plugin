@@ -6,7 +6,7 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceEvent;
 import net.sf.json.JSONObject;
 
-public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSourceEvent.Payload> {
+public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSourceEvent.TriggerPayload> {
 
   private final ServerIdentification identification;
 
@@ -18,11 +18,11 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
     }
   }
 
-  ScmManagerSourceEvent(JSONObject form, Payload payload) {
+  ScmManagerSourceEvent(JSONObject form, TriggerPayload payload) {
     this(new ServerIdentification(form), payload);
   }
 
-  ScmManagerSourceEvent(ServerIdentification identification, Payload payload) {
+  ScmManagerSourceEvent(ServerIdentification identification, TriggerPayload payload) {
     super(Type.CREATED, payload, identification.getServerUrl());
     this.identification = identification;
   }
@@ -49,21 +49,41 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
 
   abstract boolean isSpecificMatch(ScmManagerSource source);
 
-  static class Payload {
+  static class TriggerPayload {
     private final boolean global;
+    private final String namespace;
+    private final String name;
 
-    Payload(boolean global) {
-      this.global = global;
+    TriggerPayload() {
+      this(true, null, null);
     }
 
-    public boolean isGlobal() {
-      return global;
+    public TriggerPayload(String namespace, String name) {
+      this(false, namespace, name);
+    }
+
+    public TriggerPayload(boolean global, String namespace, String name){
+        this.global = global;
+        this.namespace = namespace;
+        this.name = name;
+      }
+
+      public boolean isGlobal () {
+        return global;
+      }
+
+    public String getNamespace() {
+      return namespace;
+    }
+
+    public String getName() {
+      return name;
     }
   }
 
   static class ScmManagerGlobalSourceEvent extends ScmManagerSourceEvent {
     public ScmManagerGlobalSourceEvent(JSONObject form) {
-      super(form, new Payload(true));
+      super(form, new TriggerPayload());
     }
 
     @NonNull
@@ -84,29 +104,25 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
   }
 
   static class ScmManagerSingleSourceEvent extends ScmManagerSourceEvent {
-    private final String namespace;
-    private final String name;
 
     public ScmManagerSingleSourceEvent(JSONObject form) {
-      super(form, new Payload(false));
-      this.namespace = form.getString("namespace");
-      this.name = form.getString("name");
+      super(form, new TriggerPayload(form.getString("namespace"), form.getString("name")));
     }
 
     @NonNull
     @Override
     public String getSourceName () {
-      return name;
+      return getPayload().getName();
     }
 
     @Override
     boolean isSpecificMatch(ScmManagerNavigator navigator) {
-      return navigator.getNamespace().equals(namespace);
+      return navigator.getNamespace().equals(getPayload().getNamespace());
     }
 
     @Override
     boolean isSpecificMatch(ScmManagerSource source) {
-      return source.getName().equals(name);
+      return source.getName().equals(getPayload().getName());
     }
   }
 }
