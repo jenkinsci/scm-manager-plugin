@@ -20,13 +20,13 @@ This plugin has the following features:
    
    To create such a pipeline, select "New Item" on the Jenkins top level page, then enter a name and select "Multibranch
    Pipeline".
-   ![](docs/assets/select-multibranch-pipeline.png)
+   ![](docs/de/assets/select-multibranch-pipeline.png)
    In the configuration form for this item, select the matching "SCM-Manager" entry for your repository type in the "Add
    source" dropdown in the section "Branch Sources".
-   ![](docs/assets/config-multibranch-pipeline-source.png)
+   ![](docs/de/assets/config-multibranch-pipeline-source.png)
    In the new configuration enter the base URL of your SCM-Manager instance and select according credentials. This
    plugin will then load a list of all available repositories you can select from.
-   ![](docs/assets/config-multibranch-pipeline.png)
+   ![](docs/de/assets/config-multibranch-pipeline.png)
    Finally you can select behaviours where you can choose for example, whether branches, tags or pull requests shall be
    build.
 - If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager namespace" jobs. These
@@ -36,10 +36,10 @@ This plugin has the following features:
    
    To create such a folder for a complete namespace, select "New Item" on the Jenkins top level page, then enter a name
    and select "SCM-Manager Namespace".
-   ![](docs/assets/select-namespace-item.png)
+   ![](docs/de/assets/select-namespace-item.png)
    In the configuration form for this item, enter the base URL of your SCM-Manager instance and select according
    credentials. This plugin will then load a list of all available namespaces you can select from.
-   ![](docs/assets/config-namespace-item.png)
+   ![](docs/de/assets/config-namespace-item.png)
    Finally you can select behaviours where you can choose for example, whether branches, tags or pull requests shall be
    build.
 
