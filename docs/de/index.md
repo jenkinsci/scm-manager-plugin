@@ -3,7 +3,7 @@ title: Dokumentation
 subtitle: Dokumentation des SCM-Manager Plugins für Jenkins
 ---
 
-Das SCM-Manager-Plugin für den Jenkins bietet mehrere Wege der Verbindung eines SCM-Managers mit Jenkins, wie die
+Das SCM-Manager-Plugin für den Jenkins bietet mehrere Möglichkeiten der Kommunikation eines SCM-Managers mit Jenkins, wie die
 Anzeige von Ergebnissen der Builds, sog. "Multibranch Pipelines", Ordner für komplette Namespaces und verschiedene
 Navigationen.
 
@@ -27,24 +27,23 @@ In der darauf folgenden Konfiguration muss in der Sektion "Branch Sources" über
 Typen des Repositories passende "SCM-Manager" Eintrag gewählt werden.
 ![](assets/config-multibranch-pipeline-source.png)
 In dem neuen Abschnitt kann nun die Base URL der SCM-Manager-Instanz eingetragen sowie die passende Authentifizierung
-gewählt werden. Das Plugin ládt nun eine Liste aller zur Verfügung stehenden Repositories, aus der eines gewählt
-werden kann.
+gewählt werden. Anschließend wird eine Liste aller zur Verfügung stehenden Repositories geladen, von denen eines gewählt
+werden muss.
 ![](assets/config-multibranch-pipeline.png)
 Zum Abschluss können verschiedene Verhaltensweisen gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
 ### Namespaces
 Sollen für alle Repositories eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein "SCM-Manager
-namespace" Job genutzt werden. Dieser prüft alle Repositories in einem gegebenen Namespace und erzeugt entsprechende
-Multibranch Pipelines, wenn in einem Repository ein `Jenkinsfile` gefunden wurde. Wurde ind dem Namespace ein neues
-passendes Repository erzeugt, wird automatisch eine neue Pipeline erstellt.
+Namespace" Job genutzt werden. Dieser prüft alle Repositories in einem gegebenen Namespace und erzeugt entsprechende
+Multibranch Pipelines, wenn im Root Verzeichnis des Repositories ein `Jenkinsfile` gefunden wurde. Wird in dem Namespace ein passendes neues Repository erzeugt, wird automatisch der dazugehörige Build Job im Jenkins erstellt.
 Um nicht mehr vorhandene Build Jobs zu entfernen, kann manuell "Scan Namespace Now" gestartet werden.
 
 Um einen solchen Ordner für einen kompletten Namespace zu erstellen, muss zunächst "New Item" auf der Startseite
 von Jenkins gewählt werden. Danach kann ein Name eingetragen und der Punkt "SCM-Manager Namespace" gewählt werden.
 ![](assets/select-namespace-item.png)
-In der Konfiguration muss nun die Base URL der SCM-Manager Instanz eingetragen und passende Authentifizierung
-gewählt werden. Das Plugin lädt daraufhin alle verfügbaren Namesaces, von denen einer gewählt werden kann.
+In der Konfiguration muss nun die Instanz URL des SCM-Manager Servers eingetragen und eine gültige Authentifizierung
+gewählt werden. Das Plugin lädt daraufhin alle verfügbaren Namespaces, von denen einer gewählt werden kann.
 ![](assets/config-namespace-item.png)
 Abschließend können verschiedene Verhaltensweise gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
@@ -66,4 +65,7 @@ Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seite
 ## Voraussetzungen
 
 Für die volle Funktionalität wird ein SCM-Manager v2 mit installiertem
-[jenkins Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) benötigt.
+[jenkins Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) für das automatische Starten der Builds sowie
+dem [CI Plugin](https://www.scm-manager.org/plugins/scm-ci-plugin/) zur Anzeige der Build Status im SCM-Manager
+benötigt. Zudem können mit dem [SSH Plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/) Verbindungen zwischen
+Jenkins und SCM-Manager per SSH erzeugt werden.
