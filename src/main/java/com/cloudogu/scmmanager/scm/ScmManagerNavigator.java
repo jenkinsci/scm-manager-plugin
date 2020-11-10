@@ -250,8 +250,8 @@ public class ScmManagerNavigator extends SCMNavigator {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public ListBoxModel doFillCredentialsIdItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) {
-      return ConnectionConfiguration.fillCredentialsIdItems(context, value);
+    public ListBoxModel doFillCredentialsIdItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
+      return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
 
     @SuppressWarnings("unused") // used By stapler

@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -15,8 +16,6 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.scm.api.SCMSourceOwner;
 import org.acegisecurity.Authentication;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.QueryParameter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 class ConnectionConfiguration {
 
-  static ListBoxModel fillCredentialsIdItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) {
+  static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
     if (context == null || !context.hasPermission(Item.CONFIGURE)) {
       return new StandardUsernameListBoxModel().includeCurrentValue(value);
     }
@@ -34,8 +33,19 @@ class ConnectionConfiguration {
       : ACL.SYSTEM;
     return new StandardUsernameListBoxModel()
       .includeEmptyValue()
-      .includeAs(authentication, context, StandardUsernameCredentials.class, URIRequirementBuilder.fromUri(value).build())
+      .includeAs(authentication, context, findSupportedCredentials(serverUrl), URIRequirementBuilder.fromUri(value).build())
       .includeCurrentValue(value);
+  }
+
+  private static Class<? extends StandardUsernameCredentials> findSupportedCredentials(String serverUrl) {
+    Class<? extends StandardUsernameCredentials> supportedCredentials;
+    if (serverUrl.startsWith("ssh")) {
+      supportedCredentials = StandardUsernameCredentials.class;
+    } else {
+      // fallback for http
+      supportedCredentials = StandardUsernamePasswordCredentials.class;
+    }
+    return supportedCredentials;
   }
 
   static FormValidation validateCredentialsId(ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value) throws InterruptedException, ExecutionException {
