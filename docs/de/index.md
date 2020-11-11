@@ -15,9 +15,9 @@ oder `FAILURE`).
 
 ### Multibranch Pipelines
 Für sog. "**Multibranch Pipelines**" gibt es eine neue "Branch Source" names "SCM-Manager", sodass Pipelines in Jenkins
-erstellt werden können, die selbständig branches, tags and pull requests in Repositories finden, die im SCM-Manager
+erstellt werden können, die selbständig Branches, Tags und Pull Requests in Repositories finden, die im SCM-Manager
 verwaltet werden. Im Zusammenspiel mit dem
-[jenkins plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) im SCM-Manager erhält Jenkins sog. Hooks
+[Jenkins Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) im SCM-Manager erhält Jenkins sog. Hooks
 bei jeder relevanten Änderungen und stößt neue Builds an.
 
 Um eine solche Pipeline zu erstellen, muss zunächst "New Item" auf der Startseite von Jenkins gewählt werden. Danach
