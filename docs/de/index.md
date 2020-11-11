@@ -9,8 +9,8 @@ Navigationen.
 
 ### Build Ergebnisse
 Sobald das Plugin im Jenkins installiert wurde, werden automatisch Jobs erkannt, welche den SCM-Manager 2 nutzen.
-Startet ein solcher Job, sendet das Plugin einen `PENDING` Status für die entsprechende Revision and den SCM-Manager.
-Nachdem der Build abgeschlossen ist, wird das Ergebnis als Status an den SCM-Manager gesendet (`SUCCESS`, `UNSTABLE`
+Startet ein solcher Job, sendet das Plugin einen `PENDING` Status für die entsprechende Revision an den SCM-Manager.
+Nachdem der Build Job abgeschlossen ist, wird das Ergebnis als Status an den SCM-Manager gesendet (`SUCCESS`, `UNSTABLE`
 oder `FAILURE`).
 
 ### Multibranch Pipelines
