@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.api;
 
-import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
@@ -35,10 +34,32 @@ public class ScmManagerApi {
     return client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
   }
 
+  public CompletableFuture<List<Namespace>> getNamespaces() {
+    return client.get("/api/v2/namespaces", "application/vnd.scmm-namespaceCollection+json;v=2", NamespaceCollection.class)
+      .thenApply(collection -> collection.get_embedded().getNamespaces());
+  }
+
   public CompletableFuture<List<Repository>> getRepositories() {
     // TODO pageSize?
     return client.get("/api/v2/repositories?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
+  }
+
+  public CompletableFuture<List<Repository>> getRepositories(String namespace) {
+    String url = String.format("/api/v2/repositories/%s", namespace);
+    // TODO pageSize?
+    return client.get(url + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+      .thenApply(collection -> collection.get_embedded().getRepositories());
+  }
+
+  public CompletableFuture<List<Repository>> getRepositories(Namespace namespace) {
+    Optional<Link> repositoriesLink = namespace.getLinks().getLinkBy("repositories");
+    if (repositoriesLink.isPresent()) {
+      // TODO pageSize?
+      return client.get(repositoriesLink.get().getHref() + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+        .thenApply(collection -> collection.get_embedded().getRepositories());
+    }
+    return CompletableFuture.completedFuture(emptyList());
   }
 
   public CompletableFuture<Repository> getRepository(String namespace, String name) {
@@ -206,7 +227,26 @@ public class ScmManagerApi {
     }
   }
 
+  private static class NamespaceCollection {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
+    private EmbeddedNamespaces _embedded;
+
+    public EmbeddedNamespaces get_embedded() {
+      return _embedded;
+    }
+  }
+
+  private static class EmbeddedNamespaces {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
+    private List<Namespace> namespaces;
+
+    public List<Namespace> getNamespaces() {
+      return namespaces;
+    }
+  }
+
   private static class RepositoryCollection {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private EmbeddedRepositories _embedded;
 
     public EmbeddedRepositories get_embedded() {
@@ -224,6 +264,7 @@ public class ScmManagerApi {
   }
 
   private static class BranchCollection {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private EmbeddedBranches _embedded;
 
     public EmbeddedBranches get_embedded() {
@@ -241,6 +282,7 @@ public class ScmManagerApi {
   }
 
   private static class TagCollection {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private EmbeddedTags _embedded;
 
     public EmbeddedTags get_embedded() {
@@ -258,6 +300,7 @@ public class ScmManagerApi {
   }
 
   private static class PullRequestCollection {
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private EmbeddedPullRequests _embedded;
 
     public EmbeddedPullRequests get_embedded() {

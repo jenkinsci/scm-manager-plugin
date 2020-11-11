@@ -4,9 +4,7 @@ import jenkins.scm.api.SCMFile;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import javax.tools.FileObject;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static de.otto.edison.hal.Link.link;
@@ -15,6 +13,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 public class ScmManagerApiTest extends ApiClientTestBase {
+
+  @Test
+  public void shouldLoadAllNamespaces() throws InterruptedException, ExecutionException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    List<Namespace> namespaces = api.getNamespaces().get();
+
+    assertThat(namespaces).hasSize(2);
+    assertThat(namespaces)
+      .extracting("namespace")
+      .containsExactly("hitchhiker", "guide");
+  }
 
   @Test
   public void shouldLoadAllRepositories() throws InterruptedException, ExecutionException {
@@ -26,6 +36,39 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     assertThat(repositories)
       .extracting("namespace")
       .containsExactly("jenkins-plugin", "plugins");
+    assertThat(repositories)
+      .extracting("name")
+      .containsExactly("hello-shell", "scm-editor-plugin");
+  }
+
+  @Test
+  public void shouldLoadAllRepositoriesForSingleNamespace() throws InterruptedException, ExecutionException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    Namespace namespace = new Namespace(
+      linkingTo().single(link("repositories", "/api/v2/repositories/hitchhiker")).build(),
+      "hitchhiker");
+    List<Repository> repositories = api.getRepositories(namespace).get();
+
+    assertThat(repositories).hasSize(2);
+    assertThat(repositories)
+      .extracting("namespace")
+      .containsExactly("hitchhiker", "hitchhiker");
+    assertThat(repositories)
+      .extracting("name")
+      .containsExactly("hello-shell", "scm-editor-plugin");
+  }
+
+  @Test
+  public void shouldLoadAllRepositoriesForSingleNamespaceAsString() throws InterruptedException, ExecutionException {
+    ScmManagerApi api = new ScmManagerApi(apiClient());
+
+    List<Repository> repositories = api.getRepositories("hitchhiker").get();
+
+    assertThat(repositories).hasSize(2);
+    assertThat(repositories)
+      .extracting("namespace")
+      .containsExactly("hitchhiker", "hitchhiker");
     assertThat(repositories)
       .extracting("name")
       .containsExactly("hello-shell", "scm-editor-plugin");

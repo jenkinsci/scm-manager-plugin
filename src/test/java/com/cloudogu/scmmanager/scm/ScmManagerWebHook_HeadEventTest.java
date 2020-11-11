@@ -13,8 +13,7 @@ import org.junit.runner.RunWith;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -31,15 +30,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ScmManagerWebHookTest {
+public class ScmManagerWebHook_HeadEventTest {
 
   @Mock
   StaplerRequest request;
   @Mock
   StaplerResponse response;
-
-  @Captor
-  ArgumentCaptor<ScmManagerHeadEvent> eventCaptor;
 
   JSONObject form = new JSONObject();
 
@@ -113,7 +109,7 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
@@ -132,11 +128,27 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
       assertThat(heads).extracting("name").containsExactly("develop");
+      return true;
+    }));
+  }
+
+  @Test
+  public void shouldTriggerSourceEventForCreatedOrModifiedBranches() throws ServletException, IOException {
+    JSONObject branch = new JSONObject();
+    branch.put("name", "develop");
+    form.put("createdOrModifiedBranches", array(branch));
+
+    HttpResponse httpResponse = hook.doNotify(request);
+
+    httpResponse.generateResponse(request, response, null);
+    verify(response).setStatus(200);
+    verify(hook).fireNow(sourceEventThat(argument -> {
+      assertThat(argument.getPayload().isGlobal()).isFalse();
       return true;
     }));
   }
@@ -151,7 +163,7 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
@@ -170,7 +182,7 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
@@ -191,7 +203,7 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
@@ -214,7 +226,7 @@ public class ScmManagerWebHookTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(argThat(argument -> {
+    verify(hook).fireNow(headEventThat(argument -> {
       Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
       assertThat(heads).hasSize(1);
       assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
@@ -223,6 +235,14 @@ public class ScmManagerWebHookTest {
       assertThat(heads).extracting("target.name").containsExactly("develop");
       return true;
     }));
+  }
+
+  private ScmManagerHeadEvent headEventThat(ArgumentMatcher<ScmManagerHeadEvent> assertion) {
+    return argThat(assertion);
+  }
+
+  private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {
+    return argThat(assertion);
   }
 
   private JSONArray array(JSONObject branch) {
