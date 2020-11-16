@@ -22,29 +22,40 @@ bei jeder relevanten Änderungen und stößt neue Builds an.
 
 Um eine solche Pipeline zu erstellen, muss zunächst "New Item" auf der Startseite von Jenkins gewählt werden. Danach
 muss ein Name eingetragen und der Typ "Multibranch Pipeline" gewählt werden.
-![](assets/select-multibranch-pipeline.png)
+
+![How to select a multibranch pipeline](assets/select-multibranch-pipeline.png)
+
 In der darauf folgenden Konfiguration muss in der Sektion "Branch Sources" über das Drop-Down "Add source" der zu dem
 Typen des Repositories passende "SCM-Manager" Eintrag gewählt werden.
-![](assets/config-multibranch-pipeline-source.png)
+
+![How to select a multibranch pipeline source](assets/config-multibranch-pipeline-source.png)
+
 In dem neuen Abschnitt kann nun die Base URL der SCM-Manager-Instanz eingetragen sowie die passende Authentifizierung
 gewählt werden. Anschließend wird eine Liste aller zur Verfügung stehenden Repositories geladen, von denen eines gewählt
 werden muss.
-![](assets/config-multibranch-pipeline.png)
+
+![Example of a config for a multibranch pipeline](assets/config-multibranch-pipeline.png)
+
 Zum Abschluss können verschiedene Verhaltensweisen gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
 ### Namespaces
 Sollen für alle Repositories eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein "SCM-Manager
 Namespace" Job genutzt werden. Dieser prüft alle Repositories in einem gegebenen Namespace und erzeugt entsprechende
-Multibranch Pipelines, wenn im Root Verzeichnis des Repositories ein `Jenkinsfile` gefunden wurde. Wird in dem Namespace ein passendes neues Repository erzeugt, wird automatisch der dazugehörige Build Job im Jenkins erstellt.
+Multibranch Pipelines, wenn im Root Verzeichnis des Repositories ein `Jenkinsfile` gefunden wurde. Wird in dem Namespace
+ein passendes neues Repository erzeugt, wird automatisch der dazugehörige Build Job im Jenkins erstellt.
 Um nicht mehr vorhandene Build Jobs zu entfernen, kann manuell "Scan Namespace Now" gestartet werden.
 
 Um einen solchen Ordner für einen kompletten Namespace zu erstellen, muss zunächst "New Item" auf der Startseite
 von Jenkins gewählt werden. Danach kann ein Name eingetragen und der Punkt "SCM-Manager Namespace" gewählt werden.
-![](assets/select-namespace-item.png)
+
+![How to select a namespace item](assets/select-namespace-item.png)
+
 In der Konfiguration muss nun die Instanz URL des SCM-Manager Servers eingetragen und eine gültige Authentifizierung
 gewählt werden. Das Plugin lädt daraufhin alle verfügbaren Namespaces, von denen einer gewählt werden kann.
-![](assets/config-namespace-item.png)
+
+![Example of a config for a namespace item](assets/config-namespace-item.png)
+
 Abschließend können verschiedene Verhaltensweise gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
