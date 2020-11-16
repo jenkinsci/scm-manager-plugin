@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudogu.scmmanager.scm.api.ExecutionExceptions;
 import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
@@ -266,15 +267,17 @@ public class ScmManagerNavigator extends SCMNavigator {
 
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillNamespaceItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
-      ListBoxModel model = new ListBoxModel();
       if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
-        if (!Strings.isNullOrEmpty(value)) {
-          model.add(value);
-        }
-        return model;
+        return createEmptyNamespaceSelect(value);
       }
 
-      ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
+      ScmManagerApi api = null;
+      try {
+        api = apiFactory.create(context, serverUrl, credentialsId);
+      } catch (CredentialsUnavailableException e) {
+        return createEmptyNamespaceSelect(value);
+      }
+      ListBoxModel model = new ListBoxModel();
       api
         .getNamespaces()
         .exceptionally(e -> emptyList())
@@ -283,6 +286,14 @@ public class ScmManagerNavigator extends SCMNavigator {
         .map(Namespace::getNamespace)
         .sorted()
         .forEach(n -> model.add(new ListBoxModel.Option(n, n)));
+      return model;
+    }
+
+    private ListBoxModel createEmptyNamespaceSelect(String value) {
+      ListBoxModel model = new ListBoxModel();
+      if (!Strings.isNullOrEmpty(value)) {
+        model.add(value);
+      }
       return model;
     }
 

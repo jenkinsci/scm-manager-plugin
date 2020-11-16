@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
@@ -55,7 +56,12 @@ class ConnectionConfiguration {
     if (Strings.isNullOrEmpty(value)) {
       return FormValidation.error("credentials are required");
     }
-    ScmManagerApi client = apiFactory.create(context, serverUrl, value);
+    ScmManagerApi client;
+    try {
+      client = apiFactory.create(context, serverUrl, value);
+    } catch (CredentialsUnavailableException e) {
+      return FormValidation.error("credentials not valid for connection type");
+    }
     CompletableFuture<HalRepresentation> future = client.index();
     return future
       .thenApply(index -> {
