@@ -10,6 +10,9 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class LinkBuilder implements Serializable {
 
@@ -52,9 +55,19 @@ public class LinkBuilder implements Serializable {
     if (head instanceof ScmManagerPullRequestHead) {
       return concat(url, "pull-request", ((ScmManagerPullRequestHead) head).getId());
     } else if (head instanceof ScmManagerHead) {
-      return sources(head.getName());
+      String encode = encodeForUrl(head);
+      return sources(encode);
     } else {
       throw new IllegalArgumentException("unknown type of head " + head);
+    }
+  }
+
+  @SuppressWarnings("java:S112") // The exception caught here can never be thrown
+  private String encodeForUrl(SCMHead head) {
+    try {
+      return URLEncoder.encode(head.getName(), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e); // this should not happen because we use StandardCharsets
     }
   }
 
