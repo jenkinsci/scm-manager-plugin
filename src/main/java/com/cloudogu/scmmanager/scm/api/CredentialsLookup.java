@@ -26,7 +26,8 @@ class CredentialsLookup {
   public StandardUsernamePasswordCredentials http(SCMSourceOwner owner, String serverUrl, String credentialsId) {
     if (!serverUrl.startsWith("http")) {
       throw new IllegalArgumentException(String.format("http url is required, received %s instead", serverUrl));
-    }    return lookup(StandardUsernamePasswordCredentials.class, owner, serverUrl, credentialsId);
+    }
+    return lookup(StandardUsernamePasswordCredentials.class, owner, serverUrl, credentialsId);
   }
 
   private static <C extends com.cloudbees.plugins.credentials.Credentials> C lookup(Class<C> credentialsType, SCMSourceOwner owner, String serverUrl, String credentialsId) {
