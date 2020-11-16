@@ -59,4 +59,8 @@ public class HttpApiClient extends ApiClient {
     return execute(requestBuilder, type);
   }
 
+  @Override
+  public String getBaseUrl() {
+    return urlModifier.apply("");
+  }
 }

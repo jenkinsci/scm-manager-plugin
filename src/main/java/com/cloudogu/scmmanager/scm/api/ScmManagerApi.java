@@ -213,6 +213,10 @@ public class ScmManagerApi {
     return builder.toString();
   }
 
+  public String getBaseUrl() {
+    return client.getBaseUrl();
+  }
+
   private static class FileObject {
 
     private String path;

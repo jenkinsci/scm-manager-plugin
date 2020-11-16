@@ -86,6 +86,7 @@ public class ScmManagerSourceTest {
   @Before
   public void initMocks() throws IOException, InterruptedException {
     when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent")).thenReturn(api);
+    when(api.getBaseUrl()).thenReturn("https://hitchhiker.com/scm");
     source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiFactory);
     source.setOwner(scmSourceOwner);
     captureProcess();

@@ -26,6 +26,8 @@ public abstract class ApiClient {
 
   public abstract <T> CompletableFuture<T> get(String url, String contentType, Class<T> type);
 
+  public abstract String getBaseUrl();
+
   protected <T> CompletableFuture<T> execute(AsyncHttpClient.BoundRequestBuilder requestBuilder, Class<T> type) {
     CompletableFuture<T> future = new CompletableFuture<>();
     requestBuilder.execute(new AsyncCompletionHandler<Response>() {
@@ -52,5 +54,4 @@ public abstract class ApiClient {
 
     return future;
   }
-
 }

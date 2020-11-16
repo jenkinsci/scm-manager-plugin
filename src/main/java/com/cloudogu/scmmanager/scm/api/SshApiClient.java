@@ -67,6 +67,11 @@ public class SshApiClient extends ApiClient {
       });
   }
 
+  @Override
+  public String getBaseUrl() {
+    return createBaseUrl(fetcher.get().getApiUrl());
+  }
+
   @VisibleForTesting
   static String createApiUrl(String apiUrl, String url) {
     if (url.startsWith("http")) {
