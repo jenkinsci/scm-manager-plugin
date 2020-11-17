@@ -56,7 +56,7 @@ public class ScmManagerSource extends SCMSource {
   private final String type;
   private final String credentialsId;
 
-  private final LinkBuilder linkBuilder;
+  private LinkBuilder linkBuilder;
 
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
@@ -85,7 +85,6 @@ public class ScmManagerSource extends SCMSource {
     this.name = parts[1];
     this.type = parts[2];
     this.apiFactory = apiFactory;
-    this.linkBuilder = new LinkBuilder(serverUrl, namespace, name);
   }
 
   @NonNull
@@ -169,7 +168,7 @@ public class ScmManagerSource extends SCMSource {
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
     if (head instanceof ScmManagerHead) {
       SCMBuilderProvider.Context ctx = new SCMBuilderProvider.Context(
-        linkBuilder,
+        getLinkBuilder(),
         (ScmManagerHead) head,
         revision,
         credentialsId
@@ -199,7 +198,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", linkBuilder.create(revision))
+      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(revision))
     );
   }
 
@@ -207,7 +206,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", linkBuilder.create(head))
+      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(head))
     );
   }
 
@@ -215,7 +214,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", linkBuilder.repo())
+      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().repo())
     );
   }
 
@@ -241,6 +240,13 @@ public class ScmManagerSource extends SCMSource {
       return PullRequestDiscoveryTrait.class;
     }
     return BranchDiscoveryTrait.class;
+  }
+
+  private LinkBuilder getLinkBuilder() {
+    if (linkBuilder == null) {
+      linkBuilder = new LinkBuilder(createApi().getBaseUrl(), namespace, name);
+    }
+    return linkBuilder;
   }
 
   @Extension
