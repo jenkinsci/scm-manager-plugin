@@ -41,6 +41,12 @@ public class LinkBuilderTest {
   }
 
   @Test
+  public void shouldEscapeBranchNameInLink() {
+    String link = builder.create(branch("feature/some/nice/one"));
+    assertThat(link).isEqualTo(PREFIX + "/code/sources/feature%2Fsome%2Fnice%2Fone");
+  }
+
+  @Test
   public void shouldCreateTagLink() {
     String link = builder.create(tag("42.0"));
     assertThat(link).isEqualTo(PREFIX + "/code/sources/42.0");

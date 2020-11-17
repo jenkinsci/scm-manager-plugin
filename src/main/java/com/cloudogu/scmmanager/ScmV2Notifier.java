@@ -114,7 +114,7 @@ public class ScmV2Notifier implements Notifier {
       namespaceAndName.getName(),
       revision,
       buildStatus.getType(),
-      URLEncoder.encode(buildStatus.getName(), "UTF-8")
+      URLEncoder.encode(buildStatus.getName(), StandardCharsets.UTF_8.name())
     );
   }
 
