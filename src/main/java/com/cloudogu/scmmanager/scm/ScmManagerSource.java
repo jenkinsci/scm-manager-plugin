@@ -31,7 +31,9 @@ import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import jenkins.scm.impl.form.NamedArrayList;
 import jenkins.scm.impl.trait.Discovery;
+import jenkins.scm.impl.trait.RegexSCMHeadFilterTrait;
 import jenkins.scm.impl.trait.Selection;
+import jenkins.scm.impl.trait.WildcardSCMHeadFilterTrait;
 import jenkins.util.NonLocalizable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -295,6 +297,8 @@ public class ScmManagerSource extends SCMSource {
       for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
         dedup.addAll(provider.getTraitDescriptors(this));
       }
+      dedup.add(new WildcardSCMHeadFilterTrait.DescriptorImpl());
+      dedup.add(new RegexSCMHeadFilterTrait.DescriptorImpl());
       return new ArrayList<>(dedup);
     }
 
