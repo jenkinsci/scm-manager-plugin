@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Rule;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,15 +40,34 @@ public class ScmManagerApiFactoryTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void shouldCreateHttpApi() {
-    when(credentialsLookup.http(owner, "https://scm.hitchhiker.com", "scm-creds")).thenReturn(credentials);
+    CredentialsLookup.Lookup<StandardUsernamePasswordCredentials> lookup = mock(CredentialsLookup.Lookup.class);
+    when(lookup.lookup(owner)).thenReturn(credentials);
+    when(credentialsLookup.http("https://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);
+
     ScmManagerApi api = apiFactory.create(owner, "https://scm.hitchhiker.com", "scm-creds");
     assertThat(api.getProtocol()).isEqualTo("http");
   }
 
   @Test
+  @SuppressWarnings("unchecked")
+  public void shouldCreateHttpApiFromItemGroup() {
+    CredentialsLookup.Lookup<StandardUsernamePasswordCredentials> lookup = mock(CredentialsLookup.Lookup.class);
+    when(lookup.lookup(jenkinsRule.getInstance())).thenReturn(credentials);
+    when(credentialsLookup.http("https://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);
+
+    ScmManagerApi api = apiFactory.create(jenkinsRule.getInstance(), "https://scm.hitchhiker.com", "scm-creds");
+    assertThat(api.getProtocol()).isEqualTo("http");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   public void shouldCreateSshApi() {
-    when(credentialsLookup.http(owner, "ssh://scm.hitchhiker.com", "scm-creds")).thenReturn(credentials);
+    CredentialsLookup.Lookup<StandardUsernameCredentials> lookup = mock(CredentialsLookup.Lookup.class);
+    when(lookup.lookup(owner)).thenReturn(credentials);
+    when(credentialsLookup.ssh("ssh://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);
+
     ScmManagerApi api = apiFactory.create(owner, "ssh://scm.hitchhiker.com", "scm-creds");
     assertThat(api.getProtocol()).isEqualTo("ssh");
   }
