@@ -79,7 +79,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
   }
 
   @Extension(optional = true)
-  @Symbol("scm-manager-svn")
+  @Symbol("scmManagerSvn")
   public static class DescriptorImpl extends ScmManagerSourceDescriptor {
 
     public static final String DEFAULT_INCLUDES = Subversion.DEFAULT_INCLUDES;

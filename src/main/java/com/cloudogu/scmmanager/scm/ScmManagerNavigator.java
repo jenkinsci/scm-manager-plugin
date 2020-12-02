@@ -211,7 +211,7 @@ public class ScmManagerNavigator extends SCMNavigator {
   }
 
   @Extension
-  @Symbol("scm-manager")
+  @Symbol("scmManager")
   public static class DescriptorImpl extends SCMNavigatorDescriptor {
 
     private final ScmManagerApiFactory apiFactory;

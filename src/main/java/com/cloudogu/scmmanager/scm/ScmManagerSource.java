@@ -250,7 +250,7 @@ public class ScmManagerSource extends SCMSource {
   }
 
   @Extension
-  @Symbol("scm-manager")
+  @Symbol("scmManager")
   public static class DescriptorImpl extends ScmManagerSourceDescriptor {
 
     public DescriptorImpl() {
