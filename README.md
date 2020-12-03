@@ -34,6 +34,49 @@ plugin will then load a list of all available repositories you can select from.
 Finally you can select behaviours where you can choose for example, whether branches, tags or pull requests shall be
 build.
 
+#### JobDSL
+
+In order to create a SCM-Manager Mercurial or Git repository with the Jenkins JobDSL the following syntax can be used:
+
+```groovy
+multibranchPipelineJob('heart-of-gold') {
+  branchSources {
+    scmManager {
+      id('spaceships/heart-of-gold')
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      repository('spaceships/heart-of-gold')
+      discoverBranches(true)
+      discoverPullRequest(true)
+      discoverTags(false)
+    }
+  }
+}
+```
+
+The parameters `discoverBranches`, `discoverPullRequest` und `discoverTags` are optional 
+and describe which heads of the repository are build.
+The example shows the default values.
+
+For a Subversion repository have a look at the following example:
+
+```groovy
+multibranchPipelineJob('heart-of-gold') {
+  branchSources {
+    scmManagerSvn {
+      id('spaceships/heart-of-gold')
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      repository('spaceships/heart-of-gold')
+      includes("trunk,branches/*,tags/*,sandbox/*")
+      excludes("")
+    }
+  }
+}
+```
+The parameters for `includes` und `excludes` are optional and describe which directories of the repository are build.
+The example shows the default values.
+
 ### Namespaces
 If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager namespace" jobs. These
 will scan all repositories in the given namespace and create multibranch pipelines for each repository where a

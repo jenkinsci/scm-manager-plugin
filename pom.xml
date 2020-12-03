@@ -173,6 +173,15 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- improve jobdsl syntax -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>job-dsl</artifactId>
+      <version>1.77</version>
+      <optional>true</optional>
+    </dependency>
+
   </dependencies>
 
   <!-- required for RequireUpperBoundDeps -->
@@ -220,6 +229,12 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>2.10.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>script-security</artifactId>
+        <version>1.54</version>
       </dependency>
 
       <!-- fix require upper bound dependencies error for wiremock -->

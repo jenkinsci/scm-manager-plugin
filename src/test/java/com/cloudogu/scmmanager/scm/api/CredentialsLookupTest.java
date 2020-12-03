@@ -35,37 +35,44 @@ public class CredentialsLookupTest {
   @Test
   public void shouldReturnHttpCredentials() throws IOException {
     addUsernamePasswordCredentials("tricia", "trillian", "secret");
-    StandardUsernamePasswordCredentials credentials = credentialsLookup.http(owner, "http://hog", "tricia");
+    StandardUsernamePasswordCredentials credentials = credentialsLookup.http("http://hog", "tricia").lookup(owner);
+    assertThat(credentials).isNotNull();
+  }
+
+  @Test
+  public void shouldReturnCredentialsFromItemGroup() throws IOException {
+    addUsernamePasswordCredentials("tricia", "trillian", "secret");
+    StandardUsernamePasswordCredentials credentials = credentialsLookup.http("http://hog", "tricia").lookup(jenkins.getInstance());
     assertThat(credentials).isNotNull();
   }
 
   @Test
   public void shouldReturnSshUsernamePasswordCredentials() throws IOException {
     addUsernamePasswordCredentials("dent", "adent", "secret123");
-    StandardUsernameCredentials credentials = credentialsLookup.ssh(owner, "ssh://hog", "dent");
+    StandardUsernameCredentials credentials = credentialsLookup.ssh("ssh://hog", "dent").lookup(owner);
     assertThat(credentials).isNotNull();
   }
 
   @Test
   public void shouldReturnSshPrivateKeyCredentials() throws IOException {
     addPrivateKeyCredentials("slarti", "slarti", "private-ssh-key", "");
-    StandardUsernameCredentials credentials = credentialsLookup.ssh(owner, "ssh://hog", "slarti");
+    StandardUsernameCredentials credentials = credentialsLookup.ssh("ssh://hog", "slarti").lookup(owner);
     assertThat(credentials).isNotNull();
   }
 
   @Test(expected = CredentialsUnavailableException.class)
   public void shouldThrowExceptionForNonExistingCredentials() {
-    credentialsLookup.ssh(owner, "ssh://hog", "slarti");
+    credentialsLookup.ssh("ssh://hog", "slarti").lookup(owner);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionForNonSshUrl() {
-    credentialsLookup.ssh(owner, "http://hog", "slarti");
+    credentialsLookup.ssh( "http://hog", "slarti").lookup(owner);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowIllegalArgumentExceptionForNonHttpUrl() {
-    credentialsLookup.ssh(owner, "http://hog", "slarti");
+    credentialsLookup.ssh("http://hog", "slarti").lookup(owner);
   }
 
   private void addPrivateKeyCredentials(String id, String username, String key, String passphrase) throws IOException {

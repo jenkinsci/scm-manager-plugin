@@ -8,6 +8,7 @@ import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.FormValidation;
@@ -68,7 +69,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Before
   public void mockApiClient() {
-    when(apiFactory.create(any(), requestedUrl.capture(), requestedCredentials.capture())).thenReturn(api);
+    when(apiFactory.create(any(Item.class), requestedUrl.capture(), requestedCredentials.capture())).thenReturn(api);
     when(apiFactory.anonymous(requestedUrl.capture())).thenReturn(api);
 
     when(api.getProtocol()).thenReturn("http");

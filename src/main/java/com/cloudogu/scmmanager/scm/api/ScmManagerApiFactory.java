@@ -6,7 +6,8 @@ import com.cloudogu.scmmanager.BasicHttpAuthentication;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.SSHAuthentication;
 import com.google.common.annotations.VisibleForTesting;
-import jenkins.scm.api.SCMSourceOwner;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 
 public class ScmManagerApiFactory {
 
@@ -28,28 +29,80 @@ public class ScmManagerApiFactory {
     return new ScmManagerApi(new HttpApiClient(serverUrl, ANONYMOUS_AUTHENTICATION));
   }
 
-  public ScmManagerApi create(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    return new ScmManagerApi(createApiClient(owner, serverUrl, credentialsId));
+  public ScmManagerApi create(Item item, String serverUrl, String credentialsId) {
+    return new ScmManagerApi(apiClientFactory(serverUrl, credentialsId).create(item));
   }
 
-  private ApiClient createApiClient(SCMSourceOwner owner, String serverUrl, String credentialsId) {
+  public ScmManagerApi create(ItemGroup<?> itemGroup, String serverUrl, String credentialsId) {
+    return new ScmManagerApi(apiClientFactory(serverUrl, credentialsId).create(itemGroup));
+  }
+
+  private ApiClientFactory apiClientFactory(String serverUrl, String credentialsId) {
     if (serverUrl.startsWith("http")) {
-      return createHttpApiClient(owner, serverUrl, credentialsId);
+      return new HttpApiClientFactory(serverUrl, credentialsId);
     } else if (serverUrl.startsWith("ssh")) {
-      return createSshApiClient(owner, serverUrl, credentialsId);
+      return new SshApiClientFactory(serverUrl, credentialsId);
     } else {
       throw new IllegalArgumentException("unsupported server url '" + serverUrl + "' only http or ssh urls are supported");
     }
   }
 
-  private ApiClient createHttpApiClient(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    StandardUsernamePasswordCredentials credentials = credentialsLookup.http(owner, serverUrl, credentialsId);
-    return new HttpApiClient(serverUrl, BasicHttpAuthentication.from(credentials));
+  private interface ApiClientFactory {
+
+    ApiClient create(Item item);
+
+    ApiClient create(ItemGroup<?> item);
+
   }
 
-  private ApiClient createSshApiClient(SCMSourceOwner owner, String serverUrl, String credentialsId) {
-    StandardUsernameCredentials credentials = credentialsLookup.ssh(owner, serverUrl, credentialsId);
-    return new SshApiClient(serverUrl, SSHAuthentication.from(credentials));
+  private class HttpApiClientFactory implements ApiClientFactory {
+
+    private final String serverUrl;
+    private final CredentialsLookup.Lookup<StandardUsernamePasswordCredentials> credentials;
+
+    public HttpApiClientFactory(String serverUrl, String credentialsId) {
+      this.serverUrl = serverUrl;
+      credentials = credentialsLookup.http(serverUrl, credentialsId);
+    }
+
+    @Override
+    public ApiClient create(Item item) {
+      return create(credentials.lookup(item));
+    }
+
+    @Override
+    public ApiClient create(ItemGroup<?> item) {
+      return create(credentials.lookup(item));
+    }
+
+    private ApiClient create(StandardUsernamePasswordCredentials credentials) {
+      return new HttpApiClient(serverUrl, BasicHttpAuthentication.from(credentials));
+    }
+  }
+
+  private class SshApiClientFactory implements ApiClientFactory {
+
+    private final String serverUrl;
+    private final CredentialsLookup.Lookup<StandardUsernameCredentials> credentials;
+
+    public SshApiClientFactory(String serverUrl, String credentialsId) {
+      this.serverUrl = serverUrl;
+      credentials = credentialsLookup.ssh(serverUrl, credentialsId);
+    }
+
+    @Override
+    public ApiClient create(Item item) {
+      return create(credentials.lookup(item));
+    }
+
+    @Override
+    public ApiClient create(ItemGroup<?> item) {
+      return create(credentials.lookup(item));
+    }
+
+    private ApiClient create(StandardUsernameCredentials credentials) {
+      return new SshApiClient(serverUrl, SSHAuthentication.from(credentials));
+    }
   }
 
 }

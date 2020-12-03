@@ -39,6 +39,51 @@ werden muss.
 Zum Abschluss können verschiedene Verhaltensweisen gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
+#### JobDSL
+
+Um ein Build Job für ein SCM-Manager Repository mit Hilfe der JobDSL anzulegen, 
+kann folgende Syntax für Mercurial und Git Repositories verwendet werden:
+
+```groovy
+multibranchPipelineJob('heart-of-gold') {
+  branchSources {
+    scmManager {
+      id('spaceships/heart-of-gold')
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      repository('spaceships/heart-of-gold')
+      discoverBranches(true)
+      discoverPullRequest(true)
+      discoverTags(false)
+    }
+  }
+}
+```
+
+Die Parameter `discoverBranches`, `discoverPullRequest` und `discoverTags` sind Optional und bilden ab welche Typen gebaut werden sollen.
+Das Beispiel zeigt die Standardwerte.
+
+Die Syntax für ein Subversion Repository zeigt folgendes Beispiel:
+
+```groovy
+multibranchPipelineJob('heart-of-gold') {
+  branchSources {
+    scmManagerSvn {
+      id('spaceships/heart-of-gold')
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      repository('spaceships/heart-of-gold')
+      includes("trunk,branches/*,tags/*,sandbox/*")
+      excludes("")
+    }
+  }
+}
+```
+
+Die Parameter für `includes` und `excludes` sind ebenfalls optional und mit ihnen kann bestimmt werden, 
+welche Ordner des Repositories gebaut werden.
+Das Beispiel zeigt die Standardwerte.
+
 ### Namespaces
 Sollen für alle Repositories eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein "SCM-Manager
 Namespace" Job genutzt werden. Dieser prüft alle Repositories in einem gegebenen Namespace und erzeugt entsprechende
