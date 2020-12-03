@@ -8,7 +8,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 
-final class ScmTestData {
+public final class ScmTestData {
 
   static final String NAMESPACE = "hitchhiker";
   static final String NAME = "hog";
