@@ -32,7 +32,7 @@ public class PullRequestDiscoveryTrait extends SCMSourceTrait {
    * Constructor for old versions of this trait, which does not have the excludeBranchesWithPRs option.
    */
   public PullRequestDiscoveryTrait() {
-    this.excludeBranchesWithPRs = false;
+    this(false);
   }
 
   public boolean isExcludeBranchesWithPRs() {
