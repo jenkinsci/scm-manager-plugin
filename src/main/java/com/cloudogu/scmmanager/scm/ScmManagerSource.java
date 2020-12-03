@@ -141,6 +141,7 @@ public class ScmManagerSource extends SCMSource {
 
     if (candidates == null) {
       candidates = handler.getAllCandidatesFromSourceControl(request);
+      request.prepareForFullScan(candidates);
     }
     for (ScmManagerObservable candidate : candidates) {
       if (request.process(candidate.head(), candidate.revision(), handler::probe, new CriteriaWitness(request))) {
@@ -303,7 +304,7 @@ public class ScmManagerSource extends SCMSource {
     public List<SCMSourceTrait> getTraitsDefaults() {
       return Arrays.asList(
         new BranchDiscoveryTrait(),
-        new PullRequestDiscoveryTrait()
+        new PullRequestDiscoveryTrait(false)
       );
     }
 

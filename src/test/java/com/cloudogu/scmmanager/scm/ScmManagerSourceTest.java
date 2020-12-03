@@ -311,7 +311,7 @@ public class ScmManagerSourceTest {
 
   @Test
   public void shouldSupportChangeRequestCategory() {
-    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new PullRequestDiscoveryTrait()));
+    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new PullRequestDiscoveryTrait(false)));
     assertThat(source.isCategoryTraitEnabled(ChangeRequestSCMHeadCategory.DEFAULT));
   }
 
