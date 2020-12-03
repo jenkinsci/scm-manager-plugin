@@ -54,7 +54,7 @@ multibranchPipelineJob('heart-of-gold') {
       repository('spaceships/heart-of-gold')
       discoverBranches(true)
       discoverPullRequest(true)
-      discoverTags(true)
+      discoverTags(false)
     }
   }
 }
