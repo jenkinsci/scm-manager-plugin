@@ -7,7 +7,6 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
-import javaposse.jobdsl.dsl.Context;
 import javaposse.jobdsl.dsl.DslContext;
 import javaposse.jobdsl.dsl.RequiresPlugin;
 import javaposse.jobdsl.dsl.RequiresPlugins;
@@ -15,10 +14,12 @@ import javaposse.jobdsl.dsl.helpers.workflow.BranchSourcesContext;
 import javaposse.jobdsl.plugin.ContextExtensionPoint;
 import javaposse.jobdsl.plugin.DslExtensionMethod;
 import jenkins.branch.BranchSource;
-import jenkins.model.Jenkins;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
+import static com.cloudogu.scmmanager.scm.jobdsl.JobDSL.createApi;
+import static com.cloudogu.scmmanager.scm.jobdsl.JobDSL.resolve;
 
 @Extension(optional = true)
 public class BranchSourcesExtension extends ContextExtensionPoint {
@@ -40,7 +41,7 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
   @RequiresPlugin(id = "scm-manager")
   @DslExtensionMethod(context = BranchSourcesContext.class)
   public BranchSource scmManager(@DslContext(ScmManagerBranchSourceContext.class) Runnable closure) throws ExecutionException, InterruptedException {
-    ScmManagerBranchSourceContext context = resolve(new ScmManagerBranchSourceContext(), closure);
+    ScmManagerBranchSourceContext context = resolve(executor, closure, new ScmManagerBranchSourceContext());
 
     String repository = resolveRepository(context);
 
@@ -61,8 +62,8 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
     @RequiresPlugin(id = "subversion")
   })
   @DslExtensionMethod(context = BranchSourcesContext.class)
-  public BranchSource scmManagerSvn(@DslContext(ScmManagerSvnBranchSourceContext.class) Runnable closure) throws ExecutionException, InterruptedException {
-    ScmManagerSvnBranchSourceContext context = resolve(new ScmManagerSvnBranchSourceContext(), closure);
+  public BranchSource scmManagerSvn(@DslContext(ScmManagerSvnBranchSourceContext.class) Runnable closure) {
+    ScmManagerSvnBranchSourceContext context = resolve(executor, closure, new ScmManagerSvnBranchSourceContext());
     ScmManagerSvnSource source = new ScmManagerSvnSource(
       context.getId(),
       context.getServerUrl(),
@@ -74,11 +75,6 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
     return new BranchSource(source);
   }
 
-  private <C extends BranchSourceContext> C resolve(C context, Runnable closure) {
-    executor.executeInContext(closure, context);
-    context.validate();
-    return context;
-  }
 
   private String resolveRepository(ScmManagerBranchSourceContext context) throws ExecutionException, InterruptedException {
     String repository = context.getRepository();
@@ -90,21 +86,10 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
   }
 
   private String getRepositoryIdFromRemote(ScmManagerBranchSourceContext context, String namespace, String name) throws InterruptedException, java.util.concurrent.ExecutionException {
-    ScmManagerApi api = createApi(context);
+    ScmManagerApi api = createApi(apiFactory, context);
     CompletableFuture<Repository> future = api.getRepository(namespace, name);
     String type = future.get().getType();
     return String.format("%s/%s/%s", namespace, name, type);
-  }
-
-  private ScmManagerApi createApi(ScmManagerBranchSourceContext context) {
-    return apiFactory.create(Jenkins.get(), context.getServerUrl(), context.getCredentialsId());
-  }
-
-  @FunctionalInterface
-  interface Executor {
-
-    void executeInContext(Runnable runnable, Context context);
-
   }
 
 }

@@ -104,6 +104,34 @@ gewählt werden. Das Plugin lädt daraufhin alle verfügbaren Namespaces, von de
 Abschließend können verschiedene Verhaltensweise gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
+#### JobDSL
+
+Das folgende Beispiel zeigt die JobDSL, um einen Job für einen SCM-Manager Namespace zu erstellen:
+
+```groovy
+organizationFolder("spaceships") {
+  organizations {
+    scmManagerNamespace {
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      namespace("spaceships")
+      discoverBranches(true)
+      discoverPullRequest(true)
+      discoverTags(false)
+      discoverSvn {
+        includes("trunk,branches/*,tags/*,sandbox/*")
+        excludes("")
+      }
+    }
+  }
+}
+// scan namespace directly after creation
+queue("spaceships")
+```
+Die `discover*` Parameter sind Optional und das Beispiel zeigt die Standardwerte.
+Um Subversion Builds zu deaktivieren, kann der `discoverSvn` Methode ein `false` übergeben werden: `discoverSvn(false)`.
+The `discover*` parameters are optional, the example above shows the default values. 
+
 ### Navigation
 Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seiten im SCM-Manager:
 
