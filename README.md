@@ -106,6 +106,35 @@ named with the pattern *namespace/name*.
 Finally you can select behaviours where you can choose for example, whether branches, tags or pull requests shall be
 build.
 
+#### JobDSL
+
+In order to create a build job for an SCM-Manager namespace with the job dsl, have a look at the following example:
+
+```groovy
+organizationFolder("spaceships") {
+  organizations {
+    scmManagerNamespace {
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      namespace("spaceships")
+      discoverBranches(true)
+      discoverPullRequest(true)
+      discoverTags(false)
+      discoverSvn {
+        includes("trunk,branches/*,tags/*,sandbox/*")
+        excludes("")
+      }
+    }
+  }
+}
+// scan namespace directly after creation
+queue("spaceships")
+```
+
+The `discover*` parameters are optional, the example above shows the default values. 
+To disable subversion builds, a `false` can be passed to the `discoverSvn` method e.g.: `discoverSvn(false)`.
+To build all namespaces of the SCM-Manager instance, the pseudo namespace `--all--` can be used.
+
 ### Navigation
 In different pages of Jenkins you can find links to the corresponding SCM-Manager page:
 

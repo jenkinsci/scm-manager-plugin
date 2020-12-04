@@ -107,6 +107,34 @@ Build-Jobs zu erstellen. In diesem Fall werden die Ordner für die Jobs nach dem
 Abschließend können verschiedene Verhaltensweise gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
 Pull Requests gebaut werden sollen.
 
+#### JobDSL
+
+Das folgende Beispiel zeigt die JobDSL, um einen Job für einen SCM-Manager Namespace zu erstellen:
+
+```groovy
+organizationFolder("spaceships") {
+  organizations {
+    scmManagerNamespace {
+      serverUrl('https://scm.hitchhiker.com')
+      credentialsId('my-secret-id')
+      namespace("spaceships")
+      discoverBranches(true)
+      discoverPullRequest(true)
+      discoverTags(false)
+      discoverSvn {
+        includes("trunk,branches/*,tags/*,sandbox/*")
+        excludes("")
+      }
+    }
+  }
+}
+// scan namespace directly after creation
+queue("spaceships")
+```
+Die `discover*` Parameter sind optional und das Beispiel zeigt die Standardwerte.
+Um Subversion Builds zu deaktivieren, kann der `discoverSvn` Methode ein `false` übergeben werden: `discoverSvn(false)`.
+Um alle Namespaces zu bauen kann der pseudo Namespace `--all--` verwendet werden.
+
 ### Navigation
 Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seiten im SCM-Manager:
 

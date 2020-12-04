@@ -11,7 +11,6 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import javaposse.jobdsl.dsl.DslScriptException;
 import jenkins.branch.BranchSource;
-import jenkins.scm.api.trait.SCMSourceTrait;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,14 +18,12 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
+import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class BranchSourcesExtensionTest {
@@ -52,7 +49,9 @@ public class BranchSourcesExtensionTest {
 
     assertThat(source.getRepository()).isEqualTo("hitchhiker/hog/git");
     assertThat(source.getId()).isEqualTo("42");
-    assertTraits(source, BranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class, TagDiscoveryTrait.class);
+    assertContainsOnlyInstancesOf(source.getTraits(),
+      BranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class, TagDiscoveryTrait.class
+    );
     verifyNoMoreInteractions(apiFactory);
   }
 
@@ -70,7 +69,7 @@ public class BranchSourcesExtensionTest {
     });
     BranchSource branchSource = extension.scmManager(null);
     ScmManagerSource source = (ScmManagerSource) branchSource.getSource();
-    assertTraits(source, TagDiscoveryTrait.class);
+    assertContainsOnlyInstancesOf(source.getTraits(), TagDiscoveryTrait.class);
   }
 
   @Test(expected = DslScriptException.class)
@@ -109,7 +108,7 @@ public class BranchSourcesExtensionTest {
   }
 
   @Test
-  public void shouldSetIncludesAndExcludes() throws ExecutionException, InterruptedException {
+  public void shouldSetIncludesAndExcludes() {
     BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
       ScmManagerSvnBranchSourceContext context = (ScmManagerSvnBranchSourceContext) ctx;
       context.id("42");
@@ -126,7 +125,7 @@ public class BranchSourcesExtensionTest {
   }
 
   @Test
-  public void shouldCreateScmManagerSvnSource() throws ExecutionException, InterruptedException {
+  public void shouldCreateScmManagerSvnSource() {
     BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
       ScmManagerSvnBranchSourceContext context = (ScmManagerSvnBranchSourceContext) ctx;
       context.id("42");
@@ -143,15 +142,4 @@ public class BranchSourcesExtensionTest {
     assertThat(source.getIncludes()).isEqualTo(Subversion.DEFAULT_INCLUDES);
     assertThat(source.getExcludes()).isEqualTo(Subversion.DEFAULT_EXCLUDES);
   }
-
-
-  @SafeVarargs
-  private final void assertTraits(ScmManagerSource source, Class<? extends SCMSourceTrait>... expected) {
-    Set<Class<? extends SCMSourceTrait>> traits = source.getTraits()
-      .stream()
-      .map(SCMSourceTrait::getClass)
-      .collect(Collectors.toSet());
-    assertThat(traits).containsOnly(expected);
-  }
-
 }
