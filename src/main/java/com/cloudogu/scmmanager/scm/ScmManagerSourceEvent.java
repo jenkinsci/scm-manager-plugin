@@ -117,7 +117,7 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
 
     @Override
     boolean isSpecificMatch(ScmManagerNavigator navigator) {
-      return navigator.getNamespace().equals(getPayload().getNamespace());
+      return navigator.isForNamespace(getPayload().getNamespace());
     }
 
     @Override

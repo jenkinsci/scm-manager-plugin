@@ -133,7 +133,7 @@ public class ScmManagerWebHook_SourceEventTest {
   private SCMNavigator mockNavigator(String serverUrl, String namespace) {
     ScmManagerNavigator mock = mock(ScmManagerNavigator.class);
     when(mock.getServerUrl()).thenReturn(serverUrl);
-    when(mock.getNamespace()).thenReturn(namespace);
+    when(mock.isForNamespace(namespace)).thenReturn(true);
     return mock;
   }
 
