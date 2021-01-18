@@ -43,19 +43,19 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.19</version>
+      <version>1.20</version>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>2.1.17</version>
+      <version>2.3.11</version>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>ssh-credentials</artifactId>
-      <version>1.14</version>
+      <version>1.17.4</version>
     </dependency>
 
     <dependency>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mercurial</artifactId>
-      <version>2.7</version>
+      <version>2.11</version>
       <optional>true</optional>
     </dependency>
 
@@ -208,9 +208,21 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-step-api</artifactId>
+        <version>2.22</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-api</artifactId>
+        <version>2.40</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>junit</artifactId>
-        <version>1.3</version>
+        <version>1.29</version>
       </dependency>
 
       <dependency>
@@ -234,7 +246,13 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1.54</version>
+        <version>1.71</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>matrix-project</artifactId>
+        <version>1.17</version>
       </dependency>
 
       <!-- fix require upper bound dependencies error for wiremock -->
