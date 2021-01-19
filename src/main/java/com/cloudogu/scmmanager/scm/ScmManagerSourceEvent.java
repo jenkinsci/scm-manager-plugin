@@ -6,15 +6,20 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceEvent;
 import net.sf.json.JSONObject;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import static java.util.Collections.singleton;
+
 public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSourceEvent.TriggerPayload> {
 
   private final ServerIdentification identification;
 
-  public static ScmManagerSourceEvent from(JSONObject form) {
+  public static Collection<ScmManagerSourceEvent> from(JSONObject form) {
     if (form.containsKey("namespace") && form.containsKey("name")) {
-      return new ScmManagerSingleSourceEvent(form);
+      return Arrays.asList(new ScmManagerSingleSourceEvent(form), new ScmManagerSingleSourceForGlobalInstanceEvent(form));
     } else {
-      return new ScmManagerGlobalSourceEvent(form);
+      return singleton(new ScmManagerGlobalSourceEvent(form));
     }
   }
 
@@ -68,7 +73,7 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
         this.name = name;
       }
 
-      public boolean isGlobal () {
+      public boolean isGlobal() {
         return global;
       }
 
@@ -88,7 +93,7 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
 
     @NonNull
     @Override
-    public String getSourceName () {
+    public String getSourceName() {
       return "dummy";
     }
 
@@ -106,23 +111,50 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
   static class ScmManagerSingleSourceEvent extends ScmManagerSourceEvent {
 
     public ScmManagerSingleSourceEvent(JSONObject form) {
-      super(form, new TriggerPayload(form.getString("namespace"), form.getString("name")));
+      super(form, ScmManagerSourceEvent.getPayload(form));
     }
 
     @NonNull
     @Override
-    public String getSourceName () {
+    public String getSourceName() {
       return getPayload().getName();
     }
 
     @Override
     boolean isSpecificMatch(ScmManagerNavigator navigator) {
-      return navigator.getNamespace().equals(getPayload().getNamespace());
+      return navigator.isForNamespace(getPayload().getNamespace());
     }
 
     @Override
     boolean isSpecificMatch(ScmManagerSource source) {
       return source.getName().equals(getPayload().getName());
     }
+  }
+
+  static class ScmManagerSingleSourceForGlobalInstanceEvent extends ScmManagerSourceEvent {
+
+    public ScmManagerSingleSourceForGlobalInstanceEvent(JSONObject form) {
+      super(form, ScmManagerSourceEvent.getPayload(form));
+    }
+
+    @NonNull
+    @Override
+    public String getSourceName() {
+      return getPayload().getNamespace() + "/" + getPayload().getName();
+    }
+
+    @Override
+    boolean isSpecificMatch(ScmManagerNavigator navigator) {
+      return navigator.isForNamespace(ScmManagerNavigator.ALL_NAMESPACES_LABEL);
+    }
+
+    @Override
+    boolean isSpecificMatch(ScmManagerSource source) {
+      return source.getName().equals(getPayload().getName());
+    }
+  }
+
+  private static TriggerPayload getPayload(JSONObject form) {
+    return new TriggerPayload(form.getString("namespace"), form.getString("name"));
   }
 }

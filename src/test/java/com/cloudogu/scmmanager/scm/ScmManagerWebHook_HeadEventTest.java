@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -147,7 +148,7 @@ public class ScmManagerWebHook_HeadEventTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(sourceEventThat(argument -> {
+    verify(hook, times(2)).fireNow(sourceEventThat(argument -> {
       assertThat(argument.getPayload().isGlobal()).isFalse();
       return true;
     }));

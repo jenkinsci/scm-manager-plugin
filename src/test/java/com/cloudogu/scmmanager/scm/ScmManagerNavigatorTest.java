@@ -59,6 +59,18 @@ public class ScmManagerNavigatorTest {
   }
 
   @Test
+  public void shouldObserveRepositoriesForAllNamespaces() throws IOException, InterruptedException {
+    mockApiResponse(
+      repository("git", "heart-of-gold")
+    );
+
+    ScmManagerNavigator navigator = navigatorForCustomNamespace(ScmManagerNavigator.ALL_NAMESPACES_LABEL, "git");
+    navigator.visitSources(observer);
+
+    verify(observer).observe("spaceships/heart-of-gold");
+  }
+
+  @Test
   public void shouldObserveMercurialRepositories() throws IOException, InterruptedException {
     mockApiResponse(
       repository("hg", "firefly")
@@ -153,7 +165,12 @@ public class ScmManagerNavigatorTest {
 
   @NonNull
   private ScmManagerNavigator navigator(String... installedPlugins) {
-    return new ScmManagerNavigator("scm", SERVER_URL, NAMESPACE, CRENDETIALS, dependencyChecker(installedPlugins), apiFactory);
+    return navigatorForCustomNamespace(NAMESPACE, installedPlugins);
+  }
+
+  @NonNull
+  private ScmManagerNavigator navigatorForCustomNamespace(String namespace, String... installedPlugins) {
+    return new ScmManagerNavigator("scm", SERVER_URL, namespace, CRENDETIALS, dependencyChecker(installedPlugins), apiFactory);
   }
 
   private Predicate<String> dependencyChecker(String... plugins) {
@@ -171,7 +188,8 @@ public class ScmManagerNavigatorTest {
   private void mockApiResponse(Repository... repositories) {
     when(apiFactory.create(observer.getContext(), SERVER_URL, CRENDETIALS)).thenReturn(api);
     when(observer.getIncludes()).thenReturn(null);
-    when(api.getRepositories(NAMESPACE)).thenReturn(CompletableFuture.completedFuture(Arrays.asList(repositories)));
+    lenient().when(api.getRepositories(NAMESPACE)).thenReturn(CompletableFuture.completedFuture(Arrays.asList(repositories)));
+    lenient().when(api.getRepositories()).thenReturn(CompletableFuture.completedFuture(Arrays.asList(repositories)));
   }
 
 }

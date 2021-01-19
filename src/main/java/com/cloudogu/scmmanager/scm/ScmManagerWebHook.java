@@ -80,8 +80,7 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
   }
 
   private void fireSourceEvent(JSONObject form) {
-    ScmManagerSourceEvent event = ScmManagerSourceEvent.from(form);
-    fireNow(event);
+    ScmManagerSourceEvent.from(form).forEach(this::fireNow);
   }
 
   void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {

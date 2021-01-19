@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,7 +52,10 @@ import static java.util.Optional.ofNullable;
 
 public class ScmManagerNavigator extends SCMNavigator {
 
+  public static final String ALL_NAMESPACES_LABEL = "--all--";
+
   private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
+
   private final String projectName;
   private final String serverUrl;
   private final String namespace;
@@ -119,11 +123,23 @@ public class ScmManagerNavigator extends SCMNavigator {
 
       ScmManagerApi api = apiFactory.create(observer.getContext(), serverUrl, credentialsId);
       try {
-        List<Repository> repositories = api.getRepositories(namespace).get()
+        CompletableFuture<List<Repository>> repositoryRequest;
+        if (isForAllNamespaces()) {
+          repositoryRequest = api.getRepositories();
+        } else {
+          repositoryRequest = api.getRepositories(namespace);
+        }
+        List<Repository> repositories = repositoryRequest.get()
           .stream().filter(filterUnsupportedRepositories())
           .collect(Collectors.toList());
         for (Repository repository : repositories) {
-          if (request.process(repository.getName(), new ScmManagerSourceFactory(request, repository), null, new NavigatorWitness(listener))) {
+          final String subProjectName;
+          if (isForAllNamespaces()) {
+            subProjectName = repository.getNamespace() + "/" + repository.getName();
+          } else {
+            subProjectName = repository.getName();
+          }
+          if (request.process(subProjectName, new ScmManagerSourceFactory(request, repository), null, new NavigatorWitness(listener))) {
             // the observer has seen enough and doesn't want to see any more
             return;
           }
@@ -170,6 +186,14 @@ public class ScmManagerNavigator extends SCMNavigator {
     return getTraits().stream().anyMatch(trait -> trait instanceof ScmManagerSvnNavigatorTrait);
   }
 
+  public boolean isForNamespace(String namespace) {
+    return isForAllNamespaces() || this.namespace.equals(namespace);
+  }
+
+  private boolean isForAllNamespaces() {
+    return ALL_NAMESPACES_LABEL.equals(namespace);
+  }
+
   class ScmManagerSourceFactory implements SCMNavigatorRequest.SourceLambda {
 
     private final ScmManagerNavigatorRequest request;
@@ -184,7 +208,7 @@ public class ScmManagerNavigator extends SCMNavigator {
     @Override
     public SCMSource create(@NonNull String projectName) {
       String repoId = Joiner.on("/").join(
-        namespace, repository.getName(), repository.getType()
+        repository.getNamespace(), repository.getName(), repository.getType()
       );
       String id = getId() + "::" + repoId;
       if ("svn".equals(repository.getType())) {
@@ -271,13 +295,14 @@ public class ScmManagerNavigator extends SCMNavigator {
         return createEmptyNamespaceSelect(value);
       }
 
-      ScmManagerApi api = null;
+      ScmManagerApi api;
       try {
         api = apiFactory.create(context, serverUrl, credentialsId);
       } catch (CredentialsUnavailableException e) {
         return createEmptyNamespaceSelect(value);
       }
       ListBoxModel model = new ListBoxModel();
+      model.add(ALL_NAMESPACES_LABEL);
       api
         .getNamespaces()
         .exceptionally(e -> emptyList())
@@ -285,7 +310,7 @@ public class ScmManagerNavigator extends SCMNavigator {
         .stream()
         .map(Namespace::getNamespace)
         .sorted()
-        .forEach(n -> model.add(new ListBoxModel.Option(n, n)));
+        .forEach(n -> model.add(n));
       return model;
     }
 
