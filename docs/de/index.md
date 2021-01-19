@@ -99,6 +99,9 @@ von Jenkins gewählt werden. Danach kann ein Name eingetragen und der Punkt "SCM
 In der Konfiguration muss nun die Instanz URL des SCM-Manager Servers eingetragen und eine gültige Authentifizierung
 gewählt werden. Das Plugin lädt daraufhin alle verfügbaren Namespaces, von denen einer gewählt werden kann.
 
+Alternativ kann auch <code>--all--</code> ausgewählt werden, um für alle Repositories der kompletten SCM-Manager-Instanz
+Build-Jobs zu erstellen. In diesem Fall werden die Ordner für die Jobs nach dem Muster *namespace/name* benannt.
+
 ![Example of a config for a namespace item](assets/config-namespace-item.png)
 
 Abschließend können verschiedene Verhaltensweise gewählt und konfiguriert werden, wie z. B. ob Branches, Tags oder
