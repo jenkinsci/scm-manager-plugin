@@ -13,7 +13,9 @@ import org.junit.runner.RunWith;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -21,11 +23,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,6 +47,8 @@ public class ScmManagerWebHook_HeadEventTest {
 
   @Spy
   ScmManagerWebHook hook;
+  @Captor
+  ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
 
   @Before
   public void prepareForm() throws ServletException {
@@ -50,6 +57,7 @@ public class ScmManagerWebHook_HeadEventTest {
     form.put("type", "git");
     form.put("server", "http://localhost/scm");
     when(request.getSubmittedForm()).thenReturn(form);
+    doNothing().when(hook).fireNow(scmManagerHeadEventCaptor.capture());
   }
 
   @Test
@@ -204,15 +212,16 @@ public class ScmManagerWebHook_HeadEventTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
-      assertThat(heads).extracting("id").containsExactly("42");
-      assertThat(heads).extracting("source.name").containsExactly("feature");
-      assertThat(heads).extracting("target.name").containsExactly("develop");
-      return true;
-    }));
+
+    List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+    assertThat(heads).hasSize(2);
+
+    assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
+    assertThat(heads).first().extracting("id").isEqualTo("42");
+    assertThat(heads).first().extracting("source.name").isEqualTo("feature");
+    assertThat(heads).first().extracting("target.name").isEqualTo("develop");
+
+    assertThat(heads).element(1).extracting("name").isEqualTo("feature");
   }
 
   @Test
@@ -227,15 +236,16 @@ public class ScmManagerWebHook_HeadEventTest {
 
     httpResponse.generateResponse(request, response, null);
     verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
-      assertThat(heads).extracting("id").containsExactly("42");
-      assertThat(heads).extracting("source.name").containsExactly("feature");
-      assertThat(heads).extracting("target.name").containsExactly("develop");
-      return true;
-    }));
+
+    List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+    assertThat(heads).hasSize(2);
+
+    assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
+    assertThat(heads).first().extracting("id").isEqualTo("42");
+    assertThat(heads).first().extracting("source.name").isEqualTo("feature");
+    assertThat(heads).first().extracting("target.name").isEqualTo("develop");
+
+    assertThat(heads).element(1).extracting("name").isEqualTo("feature");
   }
 
   private ScmManagerHeadEvent headEventThat(ArgumentMatcher<ScmManagerHeadEvent> assertion) {

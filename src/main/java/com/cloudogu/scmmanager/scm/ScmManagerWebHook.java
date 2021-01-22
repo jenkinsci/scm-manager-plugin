@@ -64,7 +64,9 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
       fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
       fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
       fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
+      fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(REMOVED, form, pullRequests));
       fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
+      fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(UPDATED, form, pullRequests));
 
       if (form.containsKey("createdOrModifiedBranches")) {
         // the creation or the change of a branch can also lead to a new source for navigators
