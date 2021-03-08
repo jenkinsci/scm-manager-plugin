@@ -8,6 +8,7 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import hudson.model.Item;
@@ -109,6 +110,10 @@ class ConnectionConfiguration {
       .exceptionally(e -> {
         if (e.getCause() instanceof IllegalReturnStatusException && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
           return FormValidation.ok("Credentials needed");
+        } else if (e.getCause() instanceof JsonParseException) {
+          return FormValidation.error(
+            "This does not seem to be a valid SCM-Manager url, or this is not the root URL of SCM-Manager " +
+              "(maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.");
         }
         return FormValidation.error(e.getMessage());
       })
