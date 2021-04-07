@@ -2,9 +2,10 @@ package com.cloudogu.scmmanager.scm;
 
 import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceBuilder;
 
-public class ScmManagerSvnSourceBuilder extends SCMSourceBuilder<ScmManagerSvnSourceBuilder, ScmManagerSvnSource> {
+public class ScmManagerSvnSourceBuilder extends SCMSourceBuilder<ScmManagerSvnSourceBuilder, SCMSource> {
 
   private final String serverUrl;
   private final String repository;
@@ -15,7 +16,7 @@ public class ScmManagerSvnSourceBuilder extends SCMSourceBuilder<ScmManagerSvnSo
   private String excludes;
 
   public ScmManagerSvnSourceBuilder(String projectName, String serverUrl, String repository, String credentialsId) {
-    super(ScmManagerSvnSource.class, projectName);
+    super(SCMSource.class, projectName);
     this.serverUrl = serverUrl;
     this.repository = repository;
     this.credentialsId = credentialsId;
@@ -38,7 +39,7 @@ public class ScmManagerSvnSourceBuilder extends SCMSourceBuilder<ScmManagerSvnSo
 
   @NonNull
   @Override
-  public ScmManagerSvnSource build() {
+  public SCMSource build() {
     ScmManagerSvnSource source = new ScmManagerSvnSource(id, serverUrl, repository, credentialsId);
     if (!Strings.isNullOrEmpty(includes)) {
       source.setIncludes(includes);

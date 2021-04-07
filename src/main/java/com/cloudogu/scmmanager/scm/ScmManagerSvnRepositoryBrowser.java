@@ -62,7 +62,7 @@ public class ScmManagerSvnRepositoryBrowser extends SubversionRepositoryBrowser 
     return new URL(builder.changeset(getRevision(changeSet)));
   }
 
-  @Extension
+  @Extension(optional = true)
   public static class DescriptorImpl extends Descriptor<RepositoryBrowser<?>> {
     @Override
     public String getDisplayName() {
