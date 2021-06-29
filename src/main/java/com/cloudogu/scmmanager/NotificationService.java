@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.JobInformation;
-import com.cloudogu.scmmanager.info.ScmInformationService;
 import com.google.common.base.Strings;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -19,16 +18,10 @@ class NotificationService {
   private static final Logger LOG = LoggerFactory.getLogger(NotificationService.class);
 
   private BuildStatusFactory buildStatusFactory;
-  private ScmInformationService informationService;
 
   @Inject
   public void setBuildStatusFactory(BuildStatusFactory buildStatusFactory) {
     this.buildStatusFactory = buildStatusFactory;
-  }
-
-  @Inject
-  public void setInformationService(ScmInformationService informationService) {
-    this.informationService = informationService;
   }
 
   void notify(Run<?, ?> run, Result result) {
@@ -38,7 +31,13 @@ class NotificationService {
       return;
     }
 
-    List<JobInformation> informationList = informationService.resolve(run);
+    NotificationAction action = run.getAction(NotificationAction.class);
+    if (action == null) {
+      LOG.info("no notification action is attached to build {}", run);
+      return;
+    }
+
+    List<JobInformation> informationList = action.getJobInformation();
     if (informationList.isEmpty()) {
       LOG.info("no scm information could be extracted from build {}", run);
       return;
@@ -72,6 +71,5 @@ class NotificationService {
       }
     }
   }
-
 
 }

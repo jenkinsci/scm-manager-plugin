@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.JobInformation;
-import com.cloudogu.scmmanager.info.ScmInformationService;
 import hudson.Extension;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -13,10 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -27,9 +28,6 @@ public class NotificationServiceTest {
 
   @Mock
   private BuildStatusFactory buildStatusFactory;
-
-  @Mock
-  private ScmInformationService informationService;
 
   @Mock
   private Run<?, ?> run;
@@ -49,7 +47,7 @@ public class NotificationServiceTest {
     when(buildStatusFactory.create(rootUrl, run, Result.SUCCESS)).thenReturn(status);
 
     JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
-    when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
+    mockJobInformation(information);
     notificationService.notify(run, Result.SUCCESS);
 
     CapturingNotifier notifier = getNotifier();
@@ -58,9 +56,14 @@ public class NotificationServiceTest {
     assertEquals(status, notifier.buildStatus);
   }
 
+  private void mockJobInformation(JobInformation... information) {
+    NotificationAction action = new NotificationAction(Arrays.asList(information));
+    when(run.getAction(NotificationAction.class)).thenReturn(action);
+  }
+
   @Test
   public void testNotifyWithoutInformation() {
-    when(informationService.resolve(run)).thenReturn(Collections.emptyList());
+    mockJobInformation();
     notificationService.notify(run, Result.SUCCESS);
 
     assertNotCalled();
@@ -69,7 +72,7 @@ public class NotificationServiceTest {
   @Test
   public void testNotifyWithoutBuildStatus() {
     JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
-    when(informationService.resolve(run)).thenReturn(Collections.singletonList(information));
+    mockJobInformation(information);
 
     notificationService.notify(run, Result.SUCCESS);
     assertNotCalled();
