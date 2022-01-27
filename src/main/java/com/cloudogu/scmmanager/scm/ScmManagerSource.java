@@ -250,6 +250,10 @@ public class ScmManagerSource extends SCMSource {
     return linkBuilder;
   }
 
+  public String getRemoteUrl() {
+    return new LinkBuilder(serverUrl, namespace, name).repo();
+  }
+
   @Extension
   @Symbol("scmManager")
   public static class DescriptorImpl extends ScmManagerSourceDescriptor {

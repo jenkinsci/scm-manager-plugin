@@ -3,6 +3,7 @@ package com.cloudogu.scmmanager.info;
 import com.google.common.base.Strings;
 import hudson.model.Run;
 import hudson.plugins.mercurial.MercurialSCM;
+import hudson.plugins.mercurial.MercurialSCMSource;
 import hudson.scm.SCM;
 
 import java.util.Collection;
@@ -22,6 +23,13 @@ public class HgScmInformationResolver implements ScmInformationResolver {
 
     MercurialSCM hg = (MercurialSCM) scm;
 
+    Collection<String> remoteBases = SourceUtil
+      .getSources(run, MercurialSCMSource.class, MercurialSCMSource::getSource);
+
+    if (remoteBases.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     String source = hg.getSource();
     String revision = getRevision(hg, run);
 
@@ -30,7 +38,12 @@ public class HgScmInformationResolver implements ScmInformationResolver {
     }
 
     JobInformation config = new JobInformation(TYPE, source, revision, hg.getCredentialsId(), false);
-    return Collections.singleton(config);
+
+    if (remoteBases.contains(config.getUrl())) {
+      return Collections.singleton(config);
+    }
+
+    return Collections.emptyList();
   }
 
   private String getRevision(MercurialSCM scm, Run<?, ?> run) {

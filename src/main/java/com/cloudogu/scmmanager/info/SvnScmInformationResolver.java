@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
+import jenkins.scm.impl.subversion.SubversionSCMSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class SvnScmInformationResolver implements ScmInformationResolver {
 
@@ -24,6 +26,14 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
 
     SubversionSCM svn = (SubversionSCM) scm;
 
+
+    Collection<String> remoteBases = SourceUtil
+      .getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
+
+    if (remoteBases.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     Map<String, String> env = new HashMap<>();
     svn.buildEnvironment(run, env);
 
@@ -32,7 +42,10 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     if (locations != null) {
       appendInformation(configurations, locations, env);
     }
-    return Collections.unmodifiableList(configurations);
+    return configurations
+      .stream()
+      .filter(jobInformation -> remoteBases.stream().anyMatch(remoteBase -> jobInformation.getUrl().startsWith(remoteBase)))
+      .collect(Collectors.toList());
   }
 
   private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
