@@ -30,18 +30,17 @@ public final class SourceUtil {
   }
 
   private static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
-    Object current = run.getParent();
-    while (!(current instanceof SCMSourceOwner)) {
-      if (current == null) {
-        return Optional.empty();
-      } else if (current instanceof Item) {
-        current = ((Item) current).getParent();
-      } else {
-        return Optional.empty();
-      }
-    }
-    return Optional.of((SCMSourceOwner) current);
+    return extractSourceOwner(run.getParent());
+  }
 
+  private static Optional<SCMSourceOwner> extractSourceOwner(Object parent) {
+    if (parent instanceof SCMSourceOwner) {
+      return Optional.of((SCMSourceOwner) parent);
+    } else if (parent instanceof Item) {
+      return extractSourceOwner(((Item) parent).getParent());
+    } else {
+      return Optional.empty();
+    }
   }
 
   private static boolean canExtract(SCMSource scmSource, Class<?> sourceType) {
