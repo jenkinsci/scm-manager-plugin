@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,7 +27,7 @@ public class SvnScmInformationResolverTest {
   private SubversionSCM svn;
 
   @Mock
-  private Run<?, ?> run;
+  private Run<TestJob, TestRun> run;
 
   private final SvnScmInformationResolver resolver = new SvnScmInformationResolver();
 
@@ -46,6 +47,7 @@ public class SvnScmInformationResolverTest {
 
   @Test
   public void testResolveWithEmptyLocations() {
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
     when(svn.getLocations()).thenReturn(new SubversionSCM.ModuleLocation[0]);
 
     Collection<JobInformation> information = resolver.resolve(run, svn);
@@ -54,6 +56,7 @@ public class SvnScmInformationResolverTest {
 
   @Test
   public void testResolveWithOneLocation() {
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
     applyRevisions(42);
 
@@ -71,6 +74,7 @@ public class SvnScmInformationResolverTest {
 
   @Test
   public void testResolveOneWithoutRevision() {
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
     applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
 
     Collection<JobInformation> information = resolver.resolve(run, svn);
@@ -79,6 +83,11 @@ public class SvnScmInformationResolverTest {
 
   @Test
   public void testResolveMutlipleWithTooFewRevision() {
+    mockSource(
+      run,
+      "https://scm.scm-manager.org/repo/ns/one",
+      "https://scm.scm-manager.org/repo/ns/two",
+      "https://scm.scm-manager.org/repo/ns/three");
     applyLocations(
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two"),
@@ -92,6 +101,10 @@ public class SvnScmInformationResolverTest {
 
   @Test
   public void testResolveWithMultipleLocations() {
+    mockSource(
+      run,
+      "https://scm.scm-manager.org/repo/ns/one",
+      "https://scm.scm-manager.org/repo/ns/two");
     applyLocations(
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two")
