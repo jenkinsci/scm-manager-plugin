@@ -1,34 +1,24 @@
 package com.cloudogu.scmmanager.info;
 
-import com.cloudogu.scmmanager.scm.ScmManagerSource;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.Job;
 import hudson.model.Run;
-import hudson.model.TopLevelItem;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.mercurial.MercurialSCM;
-import jenkins.model.Jenkins;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.jvnet.hudson.reactor.ReactorException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
+import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HgScmInformationResolverTest {
@@ -38,13 +28,6 @@ public class HgScmInformationResolverTest {
 
   @Mock
   private Run<TestJob, TestRun> run;
-
-  @Mock
-  private TestJob job;
-  @Mock
-  private TestSCMSourceOwner sourceOwner;
-  @Mock
-  private ScmManagerSource scmSource;
 
   private final HgScmInformationResolver resolver = new HgScmInformationResolver();
 
@@ -66,7 +49,7 @@ public class HgScmInformationResolverTest {
 
   @Test
   public void testResolveWithoutRevision() {
-    mockSource();
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
 
     Collection<JobInformation> information = resolver.resolve(run, hg);
     assertTrue(information.isEmpty());
@@ -74,7 +57,8 @@ public class HgScmInformationResolverTest {
 
   @Test
   public void testResolve() {
-    mockSource();
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
+    doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
     applyRevision("42abc");
     when(hg.getCredentialsId()).thenReturn("scm-one");
 
@@ -89,15 +73,6 @@ public class HgScmInformationResolverTest {
     );
   }
 
-  private void mockSource() {
-    doReturn(job).when(run).getParent();
-    doReturn(sourceOwner).when(job).getParent();
-    doReturn(Collections.singletonList(scmSource)).when(sourceOwner).getSCMSources();
-    doReturn("https://scm.scm-manager.org/repo/ns/one").when(scmSource).getRemoteUrl();
-
-    doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
-  }
-
   @SuppressWarnings("unchecked")
   private void applyRevision(String revision) {
     doAnswer((ic) -> {
@@ -107,21 +82,4 @@ public class HgScmInformationResolverTest {
     }).when(hg).buildEnvironment(any(Run.class), any(Map.class));
   }
 
-  private static abstract class TestRun extends Run<TestJob, TestRun> {
-    protected TestRun(@Nonnull TestJob job) throws IOException {
-      super(job);
-    }
-  }
-
-  private static abstract class TestJob extends Job<TestJob, TestRun> {
-    protected TestJob(ItemGroup parent, String name) {
-      super(parent, name);
-    }
-  }
-
-  private static abstract class TestSCMSourceOwner extends Jenkins implements SCMSourceOwner {
-    protected TestSCMSourceOwner(File root, ServletContext context) throws IOException, InterruptedException, ReactorException {
-      super(root, context);
-    }
-  }
 }
