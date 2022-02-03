@@ -32,9 +32,9 @@ public class CheckoutListener extends SCMListener {
   }
 
   @Override
-  public void onCheckout(Run<?, ?> build, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) {
-    List<JobInformation> jobInformation = informationService.resolve(build, scm);
-    build.addAction(new NotificationAction(jobInformation));
-    notificationService.notify(build, null);
+  public void onCheckout(Run<?, ?> run, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) {
+    List<JobInformation> jobInformation = informationService.resolve(run, scm);
+    run.addAction(new NotificationAction(jobInformation));
+    notificationService.notify(run, null);
   }
 }

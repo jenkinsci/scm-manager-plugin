@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -58,7 +59,7 @@ public class NotificationServiceTest {
 
   private void mockJobInformation(JobInformation... information) {
     NotificationAction action = new NotificationAction(Arrays.asList(information));
-    when(run.getAction(NotificationAction.class)).thenReturn(action);
+    when(run.getActions(NotificationAction.class)).thenReturn(Collections.singletonList(action));
   }
 
   @Test
@@ -87,7 +88,7 @@ public class NotificationServiceTest {
   private CapturingNotifier getNotifier() {
     for (NotifierProvider provider : NotifierProvider.all()) {
       if (provider instanceof SampleNotifierProvider) {
-        return ((SampleNotifierProvider)provider).notifier;
+        return ((SampleNotifierProvider) provider).notifier;
       }
     }
     throw new IllegalStateException("could not find CapturingNotifier");

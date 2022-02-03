@@ -12,9 +12,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Collection;
 import java.util.Map;
 
+import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HgScmInformationResolverTest {
@@ -23,7 +27,7 @@ public class HgScmInformationResolverTest {
   private MercurialSCM hg;
 
   @Mock
-  private Run<?, ?> run;
+  private Run<TestJob, TestRun> run;
 
   private final HgScmInformationResolver resolver = new HgScmInformationResolver();
 
@@ -45,7 +49,7 @@ public class HgScmInformationResolverTest {
 
   @Test
   public void testResolveWithoutRevision() {
-    when(hg.getSource()).thenReturn("https://scm.scm-manager.org/repo/ns/one");
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
 
     Collection<JobInformation> information = resolver.resolve(run, hg);
     assertTrue(information.isEmpty());
@@ -53,7 +57,25 @@ public class HgScmInformationResolverTest {
 
   @Test
   public void testResolve() {
-    when(hg.getSource()).thenReturn("https://scm.scm-manager.org/repo/ns/one");
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
+    doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
+    applyRevision("42abc");
+    when(hg.getCredentialsId()).thenReturn("scm-one");
+
+    Collection<JobInformation> information = resolver.resolve(run, hg);
+    assertEquals(1, information.size());
+    Assertions.info(
+      information.iterator().next(),
+      "hg",
+      "42abc",
+      "https://scm.scm-manager.org/repo/ns/one",
+      "scm-one"
+    );
+  }
+
+  @Test
+  public void testResolveWithoutSourceOwner() {
+    doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
     applyRevision("42abc");
     when(hg.getCredentialsId()).thenReturn("scm-one");
 

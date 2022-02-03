@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 class NotificationService {
 
@@ -31,13 +33,17 @@ class NotificationService {
       return;
     }
 
-    NotificationAction action = run.getAction(NotificationAction.class);
-    if (action == null) {
+    Collection<NotificationAction> actions = run.getActions(NotificationAction.class);
+    if (actions == null || actions.isEmpty()) {
       LOG.info("no notification action is attached to build {}", run);
       return;
     }
 
-    List<JobInformation> informationList = action.getJobInformation();
+    List<JobInformation> informationList = actions
+      .stream()
+      .map(NotificationAction::getJobInformation)
+      .flatMap(List::stream)
+      .collect(Collectors.toList());
     if (informationList.isEmpty()) {
       LOG.info("no scm information could be extracted from build {}", run);
       return;

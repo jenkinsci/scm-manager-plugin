@@ -8,14 +8,16 @@ import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
 import hudson.scm.SCM;
+import jenkins.plugins.git.GitSCMSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-@Extension(optional = true)
+@Extension(optional = true) // We don't know why, but this is necessary
 public class GitScmInformationResolver implements ScmInformationResolver {
 
   private static final String TYPE = "git";
@@ -29,11 +31,21 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     GitSCM git = (GitSCM) scm;
 
     Optional<String> revision = getRevision(run, git);
-    if (revision.isPresent()) {
-      return createInformation(git, revision.get());
-    } else {
+    if (!revision.isPresent()) {
       return Collections.emptyList();
     }
+
+    if (!SourceUtil.extractSourceOwner(run).isPresent()) {
+      return createInformation(git, revision.get());
+    }
+
+    Collection<String> remoteBases = SourceUtil
+      .getSources(run, GitSCMSource.class, GitSCMSource::getRemote);
+
+    return createInformation(git, revision.get())
+      .stream()
+      .filter(jobInformation -> remoteBases.contains(jobInformation.getUrl()))
+      .collect(Collectors.toList());
   }
 
   private List<JobInformation> createInformation(GitSCM git, String revision) {
@@ -41,7 +53,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     for (UserRemoteConfig urc : git.getUserRemoteConfigs()) {
       information.add(createInformation(urc, revision));
     }
-    return Collections.unmodifiableList(information);
+    return information;
   }
 
   private JobInformation createInformation(UserRemoteConfig urc, String revision) {

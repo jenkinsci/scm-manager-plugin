@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -27,7 +28,7 @@ public class GitScmInformationResolverTest {
   private GitSCM git;
 
   @Mock
-  private Run<?, ?> run;
+  private Run<TestJob, TestRun> run;
 
   private final GitScmInformationResolver resolver = new GitScmInformationResolver();
 
@@ -48,6 +49,7 @@ public class GitScmInformationResolverTest {
   public void testResolveWithoutRevision() {
     BuildData buildData = mock(BuildData.class);
     when(git.getBuildData(run)).thenReturn(buildData);
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
 
     Collection<JobInformation> information = resolver.resolve(run, git);
     assertTrue(information.isEmpty());
@@ -55,6 +57,7 @@ public class GitScmInformationResolverTest {
 
   @Test
   public void testResolveWithoutSha1() {
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
     BuildData buildData = mock(BuildData.class);
     Revision revision = mock(Revision.class);
     when(buildData.getLastBuiltRevision()).thenReturn(revision);
@@ -74,6 +77,23 @@ public class GitScmInformationResolverTest {
 
   @Test
   public void testResolve() {
+    mockSource(run, "https://scm.scm-manager.org/repo/ns/one", "https://scm.scm-manager.org/repo/ns/two");
+    applyRevision("abc42");
+    applyUrcs(
+      urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
+      urc("https://scm.scm-manager.org/repo/ns/two", "scm-two")
+    );
+
+    Collection<JobInformation> information = resolver.resolve(run, git);
+    assertEquals(2, information.size());
+
+    Iterator<JobInformation> it = information.iterator();
+    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
+    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
+  }
+
+  @Test
+  public void testResolveWithoutSourceOwner() {
     applyRevision("abc42");
     applyUrcs(
       urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
