@@ -92,6 +92,22 @@ public class GitScmInformationResolverTest {
     Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
   }
 
+  @Test
+  public void testResolveWithoutSourceOwner() {
+    applyRevision("abc42");
+    applyUrcs(
+      urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
+      urc("https://scm.scm-manager.org/repo/ns/two", "scm-two")
+    );
+
+    Collection<JobInformation> information = resolver.resolve(run, git);
+    assertEquals(2, information.size());
+
+    Iterator<JobInformation> it = information.iterator();
+    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
+    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
+  }
+
   private UserRemoteConfig urc(String url, String credentialsId) {
     return new UserRemoteConfig(url, null, null, credentialsId);
   }

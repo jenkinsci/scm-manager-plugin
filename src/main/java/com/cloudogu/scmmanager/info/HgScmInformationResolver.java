@@ -23,6 +23,16 @@ public class HgScmInformationResolver implements ScmInformationResolver {
 
     MercurialSCM hg = (MercurialSCM) scm;
 
+    String revision = getRevision(hg, run);
+    String source = hg.getSource();
+    if (Strings.isNullOrEmpty(source) || Strings.isNullOrEmpty(revision)) {
+      return Collections.emptyList();
+    }
+
+    if (!SourceUtil.extractSourceOwner(run).isPresent()) {
+      return Collections.singleton(createInformation(hg, revision, source));
+    }
+
     Collection<String> remoteBases = SourceUtil
       .getSources(run, MercurialSCMSource.class, MercurialSCMSource::getSource);
 
@@ -30,20 +40,17 @@ public class HgScmInformationResolver implements ScmInformationResolver {
       return Collections.emptyList();
     }
 
-    String source = hg.getSource();
-    String revision = getRevision(hg, run);
-
-    if (Strings.isNullOrEmpty(source) || Strings.isNullOrEmpty(revision)) {
-      return Collections.emptyList();
-    }
-
-    JobInformation config = new JobInformation(TYPE, source, revision, hg.getCredentialsId(), false);
+    JobInformation config = createInformation(hg, revision, source);
 
     if (remoteBases.contains(config.getUrl())) {
       return Collections.singleton(config);
     }
 
     return Collections.emptyList();
+  }
+
+  private JobInformation createInformation(MercurialSCM hg, String revision, String source) {
+    return new JobInformation(TYPE, source, revision, hg.getCredentialsId(), false);
   }
 
   private String getRevision(MercurialSCM scm, Run<?, ?> run) {

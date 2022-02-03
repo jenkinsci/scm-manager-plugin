@@ -29,7 +29,7 @@ public final class SourceUtil {
       ).orElse(Collections.emptyList());
   }
 
-  private static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
+  static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
     return extractSourceOwner(run.getParent());
   }
 

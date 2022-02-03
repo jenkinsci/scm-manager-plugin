@@ -88,7 +88,7 @@ public class NotificationServiceTest {
   private CapturingNotifier getNotifier() {
     for (NotifierProvider provider : NotifierProvider.all()) {
       if (provider instanceof SampleNotifierProvider) {
-        return ((SampleNotifierProvider)provider).notifier;
+        return ((SampleNotifierProvider) provider).notifier;
       }
     }
     throw new IllegalStateException("could not find CapturingNotifier");

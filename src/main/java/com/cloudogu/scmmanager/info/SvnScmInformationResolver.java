@@ -26,14 +26,6 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
 
     SubversionSCM svn = (SubversionSCM) scm;
 
-
-    Collection<String> remoteBases = SourceUtil
-      .getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
-
-    if (remoteBases.isEmpty()) {
-      return Collections.emptyList();
-    }
-
     Map<String, String> env = new HashMap<>();
     svn.buildEnvironment(run, env);
 
@@ -42,6 +34,18 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     if (locations != null) {
       appendInformation(configurations, locations, env);
     }
+
+    if (!SourceUtil.extractSourceOwner(run).isPresent()) {
+      return configurations;
+    }
+
+    Collection<String> remoteBases = SourceUtil
+      .getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
+
+    if (remoteBases.isEmpty()) {
+      return Collections.emptyList();
+    }
+
     return configurations
       .stream()
       .filter(jobInformation -> remoteBases.stream().anyMatch(remoteBase -> jobInformation.getUrl().startsWith(remoteBase)))

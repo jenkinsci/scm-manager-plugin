@@ -82,7 +82,7 @@ public class SvnScmInformationResolverTest {
   }
 
   @Test
-  public void testResolveMutlipleWithTooFewRevision() {
+  public void testResolveMultipleWithTooFewRevision() {
     mockSource(
       run,
       "https://scm.scm-manager.org/repo/ns/one",
@@ -92,6 +92,18 @@ public class SvnScmInformationResolverTest {
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two"),
       location("https://scm.scm-manager.org/repo/ns/three", "scm-three")
+    );
+    applyRevisions(42, 21);
+
+    Collection<JobInformation> information = resolver.resolve(run, svn);
+    assertEquals(2, information.size());
+  }
+
+  @Test
+  public void testResolveMultipleWithoutSourceOwner() {
+    applyLocations(
+      location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
+      location("https://scm.scm-manager.org/repo/ns/two", "scm-two")
     );
     applyRevisions(42, 21);
 

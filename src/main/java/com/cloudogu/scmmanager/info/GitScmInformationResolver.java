@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Extension(optional = true)
+@Extension(optional = true) // We don't know why, but this is necessary
 public class GitScmInformationResolver implements ScmInformationResolver {
 
   private static final String TYPE = "git";
@@ -30,22 +30,22 @@ public class GitScmInformationResolver implements ScmInformationResolver {
 
     GitSCM git = (GitSCM) scm;
 
+    Optional<String> revision = getRevision(run, git);
+    if (!revision.isPresent()) {
+      return Collections.emptyList();
+    }
+
+    if (!SourceUtil.extractSourceOwner(run).isPresent()) {
+      return createInformation(git, revision.get());
+    }
+
     Collection<String> remoteBases = SourceUtil
       .getSources(run, GitSCMSource.class, GitSCMSource::getRemote);
 
-    if (remoteBases.isEmpty()) {
-      return Collections.emptyList();
-    }
-
-    Optional<String> revision = getRevision(run, git);
-    if (revision.isPresent()) {
-      return createInformation(git, revision.get())
-        .stream()
-        .filter(jobInformation -> remoteBases.contains(jobInformation.getUrl()))
-        .collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
+    return createInformation(git, revision.get())
+      .stream()
+      .filter(jobInformation -> remoteBases.contains(jobInformation.getUrl()))
+      .collect(Collectors.toList());
   }
 
   private List<JobInformation> createInformation(GitSCM git, String revision) {

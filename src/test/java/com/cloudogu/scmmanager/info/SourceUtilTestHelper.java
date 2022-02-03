@@ -2,7 +2,6 @@ package com.cloudogu.scmmanager.info;
 
 import com.cloudogu.scmmanager.scm.ScmManagerSource;
 import hudson.model.Run;
-import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +10,11 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-class SourceUtilTestHelper extends TestCase {
+final class SourceUtilTestHelper {
+
+  private SourceUtilTestHelper() {
+  }
+
   static void mockSource(Run<TestJob, TestRun> run, String... urls) {
     TestJob job = mock(TestJob.class);
     TestSCMSourceOwner sourceOwner = mock(TestSCMSourceOwner.class);

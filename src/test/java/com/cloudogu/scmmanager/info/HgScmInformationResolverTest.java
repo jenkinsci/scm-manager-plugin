@@ -73,6 +73,23 @@ public class HgScmInformationResolverTest {
     );
   }
 
+  @Test
+  public void testResolveWithoutSourceOwner() {
+    doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
+    applyRevision("42abc");
+    when(hg.getCredentialsId()).thenReturn("scm-one");
+
+    Collection<JobInformation> information = resolver.resolve(run, hg);
+    assertEquals(1, information.size());
+    Assertions.info(
+      information.iterator().next(),
+      "hg",
+      "42abc",
+      "https://scm.scm-manager.org/repo/ns/one",
+      "scm-one"
+    );
+  }
+
   @SuppressWarnings("unchecked")
   private void applyRevision(String revision) {
     doAnswer((ic) -> {
