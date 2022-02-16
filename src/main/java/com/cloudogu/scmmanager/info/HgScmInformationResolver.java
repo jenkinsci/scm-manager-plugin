@@ -22,7 +22,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
   @Override
   public Collection<JobInformation> resolve(Run<?, ?> run , SCM scm) {
     if (!(scm instanceof MercurialSCM)) {
-      LOG.trace("scm is not of mercurial, skip collecting information");
+      LOG.trace("scm is not a mercurial scm, skip collecting information");
       return Collections.emptyList();
     }
 
