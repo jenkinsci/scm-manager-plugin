@@ -25,7 +25,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
   @Override
   public Collection<JobInformation> resolve(Run<?, ?> run, SCM scm) {
     if (!(scm instanceof SubversionSCM)) {
-      LOG.trace("scm is not of svn, skip collecting information");
+      LOG.trace("scm is not a svn repository, skip collecting information");
       return Collections.emptyList();
     }
 
