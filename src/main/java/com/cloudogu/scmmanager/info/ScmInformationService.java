@@ -3,12 +3,16 @@ package com.cloudogu.scmmanager.info;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.scm.SCM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class ScmInformationService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmInformationService.class);
 
   /**
    * Use {@link #resolve(Run, SCM)} instead.
@@ -20,11 +24,13 @@ public class ScmInformationService {
    */
   @Deprecated
   public List<JobInformation> resolve(Run<?, ?> run) {
+    LOG.trace("resolve job information from run {}", run);
     Job<?, ?> job = run.getParent();
     return collect(((configurations, resolver) -> configurations.addAll(resolver.resolve(run, job))));
   }
 
   public List<JobInformation> resolve(Run<?, ?> run, SCM scm) {
+    LOG.trace("resolve job information from run {} and scm {}", run, scm);
     return collect(((configurations, resolver) -> configurations.addAll(resolver.resolve(run, scm))));
   }
 
