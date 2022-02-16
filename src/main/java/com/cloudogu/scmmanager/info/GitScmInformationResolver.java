@@ -42,7 +42,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     }
 
     if (!SourceUtil.extractSourceOwner(run).isPresent()) {
-      LOG.trace("run does not contain source owner");
+      LOG.trace("run does not contain source owner, start collecting information");
       return createInformation(git, revision.get());
     }
 
@@ -50,7 +50,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
       .getSources(run, GitSCMSource.class, GitSCMSource::getRemote);
 
     if (remoteBases.isEmpty()) {
-      LOG.warn("source owner has no sources, skip collecting information");
+      LOG.trace("source owner has no sources, skip collecting information");
       return Collections.emptyList();
     }
 

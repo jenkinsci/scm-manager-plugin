@@ -46,7 +46,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     }
 
     if (!SourceUtil.extractSourceOwner(run).isPresent()) {
-      LOG.trace("run does not contain source owner");
+      LOG.trace("run does not contain source owner, start collecting information");
       return configurations;
     }
 
@@ -54,7 +54,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
       .getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
 
     if (remoteBases.isEmpty()) {
-      LOG.warn("source owner has no sources, skip collecting information");
+      LOG.trace("source owner has no sources, skip collecting information");
       return Collections.emptyList();
     }
 
