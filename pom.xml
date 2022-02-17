@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>scm-manager</artifactId>
-  <version>1.7.8</version>
+  <version>1.7.9-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>SCM-Manager Plugin</name>
@@ -296,7 +296,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>1.7.8</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
