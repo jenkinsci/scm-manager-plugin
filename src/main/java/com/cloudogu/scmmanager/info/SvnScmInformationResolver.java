@@ -61,7 +61,7 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
     return configurations
       .stream()
       .filter(jobInformation -> remoteBases.stream().anyMatch(remoteBase -> {
-        boolean valid = jobInformation.getUrl().startsWith(remoteBase);
+        boolean valid = URIs.normalize(jobInformation.getUrl()).startsWith(remoteBase);
         if (!valid) {
           LOG.trace(
             "skip {}, because it does not start of the source owner {}. Maybe it is a library.",

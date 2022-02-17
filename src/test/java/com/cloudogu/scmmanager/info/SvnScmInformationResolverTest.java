@@ -116,7 +116,7 @@ public class SvnScmInformationResolverTest {
     mockSource(
       run,
       "https://scm.scm-manager.org/repo/ns/one",
-      "https://scm.scm-manager.org/repo/ns/two");
+      "https://scm.scm-manager.org:443/repo/ns/two");
     applyLocations(
       location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
       location("https://scm.scm-manager.org/repo/ns/two", "scm-two")

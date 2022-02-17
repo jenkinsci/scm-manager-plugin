@@ -81,7 +81,7 @@ public class GitScmInformationResolverTest {
     applyRevision("abc42");
     applyUrcs(
       urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
-      urc("https://scm.scm-manager.org/repo/ns/two", "scm-two")
+      urc("https://scm.scm-manager.org:443/repo/ns/two", "scm-two")
     );
 
     Collection<JobInformation> information = resolver.resolve(run, git);
@@ -89,7 +89,7 @@ public class GitScmInformationResolverTest {
 
     Iterator<JobInformation> it = information.iterator();
     Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
-    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
+    Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org:443/repo/ns/two", "scm-two");
   }
 
   @Test

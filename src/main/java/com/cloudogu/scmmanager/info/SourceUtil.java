@@ -24,7 +24,7 @@ public final class SourceUtil {
           .getSCMSources()
           .stream()
           .filter(scmSource -> canExtract(scmSource, sourceType))
-          .map(scmSource -> extract(scmSource, sourceType, urlExtractor))
+          .map(scmSource -> extractAndNormalize(scmSource, sourceType, urlExtractor))
           .collect(Collectors.toList())
       ).orElse(Collections.emptyList());
   }
@@ -45,6 +45,11 @@ public final class SourceUtil {
 
   private static boolean canExtract(SCMSource scmSource, Class<?> sourceType) {
     return sourceType.isAssignableFrom(scmSource.getClass()) || scmSource instanceof ScmManagerSource;
+  }
+
+  private static <T> String extractAndNormalize(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
+    String url = extract(scmSource, sourceType, urlExtractor);
+    return URIs.normalize(url);
   }
 
   private static <T> String extract(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
