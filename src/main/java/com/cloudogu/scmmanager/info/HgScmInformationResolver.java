@@ -55,7 +55,7 @@ public class HgScmInformationResolver implements ScmInformationResolver {
 
     JobInformation config = createInformation(hg, revision, source);
 
-    if (remoteBases.contains(config.getUrl())) {
+    if (remoteBases.contains(URIs.normalize(config.getUrl()))) {
       return Collections.singleton(config);
     }
 

@@ -57,7 +57,7 @@ public class GitScmInformationResolver implements ScmInformationResolver {
     return createInformation(git, revision.get())
       .stream()
       .filter(jobInformation -> {
-        boolean contains = remoteBases.contains(jobInformation.getUrl());
+        boolean contains = remoteBases.contains(URIs.normalize(jobInformation.getUrl()));
         if (!contains) {
           LOG.trace(
             "skip {}, because it is not part of the source owner {}. Maybe it is a library.",

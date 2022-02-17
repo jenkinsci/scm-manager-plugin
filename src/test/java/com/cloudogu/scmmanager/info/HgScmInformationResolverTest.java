@@ -57,7 +57,7 @@ public class HgScmInformationResolverTest {
 
   @Test
   public void testResolve() {
-    mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
+    mockSource(run, "https://scm.scm-manager.org:443/repo/ns/one");
     doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
     applyRevision("42abc");
     when(hg.getCredentialsId()).thenReturn("scm-one");
