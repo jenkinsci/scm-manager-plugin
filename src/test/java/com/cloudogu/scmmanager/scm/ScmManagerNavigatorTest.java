@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -161,6 +162,20 @@ public class ScmManagerNavigatorTest {
 
     SCMSource source = sourceCaptor.getValue();
     assertThat(source).isInstanceOf(ScmManagerSource.class);
+  }
+
+  @Test(expected = IOException.class)
+  public void shouldThrowIOExceptionOnError() throws IOException, InterruptedException, ExecutionException {
+    mockApiResponse(
+      repository("git", "heart-of-gold")
+    );
+
+    CompletableFuture<List<Repository>> repositoryRequest = mock(CompletableFuture.class);
+    when(api.getRepositories(NAMESPACE)).thenReturn(repositoryRequest);
+    when(repositoryRequest.get()).thenThrow(new ExecutionException("test", null));
+
+    ScmManagerNavigator navigator = navigator("git");
+    navigator.visitSources(observer);
   }
 
   @NonNull
