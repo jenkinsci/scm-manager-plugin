@@ -140,12 +140,15 @@ public class ScmManagerNavigator extends SCMNavigator {
             subProjectName = repository.getName();
           }
           if (request.process(subProjectName, new ScmManagerSourceFactory(request, repository), null, new NavigatorWitness(listener))) {
-            // the observer has seen enough and doesn't want to see any more
+            // the observer has seen enough and doesn't want to see anymore
             return;
           }
         }
       } catch (ExecutionException e) {
         ExecutionExceptions.log(e);
+        // We have to throw an IOException here to prevent Jenkins
+        // from removing all previously found repositories
+        throw new IOException("failed to load repositories from SCM-Manager", e);
       }
     }
   }
