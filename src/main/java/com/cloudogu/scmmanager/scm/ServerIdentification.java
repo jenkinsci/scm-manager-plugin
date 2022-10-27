@@ -23,8 +23,8 @@ class ServerIdentification {
   private static Collection<Identification> readIdentifications(JSONObject form) {
     if (form.containsKey("identifications")) {
       return form.getJSONArray("identifications").stream()
-        .filter(o -> o instanceof JSONObject)
-        .map(o -> (JSONObject) o)
+        .filter(JSONObject.class::isInstance)
+        .map(JSONObject.class::cast)
         .filter(o -> o.containsKey("value") && o.containsKey("name"))
         .map(Identification::new)
         .collect(Collectors.toList());
@@ -39,7 +39,10 @@ class ServerIdentification {
   }
 
   boolean matches(String serverUrl) {
-    return serverUrl.startsWith(this.serverUrl) || identifications.stream().anyMatch(i -> i.matches(serverUrl));
+    if (serverUrl != null) {
+      return serverUrl.startsWith(this.serverUrl) || identifications.stream().anyMatch(i -> i.matches(serverUrl));
+    }
+    return false;
   }
 
   String getServerUrl() {
