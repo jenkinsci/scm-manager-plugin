@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mercurial</artifactId>
-      <version>2.11</version>
+      <version>1260.vdfb_723cdcc81</version>
       <optional>true</optional>
     </dependency>
 
