@@ -127,7 +127,8 @@ public class ScmManagerSource extends SCMSource {
     ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(
       createApi(),
       namespace,
-      name
+      name,
+      traits
     );
 
     // for now we trigger a full scan for deletions
@@ -153,7 +154,7 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   @Override
   protected SCMProbe createProbe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {
-    ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(createApi(), namespace, name);
+    ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(createApi(), namespace, name, traits);
     return handler.probe(head, revision);
   }
 

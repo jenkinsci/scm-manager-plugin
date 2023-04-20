@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -34,7 +35,7 @@ public class ScmManagerSourceRetrieverTest {
       CompletableFuture.completedFuture(new Repository(NAMESPACE, NAME, "git"))
     );
 
-    handler = ScmManagerSourceRetriever.create(api, NAMESPACE, NAME);
+    handler = ScmManagerSourceRetriever.create(api, NAMESPACE, NAME, Collections.emptyList());
   }
 
   @Test

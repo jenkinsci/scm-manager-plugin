@@ -17,6 +17,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.trait.SCMSourceTrait;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,10 +31,12 @@ public class ScmManagerSourceRetriever {
 
   private final ScmManagerApi api;
   private final Repository repository;
+  private final List<SCMSourceTrait> traits;
 
-  private ScmManagerSourceRetriever(ScmManagerApi api, Repository repository) {
+  private ScmManagerSourceRetriever(ScmManagerApi api, Repository repository, List<SCMSourceTrait> traits) {
     this.api = api;
     this.repository = repository;
+    this.traits = traits;
   }
 
   public Iterable<ScmManagerObservable> getSpecificCandidatesFromSourceControl(ScmManagerSourceRequest request, SCMHead head) throws InterruptedException {
@@ -60,10 +63,21 @@ public class ScmManagerSourceRetriever {
         return api.getPullRequest(repository, ((ScmManagerPullRequestHead) head).getId());
       }
     } else if (head instanceof ScmManagerHead && request.isFetchBranches()) {
+      if (shouldIgnoreBranchBecauseRelatedPullRequestExists(head.getName())) {
+        return null;
+      }
       return api.getBranch(repository, head.getName());
     }
 
     return null;
+  }
+
+  private boolean shouldIgnoreBranchBecauseRelatedPullRequestExists(String branchName) {
+    if (traits.stream().anyMatch(t -> t instanceof PullRequestDiscoveryTrait && ((PullRequestDiscoveryTrait) t).isExcludeBranchesWithPRs())) {
+      CompletableFuture<List<PullRequest>> pullRequests = api.getPullRequests(repository);
+      return pullRequests.join().stream().anyMatch(p -> p.getSource().equals(branchName));
+    }
+    return false;
   }
 
   public Iterable<ScmManagerObservable> getAllCandidatesFromSourceControl(ScmManagerSourceRequest request) throws InterruptedException {
@@ -105,8 +119,7 @@ public class ScmManagerSourceRetriever {
     return new ScmManagerApiProbe(api, repository, head, rev);
   }
 
-  static ScmManagerSourceRetriever create(ScmManagerApi api, String namespace, String name) {
-    return new ScmManagerSourceRetriever(api, Futures.resolveUnchecked(api.getRepository(namespace, name)));
+  static ScmManagerSourceRetriever create(ScmManagerApi api, String namespace, String name, List<SCMSourceTrait> traits) {
+    return new ScmManagerSourceRetriever(api, Futures.resolveUnchecked(api.getRepository(namespace, name)), traits);
   }
-
 }
