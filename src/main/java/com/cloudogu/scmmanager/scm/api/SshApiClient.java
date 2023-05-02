@@ -97,11 +97,17 @@ public class SshApiClient extends ApiClient {
     LOG.info("connect to {} in order to fetch access token", sshUrl);
     try (SshConnection connection = createConnection()) {
       connection.connect(authentication);
+      return executeTokenCommand(connection);
+    }
+  }
+
+  private static AccessToken executeTokenCommand(SshConnection connection) {
+    try {
       return connection.command(ACCESS_TOKEN_COMMAND)
         .withOutput(AccessToken.class)
         .json();
-    } catch (IOException ex) {
-      throw new SshConnectionFailedException("failed to create ssh connection", ex);
+    } catch (IOException e) {
+      throw new SshConnectionFailedException("failed to create ssh connection", e);
     }
   }
 
