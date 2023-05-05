@@ -39,10 +39,7 @@ class ServerIdentification {
   }
 
   boolean matches(String serverUrl) {
-    if (serverUrl != null) {
-      return serverUrl.startsWith(this.serverUrl) || identifications.stream().anyMatch(i -> i.matches(serverUrl));
-    }
-    return false;
+    return serverUrl != null && (serverUrl.startsWith(this.serverUrl) || identifications.stream().anyMatch(i -> i.matches(serverUrl)));
   }
 
   String getServerUrl() {

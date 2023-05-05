@@ -76,7 +76,7 @@ class ConnectionConfiguration {
   }
 
   static FormValidation checkServerUrl(ScmManagerApiFactory apiFactory, String value) throws InterruptedException, ExecutionException {
-    String trimmedValue = value.trim();
+    String trimmedValue = value == null? null: value.trim();
     if (Strings.isNullOrEmpty(trimmedValue)) {
       return FormValidation.error("server url is required");
     }

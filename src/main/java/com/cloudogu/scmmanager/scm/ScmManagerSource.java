@@ -308,7 +308,7 @@ public class ScmManagerSource extends SCMSource {
     @NonNull
     public List<SCMSourceTrait> getTraitsDefaults() {
       return Arrays.asList(
-        new BranchDiscoveryTrait(),
+        new ScmManagerBranchDiscoveryTrait(),
         new PullRequestDiscoveryTrait(false)
       );
     }
