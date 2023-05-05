@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
-import com.cloudogu.scmmanager.scm.BranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
+import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnNavigatorTrait;
 import com.cloudogu.scmmanager.scm.Subversion;
 import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
@@ -63,7 +63,7 @@ public class ScmManagerNavigatorContext extends ScmManagerContext {
   public List<SCMTrait<? extends SCMTrait<?>>> getTraits() {
     List<SCMTrait<? extends SCMTrait<?>>> traits = new ArrayList<>();
     if (discoverBranches) {
-      traits.add(new BranchDiscoveryTrait());
+      traits.add(new ScmManagerBranchDiscoveryTrait());
     }
     if (discoverPullRequest) {
       traits.add(new PullRequestDiscoveryTrait());

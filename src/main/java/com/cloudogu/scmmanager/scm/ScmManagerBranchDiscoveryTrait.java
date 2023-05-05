@@ -10,10 +10,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
 
-public class BranchDiscoveryTrait extends SCMSourceTrait {
+public class ScmManagerBranchDiscoveryTrait extends SCMSourceTrait {
 
   @DataBoundConstructor
-  public BranchDiscoveryTrait() {
+  public ScmManagerBranchDiscoveryTrait() {
   }
 
   @Override
@@ -34,7 +34,7 @@ public class BranchDiscoveryTrait extends SCMSourceTrait {
     @Nonnull
     @Override
     public String getDisplayName() {
-      return "Deprecated SCM-Manager Branch Discovery";
+      return "SCM-Manager Branch Discovery";
     }
   }
 }

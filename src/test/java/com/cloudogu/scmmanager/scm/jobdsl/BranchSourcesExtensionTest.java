@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
-import com.cloudogu.scmmanager.scm.BranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
+import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerSource;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnSource;
 import com.cloudogu.scmmanager.scm.Subversion;
@@ -23,7 +23,9 @@ import java.util.concurrent.ExecutionException;
 
 import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BranchSourcesExtensionTest {
@@ -50,7 +52,7 @@ public class BranchSourcesExtensionTest {
     assertThat(source.getRepository()).isEqualTo("hitchhiker/hog/git");
     assertThat(source.getId()).isEqualTo("42");
     assertContainsOnlyInstancesOf(source.getTraits(),
-      BranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class, TagDiscoveryTrait.class
+      ScmManagerBranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class, TagDiscoveryTrait.class
     );
     verifyNoMoreInteractions(apiFactory);
   }

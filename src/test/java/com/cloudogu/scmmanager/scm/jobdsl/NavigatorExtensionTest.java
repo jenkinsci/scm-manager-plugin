@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
-import com.cloudogu.scmmanager.scm.BranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
+import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerNavigator;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnNavigatorTrait;
 import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
@@ -33,7 +33,7 @@ public class NavigatorExtensionTest {
     assertThat(scmNavigator.getCredentialsId()).isEqualTo("secret");
     assertThat(scmNavigator.getNamespace()).isEqualTo("spaceships");
     assertContainsOnlyInstancesOf(scmNavigator.getTraits(),
-      BranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class
+      ScmManagerBranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class
     );
   }
 
