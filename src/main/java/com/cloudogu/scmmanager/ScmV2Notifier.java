@@ -57,6 +57,10 @@ public class ScmV2Notifier implements Notifier {
     return httpAuthentication;
   }
 
+  public String getSourceBranch() {
+    return sourceBranch;
+  }
+
   @VisibleForTesting
   void setClient(AsyncHttpClient client) {
     this.client = client;
@@ -117,8 +121,8 @@ public class ScmV2Notifier implements Notifier {
       String[] path = buildStatus.getName().split("/");
       path[path.length - 1] = URLEncoder.encode(sourceBranch, "UTF-8");
       jsonObject.put("replaces", String.join("/", path));
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e); // this will not happen
+    } catch (Exception e) {
+      LOG.warn("Failed to compute replaced branch '{}' with path '{}'", sourceBranch, buildStatus.getName(), e);
     }
   }
 

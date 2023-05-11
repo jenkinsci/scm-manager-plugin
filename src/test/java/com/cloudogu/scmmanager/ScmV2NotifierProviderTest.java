@@ -94,6 +94,16 @@ public class ScmV2NotifierProviderTest {
     assertEquals("http://localhost:8080/scm", notifier.getInstance().toExternalForm());
   }
 
+  @Test
+  public void testGetWithSourceBranch() throws MalformedURLException {
+    applyAuthentication();
+
+    JobInformation information = new JobInformation("sample", "https://scm.scm-manager.org/repo/ns/one", "pr-1", "one", true, "simple/branch");
+    ScmV2Notifier notifier = provider.get(run, information).get();
+
+    assertEquals("simple/branch", notifier.getSourceBranch());
+  }
+
   private JobInformation createInformation(String s) {
     return new JobInformation("sample", s, "abc", "one", false);
   }
@@ -101,5 +111,4 @@ public class ScmV2NotifierProviderTest {
   private void applyAuthentication() {
     when(authenticationFactory.createHttp(run, "one")).thenReturn(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION);
   }
-
 }
