@@ -27,17 +27,19 @@ public class ScmV2Notifier implements Notifier {
   private final NamespaceAndName namespaceAndName;
   private final HttpAuthentication httpAuthentication;
   private final boolean pullRequest;
+  private final String sourceBranch;
 
   private AsyncHttpClient client;
 
   private Consumer<Response> completionListener = response -> {
   };
 
-  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication, boolean pullRequest) {
+  ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication, boolean pullRequest, String sourceBranch) {
     this.instance = instance;
     this.namespaceAndName = namespaceAndName;
     this.httpAuthentication = httpAuthentication;
     this.pullRequest = pullRequest;
+    this.sourceBranch = sourceBranch;
   }
 
   @VisibleForTesting
@@ -53,6 +55,10 @@ public class ScmV2Notifier implements Notifier {
   @VisibleForTesting
   HttpAuthentication getHttpAuthentication() {
     return httpAuthentication;
+  }
+
+  public String getSourceBranch() {
+    return sourceBranch;
   }
 
   @VisibleForTesting
@@ -104,7 +110,20 @@ public class ScmV2Notifier implements Notifier {
 
   private byte[] createRequestBody(BuildStatus buildStatus) {
     JSONObject jsonObject = JSONObject.fromObject(buildStatus);
+    if (pullRequest && sourceBranch != null) {
+      setReplacedBuild(buildStatus, jsonObject);
+    }
     return jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+  }
+
+  private void setReplacedBuild(BuildStatus buildStatus, JSONObject jsonObject) {
+    try {
+      String[] path = buildStatus.getName().split("/");
+      path[path.length - 1] = URLEncoder.encode(sourceBranch, "UTF-8");
+      jsonObject.put("replaces", String.join("/", path));
+    } catch (Exception e) {
+      LOG.warn("Failed to compute replaced branch '{}' with path '{}'", sourceBranch, buildStatus.getName(), e);
+    }
   }
 
   private String createUrl(String revision, BuildStatus buildStatus) throws UnsupportedEncodingException {

@@ -63,7 +63,8 @@ public class PullRequestJobInformationResolver implements JobInformationResolver
         ((ScmManagerPullRequestHead) scmHead).getCloneInformation().getUrl(),
         ((ScmManagerPullRequestHead) scmHead).getId(),
         urc.getCredentialsId(),
-        true
+        true,
+        ((ScmManagerPullRequestHead) scmHead).getSource().getName()
       )).collect(toList());
   }
 }
