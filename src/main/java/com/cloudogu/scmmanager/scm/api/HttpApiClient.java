@@ -2,8 +2,9 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.google.common.annotations.VisibleForTesting;
-import com.ning.http.client.AsyncHttpClient;
-import jenkins.plugins.asynchttpclient.AHC;
+import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,15 +15,15 @@ public class HttpApiClient extends ApiClient {
 
   private static final Logger LOG = LoggerFactory.getLogger(HttpApiClient.class);
 
-  private final AsyncHttpClient client;
+  private final OkHttpClient client;
   private final HttpAuthentication authentication;
   private final UnaryOperator<String> urlModifier;
 
   public HttpApiClient(String serverUrl, HttpAuthentication authentication) {
-    this(AHC.instance(), serverUrl, authentication);
+    this(JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build(), serverUrl, authentication);
   }
 
-  public HttpApiClient(AsyncHttpClient client, String serverUrl, HttpAuthentication authentication) {
+  public HttpApiClient(OkHttpClient client, String serverUrl, HttpAuthentication authentication) {
     this(client, authentication, fixServerUrl(serverUrl));
   }
 
@@ -44,7 +45,7 @@ public class HttpApiClient extends ApiClient {
   }
 
   @VisibleForTesting
-  HttpApiClient(AsyncHttpClient client, HttpAuthentication authentication, UnaryOperator<String> urlModifier) {
+  HttpApiClient(OkHttpClient client, HttpAuthentication authentication, UnaryOperator<String> urlModifier) {
     super("http");
     this.client = client;
     this.authentication = authentication;
@@ -53,10 +54,10 @@ public class HttpApiClient extends ApiClient {
 
   public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
     LOG.info("get {} from {}", type.getName(), url);
-    AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(urlModifier.apply(url));
+    Request.Builder requestBuilder = new Request.Builder().url(urlModifier.apply(url)).get();
     authentication.authenticate(requestBuilder);
     requestBuilder.addHeader("Accept", contentType);
-    return execute(requestBuilder, type);
+    return execute(client, requestBuilder, type);
   }
 
   @Override

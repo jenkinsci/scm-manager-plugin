@@ -2,9 +2,9 @@ package com.cloudogu.scmmanager;
 
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.google.common.annotations.VisibleForTesting;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Realm;
 import hudson.util.Secret;
+import okhttp3.Credentials;
+import okhttp3.Request;
 
 public class BasicHttpAuthentication implements HttpAuthentication {
 
@@ -30,13 +30,7 @@ public class BasicHttpAuthentication implements HttpAuthentication {
     return password;
   }
 
-  public void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder) {
-    Realm realm = new Realm.RealmBuilder()
-      .setUsePreemptiveAuth(true)
-      .setScheme(Realm.AuthScheme.BASIC)
-      .setPrincipal(username)
-      .setPassword(password.getPlainText())
-      .build();
-    requestBuilder.setRealm(realm);
+  public void authenticate(Request.Builder requestBuilder) {
+    requestBuilder.header("Authorization", Credentials.basic(username, password.getPlainText()));
   }
 }

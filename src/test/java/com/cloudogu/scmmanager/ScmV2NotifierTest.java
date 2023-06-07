@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.ning.http.client.AsyncHttpClient;
+import okhttp3.OkHttpClient;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -11,7 +11,14 @@ import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 
 public class ScmV2NotifierTest {
 
@@ -82,25 +89,24 @@ public class ScmV2NotifierTest {
     ScmV2Notifier notifier =
       new ScmV2Notifier(
         instanceURL,
-        namespaceAndName, req -> req.setHeader("Authenticated", "yes; awesome"),
+        namespaceAndName, req -> req.header("Authenticated", "yes; awesome"),
         pullRequest != null,
         pullRequest == null ? null : branch);
 
     CountDownLatch cdl = new CountDownLatch(1);
-    try (AsyncHttpClient client = new AsyncHttpClient()) {
-      notifier.setClient(client);
-      notifier.setCompletionListener((response -> cdl.countDown()));
+    OkHttpClient client = new OkHttpClient();
+    notifier.setClient(client);
+    notifier.setCompletionListener((response -> cdl.countDown()));
 
-      BuildStatus status = BuildStatus.success(
+    BuildStatus status = BuildStatus.success(
         pullRequest != null ? pullRequest : branch,
-        "hitchhiker >> heart-of-gold",
-        "https://hitchhiker.com"
-      );
+      "hitchhiker >> heart-of-gold",
+      "https://hitchhiker.com"
+    );
 
-      notifier.notify("abc", status);
+    notifier.notify("abc", status);
 
-      cdl.await(30, TimeUnit.SECONDS);
-    }
+    cdl.await(30, TimeUnit.SECONDS);
   }
 
   private URL createInstanceURL() throws MalformedURLException {

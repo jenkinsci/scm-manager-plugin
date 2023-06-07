@@ -2,8 +2,7 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.ning.http.client.AsyncHttpClient;
-import org.junit.After;
+import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Rule;
 
@@ -13,22 +12,17 @@ public class ApiClientTestBase {
   @Rule
   public WireMockRule rule = new WireMockRule(options().dynamicPort());
 
-  private AsyncHttpClient client;
+  private OkHttpClient client;
 
   private String[] pathInjection = {};
   private int pathInjectionIndex = 0;
 
   @Before
   public void setUpAHC() {
-    this.client = new AsyncHttpClient();
+    this.client = new OkHttpClient();
   }
 
-  @After
-  public void tearDownAHC() {
-    this.client.close();
-  }
-
-  public AsyncHttpClient getClient() {
+  public OkHttpClient getClient() {
     return client;
   }
 

@@ -3,11 +3,13 @@ package com.cloudogu.scmmanager;
 import com.cloudogu.scmmanager.info.JobInformation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Response;
 import hudson.model.Run;
-import jenkins.plugins.asynchttpclient.AHC;
+import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,7 @@ public class ScmMigratedV1Notifier implements Notifier {
   private final Run<?, ?> run;
   private final JobInformation information;
 
-  private AsyncHttpClient client;
+  private OkHttpClient client;
   private ScmV2NotifierProvider v2NotifierProvider;
 
   ScmMigratedV1Notifier(AuthenticationFactory authenticationFactory, Run<?, ?> run, JobInformation information) {
@@ -31,15 +33,15 @@ public class ScmMigratedV1Notifier implements Notifier {
   }
 
   @VisibleForTesting
-  void setClient(AsyncHttpClient client) {
+  void setClient(OkHttpClient client) {
     this.client = client;
   }
 
-  private AsyncHttpClient getClient() {
+  private OkHttpClient getClient() {
     if (client != null) {
       return client;
     }
-    return AHC.instance();
+    return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build();
   }
 
   @VisibleForTesting
@@ -56,29 +58,29 @@ public class ScmMigratedV1Notifier implements Notifier {
 
   @Override
   public void notify(String revision, BuildStatus buildStatus) {
-    AsyncHttpClient.BoundRequestBuilder request = getClient().prepareGet(information.getUrl())
-      .setFollowRedirects(false);
+    Request.Builder request = new Request.Builder().url(information.getUrl())
+      .get();
+    // TODO not follow redirects
     authenticationFactory.createHttp(run, information.getCredentialsId()).authenticate(request);
-    request.execute(new AsyncCompletionHandler<Object>() {
+    client.newCall(request.build()).enqueue(new Callback() {
 
       @Override
-      public void onThrowable(Throwable t) {
-        LOG.warn("failed to get redirect uri from migrated repository", t);
-      }
-
-      @Override
-      public Object onCompleted(Response response) throws Exception {
-        if (response.isRedirected()) {
-          String location = response.getHeader("Location");
+      public void onResponse(Call call, Response response) throws IOException {
+        if (response.isRedirect()) {
+          String location = response.header("Location");
           if (!Strings.isNullOrEmpty(location)) {
             notifyV2(location, revision, buildStatus);
           } else {
             LOG.warn("server returned redirect without location header");
           }
         } else {
-          LOG.debug("expected redirect, but server returned status code {}", response.getStatusCode());
+          LOG.debug("expected redirect, but server returned status code {}", response.code());
         }
-        return null;
+      }
+
+      @Override
+      public void onFailure(Call call, IOException e) {
+        LOG.warn("failed to get redirect uri from migrated repository", e);
       }
     });
   }

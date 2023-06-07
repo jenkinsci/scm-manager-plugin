@@ -1,11 +1,14 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Response;
-import jenkins.plugins.asynchttpclient.AHC;
+import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import net.sf.json.JSONObject;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +32,7 @@ public class ScmV2Notifier implements Notifier {
   private final boolean pullRequest;
   private final String sourceBranch;
 
-  private AsyncHttpClient client;
+  private OkHttpClient client;
 
   private Consumer<Response> completionListener = response -> {
   };
@@ -62,7 +65,7 @@ public class ScmV2Notifier implements Notifier {
   }
 
   @VisibleForTesting
-  void setClient(AsyncHttpClient client) {
+  void setClient(OkHttpClient client) {
     this.client = client;
   }
 
@@ -71,9 +74,9 @@ public class ScmV2Notifier implements Notifier {
     this.completionListener = completionListener;
   }
 
-  private AsyncHttpClient getClient() {
+  private OkHttpClient getClient() {
     if (client == null) {
-      return AHC.instance();
+      return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build();
     }
     return client;
   }
@@ -85,25 +88,25 @@ public class ScmV2Notifier implements Notifier {
     String url = createUrl(revision, buildStatus);
     LOG.info("send build status to {}", url);
 
-    AsyncHttpClient.BoundRequestBuilder put = getClient().preparePut(url);
+    Request.Builder put = new Request.Builder().url(url);
     httpAuthentication.authenticate(put);
 
-    put.setHeader("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
-      .setBody(createRequestBody(buildStatus))
-      .execute(new AsyncCompletionHandler<Object>() {
+    put.header("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
+      .put(RequestBody.create(createRequestBody(buildStatus)));
+    getClient().newCall(put.build())
+      .enqueue(new Callback() {
         @Override
-        public void onThrowable(Throwable t) {
-          LOG.warn("failed to notify scm-manager", t);
+        public void onFailure(Call call, IOException e) {
+          LOG.warn("failed to notify scm-manager", e);
         }
 
         @Override
-        public Object onCompleted(Response response) {
+        public void onResponse(Call call, Response response) throws IOException {
           LOG.info(
             "status notify for repository {} and revision {} returned {}",
-            namespaceAndName, revision, response.getStatusCode()
+            namespaceAndName, revision, response.code()
           );
           completionListener.accept(response);
-          return null;
         }
       });
   }

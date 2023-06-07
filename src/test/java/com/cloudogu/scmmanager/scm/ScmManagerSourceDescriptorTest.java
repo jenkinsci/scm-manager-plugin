@@ -4,7 +4,6 @@ import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
-import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
@@ -137,7 +136,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException, ExecutionException {
-    ScmManagerApiTestMocks.mockError(new NotFoundException("not found"), when(api.index()));
+    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.index()));
 
     FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
@@ -215,7 +214,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
-    ScmManagerApiTestMocks.mockError(new NotFoundException("not found"), when(api.getRepositories()));
+    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
     ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 

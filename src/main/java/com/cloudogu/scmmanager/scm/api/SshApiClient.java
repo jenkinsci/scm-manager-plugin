@@ -8,12 +8,13 @@ import com.cloudogu.scmmanager.SshConnectionFailedException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.ning.http.client.AsyncHttpClient;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.plugins.asynchttpclient.AHC;
+import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,18 +33,18 @@ public class SshApiClient extends ApiClient {
   @SuppressWarnings("squid:4738") // jenkins provides an old guava version, so we can't use java.util.Supplier
   private final Supplier<AccessToken> fetcher = Suppliers.memoize(this::fetchAccessTokenFromSsh);
 
-  private final AsyncHttpClient client;
+  private final OkHttpClient client;
   private final SshConnectionFactory connectionFactory;
   private final String sshUrl;
   private final SSHAuthentication authentication;
 
   public SshApiClient(String sshUrl, SSHAuthentication authentication) {
-    this(AHC.instance(), new SshConnectionFactory(), sshUrl, authentication);
+    this(new OkHttpClient(), new SshConnectionFactory(), sshUrl, authentication);
   }
 
-  public SshApiClient(AsyncHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
+  public SshApiClient(OkHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
     super("ssh");
-    this.client = client;
+    this.client = JenkinsOkHttpClient.newClientBuilder(client).build();
     this.connectionFactory = connectionFactory;
     this.sshUrl = sshUrl;
     this.authentication = authentication;
@@ -59,11 +60,11 @@ public class SshApiClient extends ApiClient {
       .thenCompose(token -> {
         String apiUrl = createApiUrl(token.getApiUrl(), url);
 
-        AsyncHttpClient.BoundRequestBuilder requestBuilder = client.prepareGet(apiUrl);
+        Request.Builder requestBuilder = new Request.Builder().get().url(apiUrl);
         BearerHttpAuthentication.authenticate(requestBuilder, token.getAccessToken());
         requestBuilder.addHeader("Accept", contentType);
 
-        return execute(requestBuilder, type);
+        return execute(client, requestBuilder, type);
       });
   }
 

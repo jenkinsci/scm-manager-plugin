@@ -2,8 +2,8 @@ package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.JobInformation;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.ning.http.client.AsyncHttpClient;
 import hudson.model.Run;
+import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +45,7 @@ public class ScmMigratedV1NotifierTest {
   @Before
   public void prepareAuthentication() {
     when(authenticationFactory.createHttp(run, "one"))
-      .thenReturn(response -> response.setHeader("Auth", "Awesome"));
+      .thenReturn(response -> response.header("Auth", "Awesome"));
   }
 
   @Test
@@ -57,12 +57,11 @@ public class ScmMigratedV1NotifierTest {
     ScmMigratedV1Notifier notifier = createV1Notifier();
     AtomicReference<JobInformation> reference = applyV2Notifier(cdl, null);
 
-    try (AsyncHttpClient client = new AsyncHttpClient()) {
-      notifier.setClient(client);
-      notifier.notify("abc123", BuildStatus.success("old-repo", "Old-Repo", "https://oss.cloudogu.com"));
+    OkHttpClient client = new OkHttpClient();
+    notifier.setClient(client);
+    notifier.notify("abc123", BuildStatus.success("old-repo", "Old-Repo", "https://oss.cloudogu.com"));
 
-      cdl.await(30, TimeUnit.SECONDS);
-    }
+    cdl.await(30, TimeUnit.SECONDS);
 
     assertInfo(reference);
   }
@@ -80,12 +79,11 @@ public class ScmMigratedV1NotifierTest {
 
     BuildStatus success = BuildStatus.success("old-repo", "Old-Repo",  "https://oss.cloudogu.com");
 
-    try (AsyncHttpClient client = new AsyncHttpClient()) {
-      notifier.setClient(client);
-      notifier.notify("abc123", success);
+    OkHttpClient client = new OkHttpClient();
+    notifier.setClient(client);
+    notifier.notify("abc123", success);
 
-      cdl.await(30, TimeUnit.SECONDS);
-    }
+    cdl.await(30, TimeUnit.SECONDS);
 
     assertInfo(reference);
     Mockito.verify(v2Notifier).notify("abc123", success);
