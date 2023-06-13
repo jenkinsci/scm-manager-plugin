@@ -1,0 +1,18 @@
+{
+  "request": {
+    "url": "/scm/git/some/old/repo",
+    "method": "GET",
+    "headers": {
+      "Auth": {
+        "equalTo": "Awesome"
+      }
+    }
+  },
+  "response": {
+    "status": 301,
+    "body": "",
+    "headers": {
+      "Location": "https://localhost/scm/old/repo"
+    }
+  }
+}

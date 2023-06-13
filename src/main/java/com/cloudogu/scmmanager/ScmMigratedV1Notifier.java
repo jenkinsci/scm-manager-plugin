@@ -41,7 +41,7 @@ public class ScmMigratedV1Notifier implements Notifier {
     if (client != null) {
       return client;
     }
-    return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build();
+    return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient.Builder().followRedirects(false).build()).build();
   }
 
   @VisibleForTesting
@@ -58,11 +58,9 @@ public class ScmMigratedV1Notifier implements Notifier {
 
   @Override
   public void notify(String revision, BuildStatus buildStatus) {
-    Request.Builder request = new Request.Builder().url(information.getUrl())
-      .get();
-    // TODO not follow redirects
+    Request.Builder request = new Request.Builder().url(information.getUrl()).get();
     authenticationFactory.createHttp(run, information.getCredentialsId()).authenticate(request);
-    client.newCall(request.build()).enqueue(new Callback() {
+    getClient().newCall(request.build()).enqueue(new Callback() {
 
       @Override
       public void onResponse(Call call, Response response) throws IOException {
