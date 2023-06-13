@@ -39,12 +39,12 @@ public class SshApiClient extends ApiClient {
   private final SSHAuthentication authentication;
 
   public SshApiClient(String sshUrl, SSHAuthentication authentication) {
-    this(new OkHttpClient(), new SshConnectionFactory(), sshUrl, authentication);
+    this(JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build(), new SshConnectionFactory(), sshUrl, authentication);
   }
 
   public SshApiClient(OkHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
     super("ssh");
-    this.client = JenkinsOkHttpClient.newClientBuilder(client).build();
+    this.client = client;
     this.connectionFactory = connectionFactory;
     this.sshUrl = sshUrl;
     this.authentication = authentication;
