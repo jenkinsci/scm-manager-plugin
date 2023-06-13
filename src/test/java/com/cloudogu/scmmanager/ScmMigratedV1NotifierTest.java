@@ -1,11 +1,11 @@
 package com.cloudogu.scmmanager;
 
 import com.cloudogu.scmmanager.info.JobInformation;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import hudson.model.Run;
 import okhttp3.OkHttpClient;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -19,10 +19,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -30,8 +26,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ScmMigratedV1NotifierTest {
 
-  @Rule
-  public WireMockRule wireMockRule = new WireMockRule(0);
+  private final MockWebServer server = new MockWebServer();
 
   @Mock
   private AuthenticationFactory authenticationFactory;
@@ -49,7 +44,7 @@ public class ScmMigratedV1NotifierTest {
   }
 
   @Test
-  public void testNotifyWithoutMatchingV2Location() throws InterruptedException, MalformedURLException {
+  public void testNotifyWithoutMatchingV2Location() throws InterruptedException, IOException {
     stubResource();
 
     CountDownLatch cdl = new CountDownLatch(1);
@@ -89,16 +84,13 @@ public class ScmMigratedV1NotifierTest {
     Mockito.verify(v2Notifier).notify("abc123", success);
   }
 
-  private void stubResource() {
-    stubFor(
-      get("/scm/git/some/old/repo")
-        .withHeader("Auth", equalTo("Awesome"))
-        .willReturn(
-          aResponse()
-            .withHeader("Location", "https://scm.scm-manager.org/scm/old/repo")
-            .withStatus(301)
-        )
+  private void stubResource() throws IOException {
+    server.enqueue(
+      new MockResponse()
+        .addHeader("Location", "https://scm.scm-manager.org/scm/old/repo")
+        .setResponseCode(301)
     );
+    server.start();
   }
 
   private void assertInfo(AtomicReference<JobInformation> reference) {
@@ -110,7 +102,7 @@ public class ScmMigratedV1NotifierTest {
   }
 
   private ScmMigratedV1Notifier createV1Notifier() {
-    int port = wireMockRule.port();
+    int port = server.getPort();
     String url = String.format("http://localhost:%d/scm/git/some/old/repo", port);
 
     JobInformation information = new JobInformation("git", url, "abc", "one", false);

@@ -24,7 +24,7 @@ public class BasicHttpAuthenticationTest {
     BasicHttpAuthentication authenticator = new BasicHttpAuthentication("trillian", secret);
     authenticator.authenticate(requestBuilder);
 
-    verify(requestBuilder).header("trillian", "{}");
+    verify(requestBuilder).header("Authorization", "Basic dHJpbGxpYW46e30=");
   }
 
 }
