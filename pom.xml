@@ -247,7 +247,7 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>junit</artifactId>
-        <version>1207.va_09d5100410f</version>
+        <version>1189.v1b_e593637fa_e</version>
       </dependency>
 
       <dependency>
@@ -278,6 +278,12 @@
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>matrix-project</artifactId>
         <version>789.v57a_725b_63c79</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>font-awesome-api</artifactId>
+        <version>6.2.0-3</version>
       </dependency>
 
       <dependency>
