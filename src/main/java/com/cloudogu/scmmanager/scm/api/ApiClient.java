@@ -7,6 +7,7 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -44,8 +45,13 @@ public abstract class ApiClient {
       public void onResponse(Call call, Response response) {
         if (response.code() == 200) {
           try {
-            T t = objectMapper.readValue(response.body().bytes(), type);
-            future.complete(t);
+            ResponseBody body = response.body();
+            if (body == null) {
+              future.complete(null);
+            } else {
+              T t = objectMapper.readValue(body.bytes(), type);
+              future.complete(t);
+            }
           } catch (Exception ex) {
             future.completeExceptionally(ex);
           }
