@@ -4,7 +4,6 @@ import com.cloudogu.scmmanager.SSHAuthentication;
 import com.cloudogu.scmmanager.SshConnection;
 import com.cloudogu.scmmanager.SshConnectionFactory;
 import com.cloudogu.scmmanager.SshConnectionFailedException;
-import com.ning.http.client.AsyncHttpClient;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.junit.Test;

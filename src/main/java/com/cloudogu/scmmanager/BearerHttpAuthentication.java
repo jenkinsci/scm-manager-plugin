@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.ning.http.client.AsyncHttpClient;
+import okhttp3.Request;
 
 public class BearerHttpAuthentication implements HttpAuthentication {
 
@@ -11,11 +11,11 @@ public class BearerHttpAuthentication implements HttpAuthentication {
   }
 
   @Override
-  public void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder) {
+  public void authenticate(Request.Builder requestBuilder) {
     authenticate(requestBuilder, accessToken);
   }
 
-  public static void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder, String accessToken) {
+  public static void authenticate(Request.Builder requestBuilder, String accessToken) {
     requestBuilder.addHeader("Authorization", "Bearer ".concat(accessToken));
   }
 }

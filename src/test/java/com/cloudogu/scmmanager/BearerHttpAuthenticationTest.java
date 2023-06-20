@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import com.ning.http.client.AsyncHttpClient;
+import okhttp3.Request;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verify;
 public class BearerHttpAuthenticationTest {
 
   @Mock
-  private AsyncHttpClient.BoundRequestBuilder requestBuilder;
+  private Request.Builder requestBuilder;
 
   @Test
   public void shouldAppendBearerHeader() {

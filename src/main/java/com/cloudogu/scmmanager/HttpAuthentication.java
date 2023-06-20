@@ -1,9 +1,9 @@
 package com.cloudogu.scmmanager;
 
-import com.ning.http.client.AsyncHttpClient;
+import okhttp3.Request;
 
 public interface HttpAuthentication {
 
-  void authenticate(AsyncHttpClient.BoundRequestBuilder requestBuilder);
+  void authenticate(Request.Builder requestBuilder);
 
 }

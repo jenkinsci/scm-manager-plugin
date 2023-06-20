@@ -1,26 +1,19 @@
 package com.cloudogu.scmmanager;
 
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Realm;
 import hudson.util.Secret;
+import okhttp3.Request;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicHttpAuthenticationTest {
 
   @Mock
-  private AsyncHttpClient.BoundRequestBuilder requestBuilder;
-
-  @Captor
-  private ArgumentCaptor<Realm> realmCaptor;
+  private Request.Builder requestBuilder;
 
   @Test
   public void testAuthenticate() {
@@ -31,11 +24,7 @@ public class BasicHttpAuthenticationTest {
     BasicHttpAuthentication authenticator = new BasicHttpAuthentication("trillian", secret);
     authenticator.authenticate(requestBuilder);
 
-    verify(requestBuilder).setRealm(realmCaptor.capture());
-
-    Realm realm = realmCaptor.getValue();
-    assertEquals("trillian", realm.getPrincipal());
-    assertEquals("{}", realm.getPassword());
+    verify(requestBuilder).header("Authorization", "Basic dHJpbGxpYW46e30=");
   }
 
 }

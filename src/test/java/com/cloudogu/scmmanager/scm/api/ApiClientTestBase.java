@@ -1,48 +1,44 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.ning.http.client.AsyncHttpClient;
-import org.junit.After;
+import com.cloudogu.scmmanager.RecordedRequestDispatcher;
+import okhttp3.OkHttpClient;
+import okhttp3.mockwebserver.Dispatcher;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
-import org.junit.Rule;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import java.io.IOException;
 
 public class ApiClientTestBase {
-  @Rule
-  public WireMockRule rule = new WireMockRule(options().dynamicPort());
 
-  private AsyncHttpClient client;
+  private final MockWebServer server = new MockWebServer();
+
+  private OkHttpClient client;
 
   private String[] pathInjection = {};
   private int pathInjectionIndex = 0;
 
   @Before
-  public void setUpAHC() {
-    this.client = new AsyncHttpClient();
+  public void setUpServerAndClient() throws IOException {
+    client = new OkHttpClient();
+
+    Dispatcher mDispatcher = new RecordedRequestDispatcher();
+    server.setDispatcher(mDispatcher);
+    server.start();
   }
 
-  @After
-  public void tearDownAHC() {
-    this.client.close();
-  }
-
-  public AsyncHttpClient getClient() {
+  public OkHttpClient getClient() {
     return client;
   }
 
   protected ApiClient apiClient() {
-    HttpAuthentication noAuthentication = requestBuilder -> {};
+    HttpAuthentication noAuthentication = requestBuilder -> {
+    };
     return new HttpApiClient(client, noAuthentication, this::serverUrl);
   }
 
-  protected void injectPath(String... pathInjection) {
-    this.pathInjection = pathInjection;
-  }
-
   protected String serverUrl(String path) {
-    return String.format("http://localhost:%d%s", rule.port(), nextPathInjection() + path);
+    return String.format("http://localhost:%d%s", server.getPort(), nextPathInjection() + path);
   }
 
   private String nextPathInjection() {
@@ -54,4 +50,5 @@ public class ApiClientTestBase {
     }
     return pathInjection[pathInjectionIndex++];
   }
+
 }

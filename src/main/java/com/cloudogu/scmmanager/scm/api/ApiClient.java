@@ -2,10 +2,14 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Response;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class ApiClient {
@@ -29,27 +33,31 @@ public abstract class ApiClient {
 
   public abstract String getBaseUrl();
 
-  protected <T> CompletableFuture<T> execute(AsyncHttpClient.BoundRequestBuilder requestBuilder, Class<T> type) {
+  protected <T> CompletableFuture<T> execute(OkHttpClient client, Request.Builder requestBuilder, Class<T> type) {
     CompletableFuture<T> future = new CompletableFuture<>();
-    requestBuilder.execute(new AsyncCompletionHandler<Response>() {
+    client.newCall(requestBuilder.build()).enqueue(new Callback() {
       @Override
-      public void onThrowable(Throwable ex) {
+      public void onFailure(Call call, IOException ex) {
         future.completeExceptionally(ex);
       }
 
       @Override
-      public Response onCompleted(Response response) {
-        if (response.getStatusCode() == 200) {
+      public void onResponse(Call call, Response response) {
+        if (response.code() == 200) {
           try {
-            T t = objectMapper.readValue(response.getResponseBodyAsBytes(), type);
-            future.complete(t);
+            ResponseBody body = response.body();
+            if (body == null) {
+              future.complete(null);
+            } else {
+              T t = objectMapper.readValue(body.bytes(), type);
+              future.complete(t);
+            }
           } catch (Exception ex) {
             future.completeExceptionally(ex);
           }
         } else {
-          future.completeExceptionally(new IllegalReturnStatusException(response.getStatusCode()));
+          future.completeExceptionally(new IllegalReturnStatusException(response.code()));
         }
-        return response;
       }
     });
 

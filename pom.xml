@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.43</version>
+    <version>4.66</version>
     <relativePath />
   </parent>
 
@@ -20,9 +20,9 @@
 
   <properties>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.263.3</jenkins.version>
+    <jenkins.version>2.387.1</jenkins.version>
     <slf4j.version>1.7.30</slf4j.version>
-    <java.level>8</java.level>
+    <java.level>11</java.level>
     <!-- Other properties you may want to use:
       ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
       ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
@@ -43,37 +43,44 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>1.20</version>
+      <version>324.va_f5d6774f3a_d</version>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>2.3.11</version>
+      <version>1189.vf61b_a_5e2f62e</version>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>ssh-credentials</artifactId>
-      <version>1.17.4</version>
+      <version>305.v8f4381501156</version>
     </dependency>
 
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>async-http-client</artifactId>
-      <version>1.9.40.0</version>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>okhttp-api</artifactId>
+      <version>4.11.0-145.vcb_8de402ef81</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>4.11.0</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>trilead-api</artifactId>
-      <version>1.0.5</version>
+      <version>2.84.v72119de229b_7</version>
     </dependency>
 
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>jaxb</artifactId>
-      <version>2.3.0.1</version>
+      <version>2.3.8-1</version>
     </dependency>
 
     <!-- scm plugins should be optional -->
@@ -81,29 +88,35 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>git</artifactId>
-      <version>3.5.0</version>
+      <version>5.0.2</version>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>subversion</artifactId>
-      <version>2.12.2</version>
+      <version>2.17.2</version>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mercurial</artifactId>
-      <version>2.11</version>
+      <version>1260.vdfb_723cdcc81</version>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>branch-api</artifactId>
-      <version>2.0.11</version>
+      <version>2.1105.v472604208c55</version>
       <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>cloudbees-folder</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -114,9 +127,16 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-support</artifactId>
+      <version>839.v35e2736cfd5c</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>jackson2-api</artifactId>
-      <version>2.10.0</version>
+      <version>2.15.2-350.v0c2f3f8fc595</version>
     </dependency>
 
     <dependency>
@@ -137,13 +157,6 @@
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
       <version>2.10</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
-      <version>2.23.2</version>
-      <scope>test</scope>
     </dependency>
 
     <!-- fix require upper bound dependencies errors for slf4j -->
@@ -184,7 +197,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>job-dsl</artifactId>
-      <version>1.77</version>
+      <version>1.84</version>
       <optional>true</optional>
     </dependency>
 
@@ -198,7 +211,7 @@
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.12</version>
+        <version>1.16</version>
       </dependency>
 
       <dependency>
@@ -210,55 +223,103 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-scm-step</artifactId>
-        <version>2.6</version>
+        <version>408.v7d5b_135a_b_d49</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-support</artifactId>
+        <version>839.v35e2736cfd5c</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>2.22</version>
+        <version>639.v6eca_cd8c04a_a_</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>2.40</version>
+        <version>1213.v646def1087f9</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>junit</artifactId>
-        <version>1.29</version>
+        <version>1189.v1b_e593637fa_e</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>2.6.3</version>
+        <version>672.v64378a_b_20c60</version>
       </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.10.0</version>
+        <version>2.15.2</version>
       </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.10.0</version>
+        <version>2.15.2</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1.71</version>
+        <version>1251.vfe552ed55f8d</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>matrix-project</artifactId>
-        <version>1.17</version>
+        <version>789.v57a_725b_63c79</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>font-awesome-api</artifactId>
+        <version>6.2.0-3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>javax-activation-api</artifactId>
+        <version>1.2.0-6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin-util</artifactId>
+        <version>789.v57a_725b_63c79</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <version>2.3.7</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>cloudbees-folder</artifactId>
+        <version>6.815.v0dd5a_cb_40e0e</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jenkins.plugins</groupId>
+            <artifactId>ionicons-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <version>45.vf54fca_5d2154</version>
       </dependency>
 
       <!-- fix require upper bound dependencies error for wiremock -->
@@ -267,13 +328,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>3.8.1</version>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-security</artifactId>
-        <version>9.4.15.v20190215</version>
         <scope>test</scope>
       </dependency>
 
@@ -337,7 +391,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.9</version>
+            <version>0.8.10</version>
             <executions>
               <execution>
                 <phase>initialize</phase>
