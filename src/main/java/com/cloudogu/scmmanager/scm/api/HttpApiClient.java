@@ -1,8 +1,8 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
+import com.cloudogu.scmmanager.OkHttpClientBuilder;
 import com.google.common.annotations.VisibleForTesting;
-import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ public class HttpApiClient extends ApiClient {
   private final UnaryOperator<String> urlModifier;
 
   public HttpApiClient(String serverUrl, HttpAuthentication authentication) {
-    this(JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build(), serverUrl, authentication);
+    this(OkHttpClientBuilder.build(), serverUrl, authentication);
   }
 
   public HttpApiClient(OkHttpClient client, String serverUrl, HttpAuthentication authentication) {

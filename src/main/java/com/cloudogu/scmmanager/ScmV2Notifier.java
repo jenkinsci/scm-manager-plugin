@@ -76,7 +76,7 @@ public class ScmV2Notifier implements Notifier {
 
   private OkHttpClient getClient() {
     if (client == null) {
-      return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build();
+      return OkHttpClientBuilder.build();
     }
     return client;
   }
