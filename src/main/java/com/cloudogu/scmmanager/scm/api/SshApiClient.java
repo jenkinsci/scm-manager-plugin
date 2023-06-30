@@ -1,18 +1,17 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.BearerHttpAuthentication;
+import com.cloudogu.scmmanager.OkHttpClientBuilder;
 import com.cloudogu.scmmanager.SSHAuthentication;
 import com.cloudogu.scmmanager.SshConnection;
 import com.cloudogu.scmmanager.SshConnectionFactory;
 import com.cloudogu.scmmanager.SshConnectionFailedException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class SshApiClient extends ApiClient {
 
@@ -39,7 +39,7 @@ public class SshApiClient extends ApiClient {
   private final SSHAuthentication authentication;
 
   public SshApiClient(String sshUrl, SSHAuthentication authentication) {
-    this(JenkinsOkHttpClient.newClientBuilder(new OkHttpClient()).build(), new SshConnectionFactory(), sshUrl, authentication);
+    this(OkHttpClientBuilder.build(), new SshConnectionFactory(), sshUrl, authentication);
   }
 
   public SshApiClient(OkHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
