@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.api;
 
-import com.cloudogu.scmmanager.OkHttpClientBuilder;
 import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
