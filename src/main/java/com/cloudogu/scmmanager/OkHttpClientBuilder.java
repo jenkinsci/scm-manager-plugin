@@ -32,6 +32,7 @@ public final class OkHttpClientBuilder {
             LOG.warn("SCM-Manager request failed", ioe);
           }
         })
+        .followRedirects(false)
         .build();
   }
 }
