@@ -5,6 +5,8 @@ import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.scm.api.SCMFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 public class ScmManagerApi {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerApi.class);
 
   private final ApiClient client;
 
@@ -123,14 +127,25 @@ public class ScmManagerApi {
   public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
     Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
     if (pullRequestLink.isPresent()) {
-      return client.get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequestCollection+json;v=2", PullRequestCollection.class)
-        .thenApply(
-          pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
-            .map(preparePullRequest(repository))
-            .collect(Collectors.toList()))
-        .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
-          .thenApply(future -> completableFutures.stream().filter(cf -> !cf.isCompletedExceptionally()).map(CompletableFuture::join)
-            .collect(Collectors.toList())));
+      return
+        client
+          .get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequestCollection+json;v=2", PullRequestCollection.class)
+          .thenApply(
+            pullRequestCollection -> pullRequestCollection
+              .get_embedded()
+              .getPullRequests()
+              .stream()
+              .map(preparePullRequest(repository))
+              .filter(cf -> !cf.isCompletedExceptionally())
+              .collect(Collectors.toList())
+          )
+          .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
+            .thenApply(
+              future -> completableFutures
+                .stream()
+                .filter(cf -> !cf.isCompletedExceptionally())
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList())));
     }
     return CompletableFuture.completedFuture(Collections.emptyList());
   }
@@ -139,8 +154,22 @@ public class ScmManagerApi {
     return pullRequest -> {
       pullRequest.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
 
-      CompletableFuture<Void> source = client.get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setSourceBranch);
-      CompletableFuture<Void> target = client.get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class).thenAccept(pullRequest::setTargetBranch);
+      CompletableFuture<Void> source =
+        client
+          .get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+          .thenAccept(pullRequest::setSourceBranch);
+      CompletableFuture<Void> target =
+        client
+          .get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+          .thenAccept(pullRequest::setTargetBranch);
+
+      try {
+        source.join();
+        target.join();
+      } catch (Exception e) {
+        LOG.info("failed to fetch source or target branch of pull request {} in repository {}/{}", pullRequest.getId(), repository.getNamespace(), repository.getName(), e);
+        return CompletableFuture.failedFuture(e);
+      }
 
       return CompletableFuture.allOf(source, target).thenApply(v -> pullRequest);
     };
