@@ -44,8 +44,7 @@ public abstract class ApiClient {
       @Override
       public void onResponse(Call call, Response response) {
         if (response.code() == 200) {
-          try {
-            ResponseBody body = response.body();
+          try (ResponseBody body = response.body()) {
             if (body == null) {
               future.complete(null);
             } else {
