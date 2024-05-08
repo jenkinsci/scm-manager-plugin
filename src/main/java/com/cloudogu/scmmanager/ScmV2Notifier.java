@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
 import net.sf.json.JSONObject;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -101,12 +100,14 @@ public class ScmV2Notifier implements Notifier {
         }
 
         @Override
-        public void onResponse(Call call, Response response) throws IOException {
-          LOG.info(
-            "status notify for repository {} and revision {} returned {}",
-            namespaceAndName, revision, response.code()
-          );
-          completionListener.accept(response);
+        public void onResponse(Call call, Response response) {
+          try (response) {
+            LOG.info(
+              "status notify for repository {} and revision {} returned {}",
+              namespaceAndName, revision, response.code()
+            );
+            completionListener.accept(response);
+          }
         }
       });
   }

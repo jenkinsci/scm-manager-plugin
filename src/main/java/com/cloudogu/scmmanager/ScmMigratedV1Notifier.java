@@ -64,15 +64,17 @@ public class ScmMigratedV1Notifier implements Notifier {
 
       @Override
       public void onResponse(Call call, Response response) throws IOException {
-        if (response.isRedirect()) {
-          String location = response.header("Location");
-          if (!Strings.isNullOrEmpty(location)) {
-            notifyV2(location, revision, buildStatus);
+        try (response) {
+          if (response.isRedirect()) {
+            String location = response.header("Location");
+            if (!Strings.isNullOrEmpty(location)) {
+              notifyV2(location, revision, buildStatus);
+            } else {
+              LOG.warn("server returned redirect without location header");
+            }
           } else {
-            LOG.warn("server returned redirect without location header");
+            LOG.debug("expected redirect, but server returned status code {}", response.code());
           }
-        } else {
-          LOG.debug("expected redirect, but server returned status code {}", response.code());
         }
       }
 

@@ -43,19 +43,21 @@ public abstract class ApiClient {
 
       @Override
       public void onResponse(Call call, Response response) {
-        if (response.code() == 200) {
-          try (ResponseBody body = response.body()) {
-            if (body == null) {
-              future.complete(null);
-            } else {
-              T t = objectMapper.readValue(body.bytes(), type);
-              future.complete(t);
+        try (response) {
+          if (response.code() == 200) {
+            try (ResponseBody body = response.body()) {
+              if (body == null) {
+                future.complete(null);
+              } else {
+                T t = objectMapper.readValue(body.bytes(), type);
+                future.complete(t);
+              }
+            } catch (Exception ex) {
+              future.completeExceptionally(ex);
             }
-          } catch (Exception ex) {
-            future.completeExceptionally(ex);
+          } else {
+            future.completeExceptionally(new IllegalReturnStatusException(response.code()));
           }
-        } else {
-          future.completeExceptionally(new IllegalReturnStatusException(response.code()));
         }
       }
     });
