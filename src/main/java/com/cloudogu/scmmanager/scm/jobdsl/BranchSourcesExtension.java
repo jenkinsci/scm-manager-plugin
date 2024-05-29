@@ -78,7 +78,7 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
 
   private String resolveRepository(ScmManagerBranchSourceContext context) throws ExecutionException, InterruptedException {
     String repository = context.getRepository();
-    String[] parts = repository.split("/");
+    String[] parts = repository.split("/"); // TODO?
     if (parts.length < 3) {
       repository = getRepositoryIdFromRemote(context, parts[0], parts[1]);
     }
@@ -89,7 +89,7 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
     ScmManagerApi api = createApi(apiFactory, context);
     CompletableFuture<Repository> future = api.getRepository(namespace, name);
     String type = future.get().getType();
-    return String.format("%s/%s/%s", namespace, name, type);
+    return String.format("%s/%s/%s", namespace, name, type); // TODO?
   }
 
 }

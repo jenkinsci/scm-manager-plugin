@@ -2,7 +2,6 @@ package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
-import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.scm.SubversionSCM;
@@ -16,7 +15,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ScmManagerSvnSource extends SubversionSCMSource {
 
@@ -90,9 +88,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
 
     @Override
     protected String createRepositoryOption(Repository repository) {
-      String name = repository.getNamespace() + "/" + repository.getName();
-      Optional<Link> protocol = repository.getLinks().getLinkBy("protocol", l -> "http".equals(l.getName()));
-      return protocol.map(link -> name).orElse(null);
+      return repository.getNamespace() + "/" + repository.getName();
     }
 
     @NonNull
