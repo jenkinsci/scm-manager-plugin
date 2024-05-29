@@ -7,7 +7,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.scm.SubversionSCM;
 import hudson.scm.subversion.UpdateUpdater;
-import hudson.util.ListBoxModel;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMRevision;
@@ -90,10 +89,10 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     }
 
     @Override
-    protected ListBoxModel.Option createRepositoryOption(Repository repository) {
+    protected String createRepositoryOption(Repository repository) {
       String name = repository.getNamespace() + "/" + repository.getName();
       Optional<Link> protocol = repository.getLinks().getLinkBy("protocol", l -> "http".equals(l.getName()));
-      return protocol.map(link -> new ListBoxModel.Option(name, link.getHref())).orElse(null);
+      return protocol.map(link -> name).orElse(null);
     }
 
     @NonNull
