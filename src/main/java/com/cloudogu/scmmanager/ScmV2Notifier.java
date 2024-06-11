@@ -122,7 +122,7 @@ public class ScmV2Notifier implements Notifier {
 
   private void setReplacedBuild(BuildStatus buildStatus, JSONObject jsonObject) {
     try {
-      String[] path = buildStatus.getName().split("/"); // TODO?
+      String[] path = buildStatus.getName().split("/");
       path[path.length - 1] = URLEncoder.encode(sourceBranch, "UTF-8");
       jsonObject.put("replaces", String.join("/", path));
     } catch (Exception e) {

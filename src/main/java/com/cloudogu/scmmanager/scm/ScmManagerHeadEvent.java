@@ -70,7 +70,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
   }
 
   private boolean isMatch(@NonNull ScmManagerSource source) {
-    return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type)) // TODO?
+    return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
       && identification.matches(source.getServerUrl());
   }
 
