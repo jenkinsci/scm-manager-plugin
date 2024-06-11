@@ -74,7 +74,7 @@ public class ScmManagerSource extends SCMSource {
         this.serverUrl = serverUrl;
         this.credentialsId = credentialsId;
 
-        String[] parts = repository.split("/");
+        String[] parts = repository.split("/| \\(|\\)");
         this.namespace = parts[0];
         this.name = parts[1];
         this.type = parts[2];
@@ -177,7 +177,7 @@ public class ScmManagerSource extends SCMSource {
     }
 
     public String getRepository() {
-        return String.format("%s/%s/%s", namespace, name, type);
+        return String.format("%s/%s (%s)", namespace, name, type);
     }
 
     public String getCredentialsId() {

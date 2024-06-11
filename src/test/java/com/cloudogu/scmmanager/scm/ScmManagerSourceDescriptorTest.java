@@ -18,8 +18,8 @@ import de.otto.edison.hal.Links;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
+import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
@@ -198,31 +198,31 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws InterruptedException, ExecutionException {
-        ListBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
     }
 
     @Test
     public void shouldNotLoadRepositoriesWhenCredentialsAreEmpty() throws InterruptedException, ExecutionException {
-        ListBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", null);
 
         assertThat(model.stream()).isEmpty();
     }
 
     @Test
     public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
-        ListBoxModel model =
+        ComboBoxModel model =
                 descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", "hitchhiker/guide");
 
-        assertThat(model.stream()).extracting("name").containsExactly("hitchhiker/guide");
+        assertThat(model.stream()).containsExactly("hitchhiker/guide");
     }
 
     @Test
     public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
-        ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
     }
@@ -232,9 +232,9 @@ public class ScmManagerSourceDescriptorTest {
         when(repositoryPredicate.test(any())).thenReturn(true);
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
-        ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
-        assertThat(model.stream()).extracting("name").containsExactly("space/X (git)", "blue/dragon (hg)");
+        assertThat(model.stream()).containsExactly("space/X (git)", "blue/dragon (hg)");
     }
 
     @Test
@@ -250,9 +250,9 @@ public class ScmManagerSourceDescriptorTest {
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-        ListBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
-        assertThat(model.stream()).extracting("name").containsExactly("space/X (git)");
+        assertThat(model.stream()).containsExactly("space/X (git)");
     }
 
     private Repository createHoG() {
