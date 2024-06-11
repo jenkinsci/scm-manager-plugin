@@ -23,10 +23,15 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
 
   @DataBoundConstructor
   public ScmManagerSvnSource(String id, String serverUrl, String repository, String credentialsId) {
-    super(id, repository);
+    super(id, createRepoLink(serverUrl, repository));
     this.setCredentialsId(credentialsId);
     this.serverUrl = serverUrl;
     this.repository = repository;
+  }
+
+  private static String createRepoLink(String serverUrl, String repository) {
+    String[] parts = repository.split("/");
+    return new LinkBuilder(serverUrl, parts[0], parts[1]).repo();
   }
 
   public String getServerUrl() {
@@ -41,7 +46,9 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
   @Override
   public SubversionSCM build(@NonNull SCMHead head, SCMRevision revision) {
     // mostly a copy from SubversionSCMSource
-    // we have to rewrite the method to set the repoistory browser
+    // we have to rewrite the method to set the repository browser
+
+    String repoLink = createRepoLink(serverUrl, repository);
 
     if (revision != null && !head.equals(revision.getHead())) {
       revision = null;
@@ -50,8 +57,8 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     if (revision != null && !(revision instanceof SCMRevisionImpl)) {
       revision = null;
     }
-    StringBuilder remote = new StringBuilder(repository);
-    if (!repository.endsWith("/")) {
+    StringBuilder remote = new StringBuilder(repoLink);
+    if (!repoLink.endsWith("/")) {
       remote.append('/');
     }
     remote.append(head.getName());
@@ -68,7 +75,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     );
 
     return new SubversionSCM(
-      locations, new UpdateUpdater(), new ScmManagerSvnRepositoryBrowser(repository),
+      locations, new UpdateUpdater(), new ScmManagerSvnRepositoryBrowser(repoLink),
       null, null, null, null,
       null, false, false, null,
       false
@@ -105,5 +112,4 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
       };
     }
   }
-
 }
