@@ -4,7 +4,7 @@ import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMSourceOwner;
 import org.jvnet.hudson.reactor.ReactorException;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 

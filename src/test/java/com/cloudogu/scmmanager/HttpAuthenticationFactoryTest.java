@@ -5,6 +5,7 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import hudson.model.Descriptor;
 import hudson.model.Run;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
@@ -55,14 +56,15 @@ public class HttpAuthenticationFactoryTest {
   }
 
   @Test
-  public void testCreateSSHAuthentication() throws IOException {
+  public void testCreateSSHAuthentication() throws IOException, Descriptor.FormException {
     addCredential("scmadmin", "scmadmin", "scmadmin");
     SSHAuthentication authentication = authenticationFactory.createSSH(run, "scmadmin");
     assertSame(authentication.getClass(), SSHAuthentication.class);
   }
 
+  // TODO Replace with lombok
   @Test
-  public void testCreate() throws IOException {
+  public void testCreate() throws IOException, Descriptor.FormException {
     addCredential("scm-one", "trillian", "secret");
 
     HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-one");
@@ -73,7 +75,7 @@ public class HttpAuthenticationFactoryTest {
     assertEquals("secret", basic.getPassword().getPlainText());
   }
 
-  private void addCredential(String id, String username, String password) throws IOException {
+  private void addCredential(String id, String username, String password) throws IOException, Descriptor.FormException {
     Credentials c = new UsernamePasswordCredentialsImpl(
       CredentialsScope.GLOBAL, id, "description", username, password
     );
