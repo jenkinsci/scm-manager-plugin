@@ -2,10 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <!-- The plugin version includes several dependencies, especially the version
+     ~ of the hpi plugin. -->
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.85</version>
+    <version>5.5</version>
     <relativePath />
   </parent>
 
@@ -18,6 +20,11 @@
   <description>Jenkins SCM-Manager Plugin</description>
   <url>https://github.com/jenkinsci/scm-manager-plugin</url>
 
+  <organization>
+    <name>Cloudogu GmbH</name>
+    <url>https://cloudogu.com</url>
+  </organization>
+
   <properties>
     <java.level>17</java.level>
 
@@ -26,13 +33,39 @@
     <jenkins.version>2.479.2</jenkins.version>
 
     <!-- Other version properties required for this plugin -->
+    <edison.version>2.1.1</edison.version>
+    <edison-joda.version>2.10.2</edison-joda.version>
+    <lombok.version>1.18.36</lombok.version>
+    <mercurial.version>1260.vdfb_723cdcc81</mercurial.version>
     <jackson.version>2.17.0</jackson.version>
     <slf4j.version>2.0.16</slf4j.version>
 
+    <!-- Testing scope -->
+    <assertj.version>3.27.3</assertj.version>
+    <mockito.version>5.15.2</mockito.version>
+    <mockwebserver.version>4.12.0</mockwebserver.version>
+
+    <!-- Jenkins Pipeline scope -->
+    <jacoco.version>0.8.10</jacoco.version>
+    <versions-plugin.version>2.7</versions-plugin.version>
+
+    <!-- TODO During a next update, please check whether the BOM
+          provides versions for these values and then remove the manual version tag.
+          This is supposed to be a temporary solution, but keep it if it isn't provided yet.
+          Or take the versions manually from the http://mvnrepository.com BOM artifact list
+          (the version number of the dependency BOM below) and replace them below.
+    -->
+    <cloudbees-folder.version>6.975.v4161e479479f</cloudbees-folder.version>
+    <matrix.version>840.v812f627cb_578</matrix.version>
+    <plugin-util.version>5.1.0</plugin-util.version>
+    <scm-api.version>698.v8e3b_c788f0a_6</scm-api.version>
+    <script-security.version>1369.v9b_98a_4e95b_2d</script-security.version>
+    <workflow-api.version>1336.vee415d95c521</workflow-api.version>
+    <workflow-support.version>936.v9fa_77211ca_e1</workflow-support.version>
+
     <!-- Other properties you may want to use:
       ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
-      ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
-      ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
+      ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin.
  -->
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
@@ -46,6 +79,12 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <dependencyManagement>
     <dependencies>
@@ -62,6 +101,11 @@
         <scope>import</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>annotation-indexer</artifactId>
+        <version>1.18</version>
+      </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -75,12 +119,6 @@
         <version>${jackson.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>annotation-indexer</artifactId>
-        <version>1.18</version>
-      </dependency>
-
       <!-- BOM-versioned dependencies -->
 
       <dependency>
@@ -91,19 +129,13 @@
 
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-scm-step</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-step-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-scm-step</artifactId>
         <!-- version provided by BOM -->
       </dependency>
 
@@ -116,19 +148,19 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <!-- version provided by BOM -->
+        <version>${scm-api.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <!-- version provided by BOM -->
+        <version>${script-security.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>matrix-project</artifactId>
-        <!-- version provided by BOM -->
+        <version>${matrix.version}</version>
       </dependency>
 
       <dependency>
@@ -146,7 +178,7 @@
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <!-- version provided by BOM -->
+        <version>${plugin-util.version}</version>
       </dependency>
 
       <dependency>
@@ -173,8 +205,6 @@
         </exclusions>
       </dependency>
 
-      <!-- fix require upper bound dependencies error for wiremock -->
-
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
@@ -186,6 +216,91 @@
   </dependencyManagement>
 
   <dependencies>
+
+    <!-- non-Jenkins BOM dependencies; these need an own version -->
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>de.otto.edison</groupId>
+      <artifactId>edison-hal</artifactId>
+      <version>${edison.version}</version>
+    </dependency>
+
+    <!-- Needed for edison -->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${edison-joda.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${mockwebserver.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- scm plugins should be optional -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mercurial</artifactId>
+      <optional>true</optional>
+      <!-- version not provided by BOM but kept here for consistency -->
+      <version>${mercurial.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>scm-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- BOM-versioned dependencies -->
+
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
@@ -222,6 +337,30 @@
       <!-- version provided by BOM -->
     </dependency>
 
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>echarts-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>${cloudbees-folder.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>pipeline-groovy-lib</artifactId>
+      <!-- version provided by BOM -->
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>script-security</artifactId>
+    </dependency>
+
     <!-- scm plugins should be optional -->
 
     <dependency>
@@ -236,14 +375,12 @@
       <artifactId>subversion</artifactId>
       <optional>true</optional>
       <!-- version provided by BOM -->
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mercurial</artifactId>
-      <optional>true</optional>
-      <!-- version not provided by BOM but kept here for consistency -->
-      <version>1260.vdfb_723cdcc81</version>
+      <exclusions>
+        <exclusion>
+          <groupId>io.jenkins.plugins</groupId>
+          <artifactId>pipeline-groovy-lib</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -269,8 +406,14 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-support</artifactId>
-      <!-- version provided by BOM -->
+      <version>${workflow-support.version}</version>
       <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <version>${workflow-api.version}</version>
     </dependency>
 
     <dependency>
@@ -279,73 +422,12 @@
       <!-- version provided by BOM -->
     </dependency>
 
-    <!-- improve jobdsl syntax -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>job-dsl</artifactId>
       <!-- version provided by BOM -->
+      <!-- TODO improve jobdsl syntax -->
       <optional>true</optional>
-    </dependency>
-
-    <!-- non-Jenkins BOM dependencies; these need an own version -->
-    <!-- fix require upper bound dependencies errors for slf4j -->
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>de.otto.edison</groupId>
-      <artifactId>edison-hal</artifactId>
-      <version>2.1.1</version>
-    </dependency>
-
-    <!-- Needed for edison -->
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>2.10.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.27.3</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>5.11.0</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <version>4.11.0</version>
-      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -362,18 +444,6 @@
       <email>eduard.heimbuch@cloudogu.com</email>
     </developer>
   </developers>
-
-  <organization>
-    <name>Cloudogu GmbH</name>
-    <url>https://cloudogu.com</url>
-  </organization>
-
-  <scm>
-    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>HEAD</tag>
-  </scm>
 
   <repositories>
     <repository>
@@ -407,7 +477,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.10</version>
+            <version>${jacoco.version}</version>
             <executions>
               <execution>
                 <phase>initialize</phase>
@@ -420,7 +490,7 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>versions-maven-plugin</artifactId>
-            <version>2.7</version>
+            <version>${versions-plugin.version}</version>
             <configuration>
               <excludes>
                 <exclude>org.apache.commons:commons-collections4</exclude>

@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.api;
 
-import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
@@ -8,6 +7,8 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey;
+import hudson.model.Descriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,21 +34,21 @@ public class CredentialsLookupTest {
   private final CredentialsLookup credentialsLookup = new CredentialsLookup();
 
   @Test
-  public void shouldReturnHttpCredentials() throws IOException {
+  public void shouldReturnHttpCredentials() throws IOException, Descriptor.FormException {
     addUsernamePasswordCredentials("tricia", "trillian", "secret");
     StandardUsernamePasswordCredentials credentials = credentialsLookup.http("http://hog", "tricia").lookup(owner);
     assertThat(credentials).isNotNull();
   }
 
   @Test
-  public void shouldReturnCredentialsFromItemGroup() throws IOException {
+  public void shouldReturnCredentialsFromItemGroup() throws IOException, Descriptor.FormException {
     addUsernamePasswordCredentials("tricia", "trillian", "secret");
     StandardUsernamePasswordCredentials credentials = credentialsLookup.http("http://hog", "tricia").lookup(jenkins.getInstance());
     assertThat(credentials).isNotNull();
   }
 
   @Test
-  public void shouldReturnSshUsernamePasswordCredentials() throws IOException {
+  public void shouldReturnSshUsernamePasswordCredentials() throws IOException, Descriptor.FormException {
     addUsernamePasswordCredentials("dent", "adent", "secret123");
     StandardUsernameCredentials credentials = credentialsLookup.ssh("ssh://hog", "dent").lookup(owner);
     assertThat(credentials).isNotNull();
@@ -83,7 +84,7 @@ public class CredentialsLookupTest {
     addCredential(sshUserPrivateKey);
   }
 
-  private void addUsernamePasswordCredentials(String id, String username, String password) throws IOException {
+  private void addUsernamePasswordCredentials(String id, String username, String password) throws IOException, Descriptor.FormException {
     UsernamePasswordCredentials upc = new UsernamePasswordCredentialsImpl(
       CredentialsScope.GLOBAL, id, username + "-desc", username, password
     );
