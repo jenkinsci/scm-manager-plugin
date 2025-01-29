@@ -2,10 +2,12 @@ package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.scm.SubversionSCM;
 import hudson.scm.subversion.UpdateUpdater;
+import hudson.util.ListBoxModel;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMRevision;
@@ -15,6 +17,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ScmManagerSvnSource extends SubversionSCMSource {
 
@@ -23,15 +26,10 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
 
   @DataBoundConstructor
   public ScmManagerSvnSource(String id, String serverUrl, String repository, String credentialsId) {
-    super(id, createRepoLink(serverUrl, repository));
+    super(id, repository);
     this.setCredentialsId(credentialsId);
     this.serverUrl = serverUrl;
     this.repository = repository;
-  }
-
-  private static String createRepoLink(String serverUrl, String repository) {
-    String[] parts = repository.split("/");
-    return new LinkBuilder(serverUrl, parts[0], parts[1]).repo();
   }
 
   public String getServerUrl() {
@@ -46,9 +44,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
   @Override
   public SubversionSCM build(@NonNull SCMHead head, SCMRevision revision) {
     // mostly a copy from SubversionSCMSource
-    // we have to rewrite the method to set the repository browser
-
-    String repoLink = createRepoLink(serverUrl, repository);
+    // we have to rewrite the method to set the repoistory browser
 
     if (revision != null && !head.equals(revision.getHead())) {
       revision = null;
@@ -57,8 +53,8 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     if (revision != null && !(revision instanceof SCMRevisionImpl)) {
       revision = null;
     }
-    StringBuilder remote = new StringBuilder(repoLink);
-    if (!repoLink.endsWith("/")) {
+    StringBuilder remote = new StringBuilder(repository);
+    if (!repository.endsWith("/")) {
       remote.append('/');
     }
     remote.append(head.getName());
@@ -75,7 +71,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     );
 
     return new SubversionSCM(
-      locations, new UpdateUpdater(), new ScmManagerSvnRepositoryBrowser(repoLink),
+      locations, new UpdateUpdater(), new ScmManagerSvnRepositoryBrowser(repository),
       null, null, null, null,
       null, false, false, null,
       false
@@ -94,8 +90,10 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
     }
 
     @Override
-    protected String createRepositoryOption(Repository repository) {
-      return repository.getNamespace() + "/" + repository.getName();
+    protected ListBoxModel.Option createRepositoryOption(Repository repository) {
+      String name = repository.getNamespace() + "/" + repository.getName();
+      Optional<Link> protocol = repository.getLinks().getLinkBy("protocol", l -> "http".equals(l.getName()));
+      return protocol.map(link -> new ListBoxModel.Option(name, link.getHref())).orElse(null);
     }
 
     @NonNull
@@ -112,4 +110,5 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
       };
     }
   }
+
 }
