@@ -57,6 +57,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   public ComboBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
     ComboBoxModel model = new ComboBoxModel();
+    //TODO REMOVEq
+    System.out.println("Value: " + value);
     if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
       if (!Strings.isNullOrEmpty(value)) {
         model.add(value);

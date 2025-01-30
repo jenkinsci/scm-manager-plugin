@@ -326,28 +326,23 @@ public class ScmManagerSource extends SCMSource {
 
   }
 
-  private static class CriteriaWitness implements SCMSourceRequest.Witness {
+  private record CriteriaWitness(ScmManagerSourceRequest request) implements SCMSourceRequest.Witness {
 
-    private final ScmManagerSourceRequest request;
-
-    public CriteriaWitness(ScmManagerSourceRequest request) {
-      this.request = request;
-    }
     @Override
-    public void record(@NonNull SCMHead scmHead, SCMRevision revision, boolean isMatch) {
-      PrintStream logger = request.listener().getLogger();
-      logger.append("    ").append(scmHead.getName()).append(": ");
-      if (revision == null) {
-        logger.println("Skipped");
-      } else {
-        if (isMatch) {
-          logger.println("Met criteria");
+      public void record(@NonNull SCMHead scmHead, SCMRevision revision, boolean isMatch) {
+        PrintStream logger = request.listener().getLogger();
+        logger.append("    ").append(scmHead.getName()).append(": ");
+        if (revision == null) {
+          logger.println("Skipped");
         } else {
-          logger.println("Does not meet criteria");
+          if (isMatch) {
+            logger.println("Met criteria");
+          } else {
+            logger.println("Does not meet criteria");
+          }
         }
       }
-    }
 
-  }
+    }
 
 }

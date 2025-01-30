@@ -35,6 +35,8 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -55,6 +57,8 @@ public class ScmManagerNavigator extends SCMNavigator {
   public static final String ALL_NAMESPACES_LABEL = "--all--";
 
   private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerNavigator.class);
 
   private final String projectName;
   private final String serverUrl;
@@ -116,6 +120,7 @@ public class ScmManagerNavigator extends SCMNavigator {
 
   @Override
   public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
+    LOG.debug("Visiting sources with observer {}", observer);
     TaskListener listener = observer.getListener();
     try (ScmManagerNavigatorRequest request = new ScmManagerNavigatorContext()
       .withTraits(traits)

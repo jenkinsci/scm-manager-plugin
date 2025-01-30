@@ -38,8 +38,10 @@ public class HttpApiClient extends ApiClient {
     }
     return url -> {
       if (url.contains("://")) {
+        LOG.debug("fixed server url: {} -> {}", serverUrl, url);
         return url;
       }
+      LOG.debug("fixed server url: {} -> {}", serverUrl, fixedServerUrl + url);
       return fixedServerUrl + url;
     };
   }

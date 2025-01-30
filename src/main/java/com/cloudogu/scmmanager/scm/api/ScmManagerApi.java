@@ -24,6 +24,8 @@ public class ScmManagerApi {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmManagerApi.class);
 
+  private static final int PAGE_SIZE = 5;
+
   private final ApiClient client;
 
   public ScmManagerApi(ApiClient client) {
@@ -44,23 +46,22 @@ public class ScmManagerApi {
   }
 
   public CompletableFuture<List<Repository>> getRepositories() {
-    // TODO pageSize?
-    return client.get("/api/v2/repositories?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+    String url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name", PAGE_SIZE);
+    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
   public CompletableFuture<List<Repository>> getRepositories(String namespace) {
-    String url = String.format("/api/v2/repositories/%s", namespace);
-    // TODO pageSize?
-    return client.get(url + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+    String url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=namespace&sortBy=name", namespace, PAGE_SIZE);
+    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
   public CompletableFuture<List<Repository>> getRepositories(Namespace namespace) {
     Optional<Link> repositoriesLink = namespace.getLinks().getLinkBy("repositories");
     if (repositoriesLink.isPresent()) {
-      // TODO pageSize?
-      return client.get(repositoriesLink.get().getHref() + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+      String url = String.format("%s?pageSize=2000&sortBy=namespace&sortBy=name", repositoriesLink.get().getHref());
+      return client.get(url,  "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
         .thenApply(collection -> collection.get_embedded().getRepositories());
     }
     return CompletableFuture.completedFuture(emptyList());

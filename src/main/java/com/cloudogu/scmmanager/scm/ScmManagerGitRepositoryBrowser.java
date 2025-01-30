@@ -22,7 +22,7 @@ public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser  {
   private final LinkBuilder linkBuilder;
 
   /**
-   * This constructor is used if the browser is used with in a normal git source (non SCM-Manager Source).
+   * This constructor is used if the browser is used within a normal git source (non SCM-Manager Source).
    *
    * @param repoUrl repository url
    */
