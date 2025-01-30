@@ -5,7 +5,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import hudson.util.ComboBoxModel;
+import hudson.model.AutoCompletionCandidates;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.scm.api.SCMSourceDescriptor;
@@ -23,6 +23,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   protected final ScmManagerApiFactory apiFactory;
   private final Predicate<Repository> repositoryPredicate;
+  private String serverUrl;
+  private String credentialsId;
 
   @VisibleForTesting
   ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
@@ -32,12 +34,20 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   @SuppressWarnings("unused") // used By stapler
   public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException, ExecutionException {
-    return ConnectionConfiguration.checkServerUrl(apiFactory, value);
+    FormValidation validation = ConnectionConfiguration.checkServerUrl(apiFactory, value);
+    if(validation.equals(FormValidation.ok())) {
+      this.serverUrl = value;
+    }
+    return validation;
   }
 
   @SuppressWarnings("unused") // used By stapler
   public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    return validateCredentialsId(context, serverUrl, value);
+    FormValidation validation = validateCredentialsId(context, serverUrl, value);
+    if(validation.equals(FormValidation.ok())) {
+      this.credentialsId = value;
+    }
+    return validation;
   }
 
   @VisibleForTesting
@@ -50,24 +60,34 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
   }
 
+  /*
   @SuppressWarnings("unused") // used By stapler
   public ComboBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
     return fillRepositoryItems(context, serverUrl, credentialsId, value);
   }
+  */
 
-  public ComboBoxModel fillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    ComboBoxModel model = new ComboBoxModel();
-    //TODO REMOVEq
+  @SuppressWarnings("unused") // used by Stapler
+  public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws ExecutionException, InterruptedException {
+    return FormValidation.ok();
+  }
+
+  @SuppressWarnings("unused") // used by Stapler
+  public AutoCompletionCandidates doAutoCompleteRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) throws ExecutionException, InterruptedException {
+      return autoCompleteRepository(context, serverUrl, credentialsId, value);
+  }
+
+  public AutoCompletionCandidates autoCompleteRepository(@AncestorInPath SCMSourceOwner context, String serverUrl, String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
+    AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+    //TODO REMOVE
     System.out.println("Value: " + value);
     if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
-      if (!Strings.isNullOrEmpty(value)) {
-        model.add(value);
-      }
-      return model;
+      return candidates;
     }
 
     ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
-    // filter all repositories, which does not support the protocol
+
+    // filter all repositories that do not support the protocol
     Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();
     Predicate<Repository> predicate = protocolPredicate.and(repositoryPredicate);
     List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
@@ -75,15 +95,15 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       if (predicate.test(repository)) {
         String option = createRepositoryOption(repository);
         if (option != null) {
-          model.add(option);
+          candidates.add(option);
         }
       }
     }
-    return model;
+    return candidates;
   }
 
   protected String createRepositoryOption(Repository repository) {
-    return String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
+    return String.format("%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
   }
 
   static {
