@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -12,8 +13,11 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 
@@ -21,16 +25,34 @@ import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
-  protected final ScmManagerApiFactory apiFactory;
-  private final Predicate<Repository> repositoryPredicate;
-  private String serverUrl;
-  private String credentialsId;
-
   @VisibleForTesting
   ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
     this.apiFactory = apiFactory;
     this.repositoryPredicate = repositoryPredicate;
   }
+
+  /**
+   * <b>Warning:</b> This extended constructor is intended for testing purposes only.
+   * @param apiFactory - Api factory
+   * @param repositoryPredicate - Repository predicate
+   * @param serverUrl - ServerUrl. Note that this is expected to be inserted by a Jenkins form in production!
+   * @param credentialsId - Id of the Jenkins credential object. Note that this is expected to be inserted by a Jenkins form in production!
+   */
+  @VisibleForTesting
+  ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate, String serverUrl, String credentialsId) {
+    this(apiFactory, repositoryPredicate);
+    this.serverUrl = serverUrl;
+    this.credentialsId = credentialsId;
+  }
+
+  protected final ScmManagerApiFactory apiFactory;
+  private final Predicate<Repository> repositoryPredicate;
+
+  private String serverUrl;
+  private String credentialsId;
+  private AutoCompletionCandidates cachedCandidates = new AutoCompletionCandidates();
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
 
   @SuppressWarnings("unused") // used By stapler
   public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException, ExecutionException {
@@ -60,16 +82,15 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
   }
 
-  /*
-  @SuppressWarnings("unused") // used By stapler
-  public ComboBoxModel doFillRepositoryItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    return fillRepositoryItems(context, serverUrl, credentialsId, value);
-  }
-  */
-
   @SuppressWarnings("unused") // used by Stapler
   public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws ExecutionException, InterruptedException {
-    return FormValidation.ok();
+    boolean isEmpty = this.cachedCandidates.getValues().isEmpty()
+      || cachedCandidates.getValues().stream().filter(c -> c.equals(value)).findFirst().isEmpty();
+    if(isEmpty) {
+      return FormValidation.error("No repository candidates found");
+    } else {
+      return FormValidation.ok();
+    }
   }
 
   @SuppressWarnings("unused") // used by Stapler
@@ -78,19 +99,79 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   }
 
   public AutoCompletionCandidates autoCompleteRepository(@AncestorInPath SCMSourceOwner context, String serverUrl, String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
-    AutoCompletionCandidates candidates = new AutoCompletionCandidates();
-    //TODO REMOVE
-    System.out.println("Value: " + value);
     if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
-      return candidates;
+      LOG.debug("ServerUrl or CredentialsId were empty or null, so no autocomplete suggestions returned.");
+      return new AutoCompletionCandidates();
     }
 
     ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
 
+    String version = api.index().get().getVersion();
+
     // filter all repositories that do not support the protocol
+    if(isLegacyAutoCompleteVersion(version)) {
+      // TODO EFFICIENCY
+      AutoCompletionCandidates candidates = autoCompleteRepositoryWithSingleNamespaceScope(api, value);
+      cachedCandidates = candidates;
+      return candidates;
+    } else {
+      AutoCompletionCandidates candidates = autoCompleteRepository(api, value);
+      cachedCandidates = candidates;
+      return candidates;
+    }
+  }
+
+  /**
+   * Versions below SCM-Manager 3.7.2 do not support queries in <tt>namespace/name</tt>
+   * format and need a different AutoComplete approach.
+   * @param version SCM-Manager version
+   */
+  private boolean isLegacyAutoCompleteVersion(String version) {
+    String[] parts = version.split("\\.");
+    int major = Integer.parseInt(parts[0]);
+    int minor = Integer.parseInt(parts[1]);
+    int patch = Integer.parseInt(parts[2]);
+
+    return major < 3 || minor < 7 || patch < 2;
+  }
+
+  private AutoCompletionCandidates autoCompleteRepository(ScmManagerApi api, String value) throws ExecutionException, InterruptedException {
+    return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(value, null));
+  }
+
+  /**
+   * In this mode, only values within an already-entered namespace scope can be searched for.
+   *
+   * This is the standard (legacy) mode up to SCM-Manager 3.7.1.
+   *
+   * @param api Api
+   * @param value Value in the textbox
+   * @return AutoCompletion candidates
+   */
+  private AutoCompletionCandidates autoCompleteRepositoryWithSingleNamespaceScope(ScmManagerApi api, String value) throws ExecutionException, InterruptedException {
+    String namespaceString = value.split("/")[0];
+    String repositoryString = null;
+    if(value.split("/").length > 1) {
+      repositoryString = value.split("/")[1];
+    }
+
+    Optional<Namespace> namespace = api.getNamespaces().exceptionally(e -> emptyList()).get().stream()
+      .filter(n -> n.getNamespace().equals(namespaceString)).findFirst();
+
+    if(namespace.isPresent()) {
+      return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(repositoryString, namespace.get()));
+    } else {
+      return new AutoCompletionCandidates();
+    }
+  }
+
+  private AutoCompletionCandidates autoCompleteCandidates(ScmManagerApi api, ScmManagerApi.SearchQuery query) throws ExecutionException, InterruptedException {
+    AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+
     Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();
     Predicate<Repository> predicate = protocolPredicate.and(repositoryPredicate);
-    List<Repository> repositories = api.getRepositories().exceptionally(e -> emptyList()).get();
+
+    List<Repository> repositories = api.getRepositories(query).exceptionally(e -> emptyList()).get();
     for (Repository repository : repositories) {
       if (predicate.test(repository)) {
         String option = createRepositoryOption(repository);

@@ -4,6 +4,7 @@ import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.annotation.Nullable;
 import jenkins.scm.api.SCMFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,8 @@ public class ScmManagerApi {
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmManagerApi.class);
 
-  private static final int PAGE_SIZE = 5;
+  // TODO REFACTOR
+  private static final int PAGE_SIZE = 2000;
 
   private final ApiClient client;
 
@@ -36,8 +38,8 @@ public class ScmManagerApi {
     return client.getProtocol();
   }
 
-  public CompletableFuture<HalRepresentation> index() {
-    return client.get("/api/v2", "application/vnd.scmm-index+json;v=2", HalRepresentation.class);
+  public CompletableFuture<Index> index() {
+    return client.get("/api/v2", "application/vnd.scmm-index+json;v=2", Index.class);
   }
 
   public CompletableFuture<List<Namespace>> getNamespaces() {
@@ -47,6 +49,27 @@ public class ScmManagerApi {
 
   public CompletableFuture<List<Repository>> getRepositories() {
     String url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name", PAGE_SIZE);
+    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+      .thenApply(collection -> collection.get_embedded().getRepositories());
+  }
+
+  /**
+   * Specifies a search query.
+   *
+   * @param query Query for the &q= part
+   * @param namespace (Optional) namespace for query restriction
+   */
+  public record SearchQuery(String query, @Nullable Namespace namespace) {
+    // no further methods necessary
+  }
+
+  public CompletableFuture<List<Repository>> getRepositories(SearchQuery searchQuery) {
+    String url = null;
+    if(searchQuery.namespace == null) {
+      url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name&q=%s", PAGE_SIZE, searchQuery.query);
+    } else {
+      url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=name&q=%s", searchQuery.namespace.getNamespace(), PAGE_SIZE, searchQuery.query);
+    }
     return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }

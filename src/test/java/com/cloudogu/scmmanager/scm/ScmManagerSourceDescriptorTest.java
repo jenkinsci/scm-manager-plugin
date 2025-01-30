@@ -1,12 +1,14 @@
 package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
+import com.cloudogu.scmmanager.scm.api.Index;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
@@ -112,7 +114,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldRejectServerUrlWithoutLoginLink() throws InterruptedException, ExecutionException {
-    HalRepresentation index = new HalRepresentation(linkingTo().single(link("any", "http://example.com/")).build());
+    Index index = new Index(linkingTo().single(link("any", "http://example.com/")).build());
     ScmManagerApiTestMocks.mockResult(when(api.index()), index);
     FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
@@ -168,8 +170,8 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldAcceptWorkingCredentials() throws InterruptedException, ExecutionException {
-    HalRepresentation index = new HalRepresentation(linkingTo().single(link("login", "http://example.com/")).build());
-    HalRepresentation indexWithLogIn = new HalRepresentation(linkingTo().single(link("me", "http://example.com/")).build());
+    Index index = new Index(linkingTo().single(link("login", "http://example.com/")).build());
+    Index indexWithLogIn = new Index(linkingTo().single(link("me", "http://example.com/")).build());
     ScmManagerApiTestMocks.mockResult(when(api.index()), index, indexWithLogIn);
 
     SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
@@ -193,6 +195,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws InterruptedException, ExecutionException {
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "", "myAuth", null);
     ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
 
     assertThat(model.stream()).isEmpty();
@@ -282,7 +285,7 @@ public class ScmManagerSourceDescriptorTest {
   }
 
   void mockCorrectIndex() {
-    HalRepresentation index = new HalRepresentation(linkingTo().single(link("login", "http://example.com/")).build());
+    Index index = new Index(linkingTo().single(link("login", "http://example.com/")).build());
     ScmManagerApiTestMocks.mockResult(when(api.index()), index);
   }
 

@@ -6,6 +6,7 @@ import com.cloudbees.plugins.credentials.common.StandardUsernameListBoxModel;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
+import com.cloudogu.scmmanager.scm.api.Index;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -63,7 +64,7 @@ class ConnectionConfiguration {
     } catch (CredentialsUnavailableException e) {
       return FormValidation.error("credentials not valid for connection type");
     }
-    CompletableFuture<HalRepresentation> future = client.index();
+    CompletableFuture<Index> future = client.index();
     return future
       .thenApply(index -> {
         if (index.getLinks().getLinkBy("me").isPresent()) {
@@ -99,7 +100,7 @@ class ConnectionConfiguration {
     }
 
     ScmManagerApi api = apiFactory.anonymous(value);
-    CompletableFuture<HalRepresentation> future = api.index();
+    CompletableFuture<Index> future = api.index();
     return future
       .thenApply(index -> {
         if (index.getLinks().getLinkBy("login").isPresent()) {
