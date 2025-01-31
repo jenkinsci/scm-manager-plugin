@@ -44,6 +44,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
   }
+  static final int AUTO_COMPLETION_MIN = 2;
 
   protected final ScmManagerApiFactory apiFactory;
   private final Predicate<Repository> repositoryPredicate;
@@ -83,11 +84,14 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   }
 
   @SuppressWarnings("unused") // used by Stapler
-  public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws ExecutionException, InterruptedException {
+  public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) {
+    if(value.length() < AUTO_COMPLETION_MIN) {
+      return FormValidation.warning(String.format("Please enter at least %d characters and a namespace for suggestions.", AUTO_COMPLETION_MIN));
+    }
     boolean isEmpty = this.cachedCandidates.getValues().isEmpty()
       || cachedCandidates.getValues().stream().filter(c -> c.equals(value)).findFirst().isEmpty();
     if(isEmpty) {
-      return FormValidation.error("No repository candidates found");
+      return FormValidation.error("Repository not found");
     } else {
       return FormValidation.ok();
     }
@@ -110,7 +114,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     // filter all repositories that do not support the protocol
     if(isLegacyAutoCompleteVersion(version)) {
-      // TODO EFFICIENCY
       AutoCompletionCandidates candidates = autoCompleteRepositoryWithSingleNamespaceScope(api, value);
       cachedCandidates = candidates;
       return candidates;
