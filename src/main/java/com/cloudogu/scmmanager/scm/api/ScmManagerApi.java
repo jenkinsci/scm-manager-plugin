@@ -59,7 +59,7 @@ public class ScmManagerApi {
    * @param query Query for the &q= part
    * @param namespace (Optional) namespace for query restriction
    */
-  public record SearchQuery(String query, @Nullable Namespace namespace) {
+  public record SearchQuery(String query, @Nullable String namespace) {
     // no further methods necessary
   }
 
@@ -68,7 +68,7 @@ public class ScmManagerApi {
     if(searchQuery.namespace == null) {
       url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name&q=%s", PAGE_SIZE, searchQuery.query);
     } else {
-      url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=name&q=%s", searchQuery.namespace.getNamespace(), PAGE_SIZE, searchQuery.query);
+      url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=name&q=%s", searchQuery.namespace, PAGE_SIZE, searchQuery.query);
     }
     return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());

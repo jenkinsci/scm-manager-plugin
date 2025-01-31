@@ -5,14 +5,12 @@ import com.cloudogu.scmmanager.scm.api.Index;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
-import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Item;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
-import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -23,6 +21,7 @@ import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -41,6 +40,7 @@ import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 
@@ -67,6 +67,10 @@ public class ScmManagerSourceDescriptorTest {
 
   @InjectMocks
   private TestingScmManagerSource.DescriptorImpl descriptor;
+
+  static final String MODERN_VERSION = "3.7.2";
+  static final String LEGACY_VERSION = "2.46.2";
+  static final String SNAPSHOT_VERSION = "4.196.11-CUSTOMENDING.HERE";
 
   @Before
   public void mockApiClient() {
@@ -114,8 +118,8 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldRejectServerUrlWithoutLoginLink() throws InterruptedException, ExecutionException {
-    Index index = new Index(linkingTo().single(link("any", "http://example.com/")).build());
-    ScmManagerApiTestMocks.mockResult(when(api.index()), index);
+    mockEmptyIndex();
+
     FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
     assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
@@ -150,7 +154,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldAcceptServerUrl() throws InterruptedException, ExecutionException {
-    mockCorrectIndex();
+    mockCorrectIndexForVersion(MODERN_VERSION);
     FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
     assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
@@ -160,7 +164,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldRejectEmptyCredentials() throws InterruptedException, ExecutionException {
-    mockCorrectIndex();
+    mockCorrectIndexForVersion(MODERN_VERSION);
     FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "");
 
     assertThat(formValidation).isNotNull();
@@ -184,7 +188,7 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldRejectWrongCredentials() throws InterruptedException, ExecutionException {
-    mockCorrectIndex();
+    mockCorrectIndexForVersion(MODERN_VERSION);
 
     FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
@@ -196,61 +200,70 @@ public class ScmManagerSourceDescriptorTest {
   @Test
   public void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws InterruptedException, ExecutionException {
     AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "", "myAuth", null);
-    ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
 
-    assertThat(model.stream()).isEmpty();
+    assertThat(candidates.getValues()).isEmpty();
   }
 
   @Test
   public void shouldNotLoadRepositoriesWhenCredentialsAreEmpty() throws InterruptedException, ExecutionException {
-    ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", null);
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "", null);
 
-    assertThat(model.stream()).isEmpty();
-  }
-
-  @Test
-  public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
-    ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", "hitchhiker/guide");
-
-    assertThat(model.stream()).containsExactly("hitchhiker/guide");
+    assertThat(candidates.getValues()).isEmpty();
   }
 
   @Test
   public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
-    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
+    mockCorrectIndexForVersion(MODERN_VERSION);
 
-    ComboBoxModel model = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
+    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))));
 
-    assertThat(model.stream()).isEmpty();
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
+
+    assertThat(candidates.getValues()).isEmpty();
   }
 
   @Test
   public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
     when(repositoryPredicate.test(any())).thenReturn(true);
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
+    mockCorrectIndexForVersion(MODERN_VERSION);
 
-    ComboBoxModel model = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
+    Repository spaceX = createSpaceX();
+    Repository dragon = createDragon();
 
-    assertThat(model.stream()).containsExactly("space/X (git)", "blue/dragon (hg)");
+    addRepositories(spaceX, dragon);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
+
+    assertThat(candidates.getValues()).containsExactly("space/X", "blue/dragon");
   }
 
   @Test
   public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
+    mockCorrectIndexForVersion(MODERN_VERSION);
+
     Repository spaceX = createSpaceX();
     Repository dragon = createDragon();
     Repository hog = createHoG();
+
+    addRepositories(spaceX, dragon, hog);
 
     when(repositoryPredicate.test(spaceX)).thenAnswer(ic -> {
       Repository repository = ic.getArgument(0);
       return "git".equals(repository.getType());
     });
 
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
-    ComboBoxModel model = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
-
-    assertThat(model.stream()).containsExactly("space/X (git)");
+    assertThat(candidates.getValues()).containsExactly("space/X");
   }
+
+  // TODO NEXT
+  /*
+  @Test
+  public void shouldNotReturnRepositoryWithIncompleteNamespaceInLegacyVersion() throws InterruptedException, ExecutionException {
+
+  }
+  */
 
   private Repository createHoG() {
     return new Repository("hitchhiker", "hog", "git", sshLinks());
@@ -284,9 +297,19 @@ public class ScmManagerSourceDescriptorTest {
     return linkBuilder("protocol", "ssh://hitchhiker.com/scm").withName("ssh").build();
   }
 
-  void mockCorrectIndex() {
-    Index index = new Index(linkingTo().single(link("login", "http://example.com/")).build());
+  void mockEmptyIndex() {
+    Index index = new Index();
     ScmManagerApiTestMocks.mockResult(when(api.index()), index);
+  }
+
+  void mockCorrectIndexForVersion(String version) {
+    Index index = spy(new Index(linkingTo().single(link("login", "http://example.com/")).build()));
+    ScmManagerApiTestMocks.mockResult(when(api.index()), index);
+    when(index.getVersion()).thenReturn(version);
+  }
+
+  private void addRepositories(Repository... repositories) {
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))), asList(repositories));
   }
 
   /**

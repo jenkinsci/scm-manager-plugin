@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.NamespaceAndName;
 import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -107,6 +108,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       LOG.debug("ServerUrl or CredentialsId were empty or null, so no autocomplete suggestions returned.");
       return new AutoCompletionCandidates();
     }
+    if (value == null) {
+      value = "";
+    }
 
     ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
 
@@ -138,6 +142,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     return major < 3 || minor < 7 || patch < 2;
   }
 
+
+
   private AutoCompletionCandidates autoCompleteRepository(ScmManagerApi api, String value) throws ExecutionException, InterruptedException {
     return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(value, null));
   }
@@ -152,20 +158,25 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
    * @return AutoCompletion candidates
    */
   private AutoCompletionCandidates autoCompleteRepositoryWithSingleNamespaceScope(ScmManagerApi api, String value) throws ExecutionException, InterruptedException {
-    String namespaceString = value.split("/")[0];
-    String repositoryString = null;
-    if(value.split("/").length > 1) {
-      repositoryString = value.split("/")[1];
-    }
+   NamespaceAndName extracted = extractNamespaceAndName(value);
 
     Optional<Namespace> namespace = api.getNamespaces().exceptionally(e -> emptyList()).get().stream()
-      .filter(n -> n.getNamespace().equals(namespaceString)).findFirst();
+      .filter(n -> n.getNamespace().equals(extracted.getNamespace())).findFirst();
 
     if(namespace.isPresent()) {
-      return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(repositoryString, namespace.get()));
+      return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(extracted.getName(), extracted.getNamespace()));
     } else {
       return new AutoCompletionCandidates();
     }
+  }
+
+  private NamespaceAndName extractNamespaceAndName(String combinedValue) {
+    String namespaceString = combinedValue.split("/")[0];
+    String repositoryString = null;
+    if(combinedValue.split("/").length > 1) {
+      repositoryString = combinedValue.split("/")[1];
+    }
+    return new NamespaceAndName(namespaceString, repositoryString);
   }
 
   private AutoCompletionCandidates autoCompleteCandidates(ScmManagerApi api, ScmManagerApi.SearchQuery query) throws ExecutionException, InterruptedException {
