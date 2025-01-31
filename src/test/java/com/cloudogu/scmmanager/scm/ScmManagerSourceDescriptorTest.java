@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Index;
+import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -30,8 +31,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
 import static de.otto.edison.hal.Link.link;
@@ -39,7 +46,10 @@ import static de.otto.edison.hal.Link.linkBuilder;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -224,7 +234,6 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
-    when(repositoryPredicate.test(any())).thenReturn(true);
     mockCorrectIndexForVersion(MODERN_VERSION);
 
     Repository spaceX = createSpaceX();
@@ -236,6 +245,26 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(candidates.getValues()).containsExactly("space/X", "blue/dragon");
   }
+
+  @Test
+  public void shouldReturnRepositoriesWithNamespaceAndSlash() throws InterruptedException, ExecutionException {
+    // TODO FIX
+    mockCorrectIndexForVersion(MODERN_VERSION);
+
+    Repository spaceX = createSpaceX();
+
+    addRepositories(spaceX);
+
+    when(repositoryPredicate.test(spaceX)).thenAnswer(ic -> {
+      Repository repository = ic.getArgument(0);
+      return "git".equals(repository.getType());
+    });
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "blue/");
+
+    assertThat(candidates.getValues()).containsExactly("space/X");
+  }
+
 
   @Test
   public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
@@ -257,13 +286,64 @@ public class ScmManagerSourceDescriptorTest {
     assertThat(candidates.getValues()).containsExactly("space/X");
   }
 
-  // TODO NEXT
-  /*
+
   @Test
   public void shouldNotReturnRepositoryWithIncompleteNamespaceInLegacyVersion() throws InterruptedException, ExecutionException {
+    mockCorrectIndexForVersion(LEGACY_VERSION);
+    Repository dragon = createDragon();
 
+    addRepositories(dragon);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "blu");
+
+    assertThat(candidates.getValues()).isEmpty();
   }
-  */
+
+  @Test
+  public void shouldNotReturnMoreThanFiveRepositoriesInModernRepositories() throws ExecutionException, InterruptedException {
+    // TODO FIX
+    mockCorrectIndexForVersion(MODERN_VERSION);
+
+    Repository hog = createHoG();
+    Repository scotty = createScotty();
+    Repository spock = createSpock();
+    Repository worf = createWorf();
+    Repository dragon = createDragon(); // hg > not supposed to be in with filter
+    Repository spaceX = createSpaceX();
+    Repository vader = createVader(); // exceding 5
+
+    when(repositoryPredicate.test(any(Repository.class))).thenAnswer(ic -> {
+      Repository repository = ic.getArgument(0);
+      return "git".equals(repository.getType());
+    });
+
+    addRepositories(hog, scotty, spock, worf, dragon, spaceX, vader);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "");
+
+    assertThat(candidates.getValues()).containsExactly(
+      "hitchhiker/hog", "enterprise/scotty", "enterprise/spock", "clingon/worf", "space/X");
+  }
+
+
+  @Test
+  public void shouldThrowWarningAfterTimeout() throws Exception {
+    mockCorrectIndexForVersion(MODERN_VERSION);
+
+    Repository spaceX = createSpaceX();
+    Repository dragon = createDragon();
+
+    addRepositories(spaceX, dragon);
+
+    CompletableFuture<List<Repository>> verySlowFuture = spy(new CompletableFuture<>());
+    doThrow(TimeoutException.class).when(verySlowFuture).get(anyInt(), any(TimeUnit.class));
+    when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))).thenReturn(verySlowFuture);
+
+
+    assertThatThrownBy(() -> descriptor.autoCompleteRepository(scmSourceOwner, "http://veryslowexample.com", "myAuth", "blue"),
+      "Test timeout code").isInstanceOf(ExecutionException.class).hasMessage("Repository loading failed due to a timeout or load issue by the SCM-Manager instance.");
+  }
+
 
   private Repository createHoG() {
     return new Repository("hitchhiker", "hog", "git", sshLinks());
@@ -275,6 +355,22 @@ public class ScmManagerSourceDescriptorTest {
 
   private Repository createSpaceX() {
     return new Repository("space", "X", "git", bothLinks());
+  }
+
+  private Repository createSpock() {
+    return new Repository("enterprise", "spock", "git", httpLinks());
+  }
+
+  private Repository createScotty() {
+    return new Repository("enterprise", "scotty", "git", httpLinks());
+  }
+
+  private Repository createWorf() {
+    return new Repository("clingon", "worf", "git", httpLinks());
+  }
+
+  private Repository createVader() {
+    return new Repository("deathstar", "vader", "git", httpLinks());
   }
 
   private Links bothLinks() {
@@ -309,6 +405,7 @@ public class ScmManagerSourceDescriptorTest {
   }
 
   private void addRepositories(Repository... repositories) {
+    ScmManagerApiTestMocks.mockResult(when(api.getNamespaces()), Arrays.stream(repositories).map(r -> new Namespace(r.getNamespace())).toList());
     ScmManagerApiTestMocks.mockResult(when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))), asList(repositories));
   }
 

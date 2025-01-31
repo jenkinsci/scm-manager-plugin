@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
 import static java.util.Collections.emptyList;
@@ -46,6 +48,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     this.credentialsId = credentialsId;
   }
   static final int AUTO_COMPLETION_MIN = 2;
+  static final int TIME_OUT_IN_MILLIS = 3500;
+  static final int MAX_RESULTS = 5;
 
   protected final ScmManagerApiFactory apiFactory;
   private final Predicate<Repository> repositoryPredicate;
@@ -55,6 +59,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   private AutoCompletionCandidates cachedCandidates = new AutoCompletionCandidates();
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
+
 
   @SuppressWarnings("unused") // used By stapler
   public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException, ExecutionException {
@@ -185,16 +190,20 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();
     Predicate<Repository> predicate = protocolPredicate.and(repositoryPredicate);
 
-    List<Repository> repositories = api.getRepositories(query).exceptionally(e -> emptyList()).get();
-    for (Repository repository : repositories) {
-      if (predicate.test(repository)) {
-        String option = createRepositoryOption(repository);
-        if (option != null) {
-          candidates.add(option);
+    try {
+      List<Repository> repositories = api.getRepositories(query).exceptionally(e -> emptyList()).get(TIME_OUT_IN_MILLIS, TimeUnit.MILLISECONDS);
+      for (Repository repository : repositories) {
+        if (candidates.getValues().size() < MAX_RESULTS && predicate.test(repository)) {
+          String option = createRepositoryOption(repository);
+          if (option != null) {
+            candidates.add(option);
+          }
         }
       }
+      return candidates;
+    } catch(TimeoutException e) {
+      throw new ExecutionException("Repository loading failed due to a timeout or load issue by the SCM-Manager instance.", e);
     }
-    return candidates;
   }
 
   protected String createRepositoryOption(Repository repository) {
