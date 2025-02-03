@@ -50,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -241,6 +242,8 @@ public class ScmManagerSourceDescriptorTest {
 
     addRepositories(spaceX, dragon);
 
+    when(repositoryPredicate.test(any())).thenAnswer(ic -> true);
+
     AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
     assertThat(candidates.getValues()).containsExactly("space/X", "blue/dragon");
@@ -248,7 +251,6 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldReturnRepositoriesWithNamespaceAndSlash() throws InterruptedException, ExecutionException {
-    // TODO FIX
     mockCorrectIndexForVersion(MODERN_VERSION);
 
     Repository spaceX = createSpaceX();
@@ -301,28 +303,28 @@ public class ScmManagerSourceDescriptorTest {
 
   @Test
   public void shouldNotReturnMoreThanFiveRepositoriesInModernRepositories() throws ExecutionException, InterruptedException {
-    // TODO FIX
     mockCorrectIndexForVersion(MODERN_VERSION);
 
-    Repository hog = createHoG();
+    Repository hog = createHoG(); // ssh, not supposed to be in
     Repository scotty = createScotty();
     Repository spock = createSpock();
     Repository worf = createWorf();
     Repository dragon = createDragon(); // hg > not supposed to be in with filter
     Repository spaceX = createSpaceX();
-    Repository vader = createVader(); // exceding 5
+    Repository vader = createVader();
+    Repository sidious = createSidious(); // exceding 5
 
     when(repositoryPredicate.test(any(Repository.class))).thenAnswer(ic -> {
       Repository repository = ic.getArgument(0);
       return "git".equals(repository.getType());
     });
 
-    addRepositories(hog, scotty, spock, worf, dragon, spaceX, vader);
+    addRepositories(hog, scotty, spock, worf, dragon, spaceX, vader, sidious);
 
     AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "");
 
     assertThat(candidates.getValues()).containsExactly(
-      "hitchhiker/hog", "enterprise/scotty", "enterprise/spock", "clingon/worf", "space/X");
+      "enterprise/scotty", "enterprise/spock", "clingon/worf", "space/X", "deathstar/vader");
   }
 
 
@@ -336,7 +338,7 @@ public class ScmManagerSourceDescriptorTest {
     addRepositories(spaceX, dragon);
 
     CompletableFuture<List<Repository>> verySlowFuture = spy(new CompletableFuture<>());
-    doThrow(TimeoutException.class).when(verySlowFuture).get(anyInt(), any(TimeUnit.class));
+    lenient().doThrow(TimeoutException.class).when(verySlowFuture).get(anyInt(), any(TimeUnit.class));
     when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))).thenReturn(verySlowFuture);
 
 
@@ -371,6 +373,10 @@ public class ScmManagerSourceDescriptorTest {
 
   private Repository createVader() {
     return new Repository("deathstar", "vader", "git", httpLinks());
+  }
+
+  private Repository createSidious() {
+    return new Repository("deathstar", "sidious", "git", httpLinks());
   }
 
   private Links bothLinks() {
