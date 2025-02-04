@@ -27,6 +27,8 @@ public class ScmManagerApi {
 
   // TODO REFACTOR
   private static final int PAGE_SIZE = 2000;
+  static final String APPLICATION_VND_SCMM = "application/vnd.scmm-branch+json;v=2";
+  static final String APPLICATION_VND_SCMM_REPOSITORY_COLLECTION = "application/vnd.scmm-repositoryCollection+json;v=2";
 
   private final ApiClient client;
 
@@ -49,7 +51,7 @@ public class ScmManagerApi {
 
   public CompletableFuture<List<Repository>> getRepositories() {
     String url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name", PAGE_SIZE);
-    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+    return client.get(url, APPLICATION_VND_SCMM_REPOSITORY_COLLECTION, RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
@@ -59,24 +61,33 @@ public class ScmManagerApi {
    * @param query Query for the &q= part
    * @param namespace (Optional) namespace for query restriction
    */
-  public record SearchQuery(String query, @Nullable String namespace) {
-    // no further methods necessary
+  public record RepositorySearchQuery(String query, @Nullable String namespace) {
+    @Override
+    public String toString() {
+      if(query == null) {
+        return namespace;
+      } else if(namespace == null) {
+        return query;
+      } else {
+        return namespace + "/" + query;
+      }
+    }
   }
 
-  public CompletableFuture<List<Repository>> getRepositories(SearchQuery searchQuery) {
+  public CompletableFuture<List<Repository>> getRepositories(RepositorySearchQuery repositorySearchQuery) {
     String url = null;
-    if(searchQuery.namespace == null) {
-      url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name&q=%s", PAGE_SIZE, searchQuery.query);
+    if(repositorySearchQuery.namespace == null) {
+      url = String.format("/api/v2/repositories?pageSize=%d&sortBy=namespace&sortBy=name&q=%s", PAGE_SIZE, repositorySearchQuery.query);
     } else {
-      url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=name&q=%s", searchQuery.namespace, PAGE_SIZE, searchQuery.query);
+      url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=name&q=%s", repositorySearchQuery.namespace, PAGE_SIZE, repositorySearchQuery.query);
     }
-    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+    return client.get(url, APPLICATION_VND_SCMM_REPOSITORY_COLLECTION, RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
   public CompletableFuture<List<Repository>> getRepositories(String namespace) {
     String url = String.format("/api/v2/repositories/%s?pageSize=%d&sortBy=namespace&sortBy=name", namespace, PAGE_SIZE);
-    return client.get(url, "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+    return client.get(url, APPLICATION_VND_SCMM_REPOSITORY_COLLECTION, RepositoryCollection.class)
       .thenApply(collection -> collection.get_embedded().getRepositories());
   }
 
@@ -84,7 +95,7 @@ public class ScmManagerApi {
     Optional<Link> repositoriesLink = namespace.getLinks().getLinkBy("repositories");
     if (repositoriesLink.isPresent()) {
       String url = String.format("%s?pageSize=2000&sortBy=namespace&sortBy=name", repositoriesLink.get().getHref());
-      return client.get(url,  "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
+      return client.get(url, APPLICATION_VND_SCMM_REPOSITORY_COLLECTION, RepositoryCollection.class)
         .thenApply(collection -> collection.get_embedded().getRepositories());
     }
     return CompletableFuture.completedFuture(emptyList());
@@ -161,7 +172,7 @@ public class ScmManagerApi {
               .stream()
               .map(preparePullRequest(repository))
               .filter(cf -> !cf.isCompletedExceptionally())
-              .collect(Collectors.toList())
+              .toList()
           )
           .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
             .thenApply(
@@ -180,11 +191,11 @@ public class ScmManagerApi {
 
       CompletableFuture<Void> source =
         client
-          .get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+          .get(getPullRequestLink(pullRequest, "sourceBranch"), APPLICATION_VND_SCMM, Branch.class)
           .thenAccept(pullRequest::setSourceBranch);
       CompletableFuture<Void> target =
         client
-          .get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+          .get(getPullRequestLink(pullRequest, "targetBranch"), APPLICATION_VND_SCMM, Branch.class)
           .thenAccept(pullRequest::setTargetBranch);
 
       try {
@@ -219,7 +230,7 @@ public class ScmManagerApi {
 
   public CompletableFuture<Branch> getBranch(Repository repository, String name) {
     Optional<Link> link = repository.getLinks().getLinkBy("branches");
-    return link.map(value -> client.get(concat(value, encode(name)), "application/vnd.scmm-branch+json;v=2", Branch.class)
+    return link.map(value -> client.get(concat(value, encode(name)), APPLICATION_VND_SCMM, Branch.class)
       .thenApply(branch -> {
         branch.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
         return branch;

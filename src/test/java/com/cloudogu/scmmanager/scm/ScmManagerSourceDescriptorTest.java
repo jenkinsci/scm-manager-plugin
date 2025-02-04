@@ -22,7 +22,6 @@ import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -32,7 +31,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -47,9 +45,9 @@ import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -91,13 +89,21 @@ public class ScmManagerSourceDescriptorTest {
     when(api.getProtocol()).thenReturn("http");
   }
 
+  @Before
+  public void mockPredicate() {
+    when(repositoryPredicate.test(any(Repository.class))).thenAnswer(ic -> {
+      Repository repository = ic.getArgument(0);
+      return "git".equals(repository.getType());
+    });
+  }
+
   @Test
   public void shouldRejectEmptyServerUrl() throws InterruptedException, ExecutionException {
     FormValidation formValidation = descriptor.doCheckServerUrl("");
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("server url is required");
+    assertThat(formValidation.getMessage()).isEqualTo("Server URL is required.");
   }
 
   @Test
@@ -106,7 +112,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("server url is required");
+    assertThat(formValidation.getMessage()).isEqualTo("Server URL is required.");
   }
 
   @Test
@@ -115,7 +121,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("illegal URL format");
+    assertThat(formValidation.getMessage()).isEqualTo("Illegal URL format.");
   }
 
   @Test
@@ -124,7 +130,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("Only http, https or ssh urls accepted");
+    assertThat(formValidation.getMessage()).isEqualTo("Only HTTP, HTTPS or SSH URLs are accepted.");
   }
 
   @Test
@@ -136,7 +142,7 @@ public class ScmManagerSourceDescriptorTest {
     assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("api has no login link");
+    assertThat(formValidation.getMessage()).isEqualTo("API has no login link.");
   }
 
   @Test
@@ -148,7 +154,7 @@ public class ScmManagerSourceDescriptorTest {
     assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
-    assertThat(formValidation.getMessage()).isEqualTo("Credentials needed");
+    assertThat(formValidation.getMessage()).isEqualTo("Credentials needed.");
   }
 
   @Test
@@ -180,7 +186,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("credentials are required");
+    assertThat(formValidation.getMessage()).isEqualTo("Credentials are required.");
   }
 
   @Test
@@ -189,8 +195,8 @@ public class ScmManagerSourceDescriptorTest {
     Index indexWithLogIn = new Index(linkingTo().single(link("me", "http://example.com/")).build());
     ScmManagerApiTestMocks.mockResult(when(api.index()), index, indexWithLogIn);
 
-    SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
-    FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+    SCMSourceOwner localScmSourceOwner = Mockito.mock(SCMSourceOwner.class);
+    FormValidation formValidation = descriptor.validateCredentialsId(localScmSourceOwner, "http://example.com", "myAuth");
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -205,7 +211,7 @@ public class ScmManagerSourceDescriptorTest {
 
     assertThat(formValidation).isNotNull();
     assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    assertThat(formValidation.getMessage()).isEqualTo("login failed");
+    assertThat(formValidation.getMessage()).isEqualTo("Login has failed.");
   }
 
   @Test
@@ -226,7 +232,7 @@ public class ScmManagerSourceDescriptorTest {
   public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
     mockCorrectIndexForVersion(MODERN_VERSION);
 
-    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))));
+    ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories(any(ScmManagerApi.RepositorySearchQuery.class))));
 
     AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
@@ -296,9 +302,102 @@ public class ScmManagerSourceDescriptorTest {
 
     addRepositories(dragon);
 
-    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "blu");
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "blue");
 
     assertThat(candidates.getValues()).isEmpty();
+  }
+
+  @Test
+  public void shouldReturnRepositoriesForSnapshot() throws InterruptedException, ExecutionException {
+    mockCorrectIndexForVersion(SNAPSHOT_VERSION);
+
+    Repository spaceX = createSpaceX();
+    Repository dragon = createDragon();
+
+    addRepositories(spaceX, dragon);
+
+    when(repositoryPredicate.test(any())).thenAnswer(ic -> true);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", null);
+
+    assertThat(candidates.getValues()).containsExactly("space/X", "blue/dragon");
+  }
+
+  @Test
+  public void shouldReturnNamespaceNotAvailableInLegacyVersion() throws ExecutionException, InterruptedException {
+    mockCorrectIndexForVersion(LEGACY_VERSION);
+    Repository spacex = createSpaceX();
+
+    addRepositories(spacex);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "sp");
+
+    assertThat(candidates.getValues()).isEmpty();
+
+    FormValidation validation = descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "sp");
+
+    assertThat(validation.kind).isEqualTo(FormValidation.Kind.WARNING);
+
+    assertThat(validation.getMessage()).isEqualTo("Namespace &#039;sp&#039; is not available. Namespace search is supported with SCM-Manager 3.7.2+.");
+  }
+
+  @Test
+  public void shouldReturnNamespacesMustNotContainSlashWithTwoSlashes() {
+    mockCorrectIndexForVersion(MODERN_VERSION);
+    Repository spacex = createSpaceX();
+
+    addRepositories(spacex);
+
+    assertThrows(ExecutionException.class, () -> descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "for/bid/den"));
+
+    FormValidation validation = descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "for/bid/den");
+
+    assertThat(validation.kind).isEqualTo(FormValidation.Kind.ERROR);
+
+    assertThat(validation.getMessage()).isEqualTo("Repository name must not contain a slash.");
+  }
+
+
+  @Test
+  public void shouldNotThrowNamespaceNotAvailableInModernVersion() throws InterruptedException, ExecutionException {
+    mockCorrectIndexForVersion(MODERN_VERSION);
+    Repository spacex = createSpaceX();
+
+    addRepositories(spacex);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "sp");
+
+    assertThat(candidates.getValues()).containsExactly("space/X");
+  }
+
+  @Test
+  public void shouldReturnAllValuesWithFinalSlashInLegacy() throws ExecutionException, InterruptedException {
+    mockCorrectIndexForVersion(LEGACY_VERSION);
+
+    Repository scotty = createScotty();
+    Repository spock = createSpock();
+
+    addRepositories(scotty, spock);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "enterprise/");
+
+    assertThat(candidates.getValues()).containsExactly(
+      "enterprise/scotty", "enterprise/spock");
+  }
+
+  @Test
+  public void shouldReturnAllValuesWithFinalSlashInModern() throws ExecutionException, InterruptedException {
+    mockCorrectIndexForVersion(MODERN_VERSION);
+
+    Repository scotty = createScotty();
+    Repository spock = createSpock();
+
+    addRepositories(scotty, spock);
+
+    AutoCompletionCandidates candidates = descriptor.autoCompleteRepository(scmSourceOwner, "http://example.com", "myAuth", "enterprise/");
+
+    assertThat(candidates.getValues()).containsExactly(
+      "enterprise/scotty", "enterprise/spock");
   }
 
   @Test
@@ -331,6 +430,7 @@ public class ScmManagerSourceDescriptorTest {
   @Test
   public void shouldThrowWarningAfterTimeout() throws Exception {
     mockCorrectIndexForVersion(MODERN_VERSION);
+    descriptor.setConfiguration(new ScmManagerSourceDescriptor.Configuration(5, 1));
 
     Repository spaceX = createSpaceX();
     Repository dragon = createDragon();
@@ -339,7 +439,7 @@ public class ScmManagerSourceDescriptorTest {
 
     CompletableFuture<List<Repository>> verySlowFuture = spy(new CompletableFuture<>());
     lenient().doThrow(TimeoutException.class).when(verySlowFuture).get(anyInt(), any(TimeUnit.class));
-    when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))).thenReturn(verySlowFuture);
+    when(api.getRepositories(any(ScmManagerApi.RepositorySearchQuery.class))).thenReturn(verySlowFuture);
 
 
     assertThatThrownBy(() -> descriptor.autoCompleteRepository(scmSourceOwner, "http://veryslowexample.com", "myAuth", "blue"),
@@ -412,7 +512,7 @@ public class ScmManagerSourceDescriptorTest {
 
   private void addRepositories(Repository... repositories) {
     ScmManagerApiTestMocks.mockResult(when(api.getNamespaces()), Arrays.stream(repositories).map(r -> new Namespace(r.getNamespace())).toList());
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories(any(ScmManagerApi.SearchQuery.class))), asList(repositories));
+    ScmManagerApiTestMocks.mockResult(when(api.getRepositories(any(ScmManagerApi.RepositorySearchQuery.class))), asList(repositories));
   }
 
   /**
@@ -422,7 +522,7 @@ public class ScmManagerSourceDescriptorTest {
 
     @Override
     protected void retrieve(SCMSourceCriteria criteria, SCMHeadObserver observer, SCMHeadEvent<?> event,  TaskListener listener) {
-
+      throw new UnsupportedOperationException();
     }
 
     @Override

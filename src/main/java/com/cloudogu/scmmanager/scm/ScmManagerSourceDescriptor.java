@@ -32,6 +32,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
     this.apiFactory = apiFactory;
     this.repositoryPredicate = repositoryPredicate;
+    this.configuration = new Configuration(Configuration.DEFAULT_TIME_OUT_IN_MILLIS, Configuration.DEFAULT_MAX_RESULTS);
   }
 
   /**
@@ -47,16 +48,29 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
   }
-  static final int AUTO_COMPLETION_MIN = 2;
-  static final int TIME_OUT_IN_MILLIS = 3500;
-  static final int MAX_RESULTS = 5;
+
+  public record Configuration(int timeoutInMillis, int maxResults) {
+    // TODO Should be reduced once performance fix has been done in SCMM.
+    static final int DEFAULT_TIME_OUT_IN_MILLIS = 120000;
+    static final int DEFAULT_MAX_RESULTS = 5;
+  }
 
   protected final ScmManagerApiFactory apiFactory;
   private final Predicate<Repository> repositoryPredicate;
 
+  private Configuration configuration;
+
+  @VisibleForTesting
+  void setConfiguration(Configuration configuration) {
+    this.configuration = configuration;
+  }
+
   private String serverUrl;
   private String credentialsId;
-  private AutoCompletionCandidates cachedCandidates = new AutoCompletionCandidates();
+  private AutoCompletionCandidates returnedCandidates = new AutoCompletionCandidates();
+
+  private AutoCompletionFormMessage autocompletionFormMessage = null;
+  private record AutoCompletionFormMessage(String message, FormValidation.Kind kind) {}
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
 
@@ -91,21 +105,30 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   @SuppressWarnings("unused") // used by Stapler
   public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) {
-    if(value.length() < AUTO_COMPLETION_MIN) {
-      return FormValidation.warning(String.format("Please enter at least %d characters and a namespace for suggestions.", AUTO_COMPLETION_MIN));
+    if(autocompletionFormMessage != null) {
+      return switch (autocompletionFormMessage.kind) {
+        case ERROR -> FormValidation.error(autocompletionFormMessage.message);
+        case WARNING -> FormValidation.warning(autocompletionFormMessage.message);
+        case OK -> FormValidation.ok(autocompletionFormMessage.message);
+      };
     }
-    boolean isEmpty = this.cachedCandidates.getValues().isEmpty()
-      || cachedCandidates.getValues().stream().filter(c -> c.equals(value)).findFirst().isEmpty();
+    boolean isEmpty = this.returnedCandidates.getValues().isEmpty()
+      || returnedCandidates.getValues().stream().filter(c -> c.equals(value)).findFirst().isEmpty();
     if(isEmpty) {
-      return FormValidation.error("Repository not found");
+      return FormValidation.warning("No repositories found.");
     } else {
       return FormValidation.ok();
     }
   }
 
   @SuppressWarnings("unused") // used by Stapler
-  public AutoCompletionCandidates doAutoCompleteRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) throws ExecutionException, InterruptedException {
+  public AutoCompletionCandidates doAutoCompleteRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) throws InterruptedException {
+    try {
       return autoCompleteRepository(context, serverUrl, credentialsId, value);
+    } catch (ExecutionException e) {
+      this.autocompletionFormMessage = new AutoCompletionFormMessage(e.getMessage(), FormValidation.Kind.ERROR);
+      return new AutoCompletionCandidates();
+    }
   }
 
   public AutoCompletionCandidates autoCompleteRepository(@AncestorInPath SCMSourceOwner context, String serverUrl, String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
@@ -124,11 +147,11 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     // filter all repositories that do not support the protocol
     if(isLegacyAutoCompleteVersion(version)) {
       AutoCompletionCandidates candidates = autoCompleteRepositoryWithSingleNamespaceScope(api, value);
-      cachedCandidates = candidates;
+      returnedCandidates = candidates;
       return candidates;
     } else {
       AutoCompletionCandidates candidates = autoCompleteRepository(api, value);
-      cachedCandidates = candidates;
+      returnedCandidates = candidates;
       return candidates;
     }
   }
@@ -139,18 +162,22 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
    * @param version SCM-Manager version
    */
   private boolean isLegacyAutoCompleteVersion(String version) {
-    String[] parts = version.split("\\.");
-    int major = Integer.parseInt(parts[0]);
-    int minor = Integer.parseInt(parts[1]);
-    int patch = Integer.parseInt(parts[2]);
+    try {
+      String[] parts = version.split("\\.");
+      int major = Integer.parseInt(parts[0]);
+      int minor = Integer.parseInt(parts[1]);
+      int patch = Integer.parseInt(parts[2]);
 
-    return major < 3 || minor < 7 || patch < 2;
+      return major < 3 || minor < 7 || patch < 2;
+    } catch (NumberFormatException e) {
+      return false;
+    }
   }
 
 
 
   private AutoCompletionCandidates autoCompleteRepository(ScmManagerApi api, String value) throws ExecutionException, InterruptedException {
-    return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(value, null));
+    return autoCompleteCandidates(api, new ScmManagerApi.RepositorySearchQuery(value, null));
   }
 
   /**
@@ -169,31 +196,45 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       .filter(n -> n.getNamespace().equals(extracted.getNamespace())).findFirst();
 
     if(namespace.isPresent()) {
-      return autoCompleteCandidates(api, new ScmManagerApi.SearchQuery(extracted.getName(), extracted.getNamespace()));
+      return autoCompleteCandidates(api, new ScmManagerApi.RepositorySearchQuery(extracted.getName(), extracted.getNamespace()));
     } else {
+      autocompletionFormMessage = new AutoCompletionFormMessage(
+        String.format("Namespace '%s' is not available. Namespace search is supported with SCM-Manager 3.7.2+.", extracted.getNamespace()),
+        FormValidation.Kind.WARNING);
       return new AutoCompletionCandidates();
     }
   }
 
-  private NamespaceAndName extractNamespaceAndName(String combinedValue) {
-    String namespaceString = combinedValue.split("/")[0];
+  private NamespaceAndName extractNamespaceAndName(String combinedValue) throws ExecutionException {
     String repositoryString = null;
-    if(combinedValue.split("/").length > 1) {
-      repositoryString = combinedValue.split("/")[1];
+    String[] split = combinedValue.split("/");
+    String namespaceString = split[0];
+    if(split.length > 2) {
+      autocompletionFormMessage = new AutoCompletionFormMessage("Repository name must not contain a slash.", FormValidation.Kind.ERROR);
+      throw new ExecutionException(new Exception("Repository name must not contain a slash."));
+    } else if(combinedValue.endsWith("/")) {
+      repositoryString = "";
     }
+
     return new NamespaceAndName(namespaceString, repositoryString);
   }
 
-  private AutoCompletionCandidates autoCompleteCandidates(ScmManagerApi api, ScmManagerApi.SearchQuery query) throws ExecutionException, InterruptedException {
+  private AutoCompletionCandidates autoCompleteCandidates(ScmManagerApi api, ScmManagerApi.RepositorySearchQuery query) throws ExecutionException, InterruptedException {
     AutoCompletionCandidates candidates = new AutoCompletionCandidates();
+
+    if(query.toString().split("/").length > 2) {
+      autocompletionFormMessage = new AutoCompletionFormMessage("Repository name must not contain a slash.", FormValidation.Kind.ERROR);
+      throw new ExecutionException(new Exception("Repository name must not contain a slash."));
+    }
 
     Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();
     Predicate<Repository> predicate = protocolPredicate.and(repositoryPredicate);
 
     try {
-      List<Repository> repositories = api.getRepositories(query).exceptionally(e -> emptyList()).get(TIME_OUT_IN_MILLIS, TimeUnit.MILLISECONDS);
+      List<Repository> repositories = api.getRepositories(query).exceptionally(
+        e -> emptyList()).get(configuration.timeoutInMillis(), TimeUnit.MILLISECONDS);
       for (Repository repository : repositories) {
-        if (candidates.getValues().size() < MAX_RESULTS && predicate.test(repository)) {
+        if (candidates.getValues().size() < configuration.maxResults() && predicate.test(repository)) {
           String option = createRepositoryOption(repository);
           if (option != null) {
             candidates.add(option);
@@ -207,7 +248,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   }
 
   protected String createRepositoryOption(Repository repository) {
-    return String.format("%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
+    return String.format("%s/%s", repository.getNamespace(), repository.getName());
   }
 
   static {
