@@ -47,7 +47,6 @@
     <mockwebserver.version>4.12.0</mockwebserver.version>
 
     <!-- Jenkins Pipeline scope -->
-    <jacoco.version>0.8.10</jacoco.version>
     <versions-plugin.version>2.7</versions-plugin.version>
 
     <!-- TODO During a next update, please check whether the BOM
@@ -492,12 +491,17 @@
 
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.jenkins-ci.tools</groupId>
+            <artifactId>maven-hpi-plugin</artifactId>
+            <version>${hpi-plugin.version}</version>
+          </plugin>
 
           <!-- prepare jacoco agent for code coverage in sonar -->
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco.version}</version>
+            <version>${jacoco-maven-plugin.version}</version>
             <executions>
               <execution>
                 <phase>initialize</phase>
@@ -507,17 +511,6 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>versions-maven-plugin</artifactId>
-            <version>${versions-plugin.version}</version>
-            <configuration>
-              <excludes>
-                <exclude>org.apache.commons:commons-collections4</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-
         </plugins>
       </build>
 
