@@ -41,23 +41,24 @@ or `FAILURE`).
 ### Multibranch Pipelines
 For multibranch pipelines, there is a new branch source named "SCM-Manager". You can create pipelines in Jenkins that
 can find branches, tags, and pull requests in SCM-Manager hosted repositories on their own. In cooperation with the
-[jenkins plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) in SCM-Manager, the Jenkins CI server will receive hooks on every change and trigger new builds.
+[Jenkins plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) in SCM-Manager, the Jenkins CI server will receive hooks on every change and trigger new builds.
 To remove stale jobs like for no longer available repositories, you can manually execute "Scan Namespace Now".
 
 To create such a pipeline, select "New Item" on the Jenkins top level page, then enter a name and select "Multibranch
 Pipeline".
 
-![](docs/assets/select-multibranch-pipeline.png)
+![How to select a multibranch pipeline](docs/assets/select-multibranch-pipeline.png)
 
 In the configuration form for this item, select the matching "SCM-Manager" entry for your repository type in the "Add
 source" dropdown in the section "Branch Sources".
 
-![](docs/assets/config-multibranch-pipeline-source.png)
+![How to select a multibranch pipeline source](docs/assets/config-multibranch-pipeline-source.png)
 
-In the new configuration, enter the base URL of your SCM-Manager instance and select according credentials. This
-plugin will then load a list of all available repositories you can select from.
+In the new configuration, enter the base URL of your SCM-Manager instance and select according credentials. Depending on
+the version of the SCM-Manager instance, this plugin will then load a list of all available repositories you can select from.
+You may also copy and paste a repository into the field.
 
-![](docs/assets/config-multibranch-pipeline.png)
+![Example of a config for a multibranch pipeline](docs/assets/config-multibranch-pipeline.png)
 
 Finally, you can select behaviours where you can choose whether branches, tags or pull requests shall be
 built (among others).
@@ -103,32 +104,36 @@ multibranchPipelineJob('heart-of-gold') {
 }
 ```
 
-### Namespaces
-If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager namespace" jobs. These
+### Organization Folders &ndash; Namespaces
+If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager Namespace" jobs. These
 will scan all repositories in the given namespace and create multibranch pipelines for each repository where a
 `Jenkinsfile` can be found. If a new repository is created in this namespace, a new pipeline will be created
 automatically.
 
 To create such a folder for a complete namespace, select "New Item" on the Jenkins top level page, then enter a name
-and select "SCM-Manager Namespace".
+and select "Organization Folder".
 
-![](docs/assets/select-namespace-item.png)
+![How to select an organization folder](docs/assets/select-namespace-organization-folder.png)
 
-In the configuration form for this item, enter the base URL of your SCM-Manager instance and select according
+In the configuration form for this item, select the *Repository&nbsp;Sources > Add* button and choose *SCM-Manager Namespace*.
+
+![How to select an SCM-Manager namespace as organization folder](docs/assets/config-namespace-select.png)
+
+Within the new form, enter the base URL of your SCM-Manager instance and select according
 credentials. This plugin will then load a list of all available namespaces you can select from.
 
 As an alternative to a concrete namespace, you can select <code>--all--</code> if you want to create build jobs for
-all repositories of the whole SCM-Manager instance. Please note, that in this case the folders for the jobs will be
+all repositories of the whole SCM-Manager instance. Please note that in this case, the folders for the jobs will be
 named with the pattern *namespace/name*.
 
-![](docs/assets/config-namespace-item.png)
+![Example of a config for a namespace item](docs/assets/config-namespace-item.png)
 
-Finally, you can select behaviours where you can choose for example, whether branches, tags or pull requests shall be
+Finally, you can select behaviours where you can choose whether (for example) branches, tags or pull requests shall be
 built.
 
 #### JobDSL
 
-In order to create a build job for an SCM-Manager namespace with the job dsl, have a look at the following example:
+Have a look at the following example in order to create a build job for an SCM-Manager namespace with the JobDSL:
 
 ```groovy
 organizationFolder("spaceships") {
