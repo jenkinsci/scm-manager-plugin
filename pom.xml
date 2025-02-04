@@ -210,15 +210,15 @@
       <!-- version provided by BOM -->
       <exclusions>
         <exclusion>
-          <groupId>org.jenkins.plugins</groupId>
+          <groupId>io.jenkins.plugins</groupId>
           <artifactId>ionicons-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
 
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>commons-lang3-api</artifactId>
       <!-- version provided by BOM -->
       <scope>test</scope>
     </dependency>
@@ -363,21 +363,10 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>${cloudbees-folder.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>pipeline-groovy-lib</artifactId>
       <!-- version provided by BOM -->
       <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>script-security</artifactId>
     </dependency>
 
     <!-- scm plugins should be optional -->
@@ -427,12 +416,6 @@
       <artifactId>workflow-support</artifactId>
       <version>${workflow-support.version}</version>
       <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-api</artifactId>
-      <version>${workflow-api.version}</version>
     </dependency>
 
     <dependency>
