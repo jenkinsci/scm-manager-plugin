@@ -492,6 +492,10 @@
 
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.jenkins-ci.tools</groupId>
+            <artifactId>maven-hpi-plugin</artifactId>
+          </plugin>
 
           <!-- prepare jacoco agent for code coverage in sonar -->
           <plugin>
