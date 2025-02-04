@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <!-- The plugin version includes several dependencies, especially the version
@@ -8,7 +9,7 @@
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>5.5</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
@@ -31,6 +32,7 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run.
        ~ Keep in mind to update the BOM dependency below accordingly. -->
     <jenkins.version>2.479.2</jenkins.version>
+    <gitHubRepo>jenkinsci/scm-manager-plugin</gitHubRepo>
 
     <!-- Other version properties required for this plugin -->
     <edison.version>2.1.1</edison.version>
@@ -69,20 +71,20 @@
  -->
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-    <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
+  <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
   <licenses>
     <license>
       <name>MIT License</name>
@@ -112,122 +114,120 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>annotation-indexer</artifactId>
-        <version>1.18</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-
-      <!-- BOM-versioned dependencies -->
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plain-credentials</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-scm-step</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>scm-api</artifactId>
-        <version>${scm-api.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>script-security</artifactId>
-        <version>${script-security.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>matrix-project</artifactId>
-        <version>${matrix.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>font-awesome-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>javax-activation-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>plugin-util-api</artifactId>
-        <version>${plugin-util.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>display-url-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins.plugins</groupId>
-        <artifactId>ionicons-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>cloudbees-folder</artifactId>
-        <!-- version provided by BOM -->
-        <exclusions>
-          <exclusion>
-            <groupId>org.jenkins.plugins</groupId>
-            <artifactId>ionicons-api</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <!-- version provided by BOM -->
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>junit</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>annotation-indexer</artifactId>
+      <version>1.18</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!-- BOM-versioned dependencies -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>plain-credentials</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-scm-step</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>scm-api</artifactId>
+      <version>${scm-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>script-security</artifactId>
+      <version>${script-security.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>${matrix.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>font-awesome-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-activation-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>plugin-util-api</artifactId>
+      <version>${plugin-util.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>display-url-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>ionicons-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <!-- version provided by BOM -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins.plugins</groupId>
+          <artifactId>ionicons-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <!-- version provided by BOM -->
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
 
     <!-- non-Jenkins BOM dependencies; these need an own version -->
 
@@ -448,7 +448,6 @@
       <!-- TODO improve jobdsl syntax -->
       <optional>true</optional>
     </dependency>
-
   </dependencies>
 
   <developers>
@@ -477,44 +476,4 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-
-  <profiles>
-    <profile>
-      <!-- profile is active on every jenkins build -->
-      <id>jenkins</id>
-
-      <activation>
-        <property>
-          <name>env.BUILD_URL</name>
-        </property>
-      </activation>
-
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jenkins-ci.tools</groupId>
-            <artifactId>maven-hpi-plugin</artifactId>
-            <version>${hpi-plugin.version}</version>
-          </plugin>
-
-          <!-- prepare jacoco agent for code coverage in sonar -->
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-
-    </profile>
-  </profiles>
-
 </project>
