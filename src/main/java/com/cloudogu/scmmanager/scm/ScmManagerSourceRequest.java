@@ -6,6 +6,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.TaskListener;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.trait.SCMSourceRequest;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+@Getter
+@ToString
 public class ScmManagerSourceRequest extends SCMSourceRequest {
 
   private final boolean fetchBranches;
@@ -38,8 +42,7 @@ public class ScmManagerSourceRequest extends SCMSourceRequest {
 
   private void collectPullRequests(Collection<SCMHead> includes) {
     for (SCMHead include : includes) {
-      if (include instanceof ScmManagerPullRequestHead) {
-        ScmManagerPullRequestHead pr = (ScmManagerPullRequestHead) include;
+      if (include instanceof ScmManagerPullRequestHead pr) {
         pullRequests.add(pr);
       }
     }
@@ -52,22 +55,6 @@ public class ScmManagerSourceRequest extends SCMSourceRequest {
       return Collections.emptySet();
     }
     return includes;
-  }
-
-  public boolean isFetchBranches() {
-    return fetchBranches;
-  }
-
-  public boolean isFetchTags() {
-    return fetchTags;
-  }
-
-  public boolean isFetchPullRequests() {
-    return fetchPullRequests;
-  }
-
-  public List<ScmManagerPullRequestHead> getPullRequests() {
-    return pullRequests;
   }
 
   public void prepareForFullScan(Iterable<ScmManagerObservable> observables) {

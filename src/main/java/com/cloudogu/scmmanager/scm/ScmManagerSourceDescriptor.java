@@ -28,7 +28,8 @@ import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
-  @VisibleForTesting
+  static final String NOT_CONTAIN_A_SLASH = "Repository name must not contain a slash.";
+
   ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
     this.apiFactory = apiFactory;
     this.repositoryPredicate = repositoryPredicate;
@@ -182,7 +183,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   /**
    * In this mode, only values within an already-entered namespace scope can be searched for.
-   *
    * This is the standard (legacy) mode up to SCM-Manager 3.7.1.
    *
    * @param api Api
@@ -210,8 +210,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     String[] split = combinedValue.split("/");
     String namespaceString = split[0];
     if(split.length > 2) {
-      autocompletionFormMessage = new AutoCompletionFormMessage("Repository name must not contain a slash.", FormValidation.Kind.ERROR);
-      throw new ExecutionException(new Exception("Repository name must not contain a slash."));
+      autocompletionFormMessage = new AutoCompletionFormMessage(NOT_CONTAIN_A_SLASH, FormValidation.Kind.ERROR);
+      throw new ExecutionException(new Exception(NOT_CONTAIN_A_SLASH));
     } else if(combinedValue.endsWith("/")) {
       repositoryString = "";
     }
@@ -223,8 +223,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     AutoCompletionCandidates candidates = new AutoCompletionCandidates();
 
     if(query.toString().split("/").length > 2) {
-      autocompletionFormMessage = new AutoCompletionFormMessage("Repository name must not contain a slash.", FormValidation.Kind.ERROR);
-      throw new ExecutionException(new Exception("Repository name must not contain a slash."));
+      autocompletionFormMessage = new AutoCompletionFormMessage(NOT_CONTAIN_A_SLASH, FormValidation.Kind.ERROR);
+      throw new ExecutionException(new Exception(NOT_CONTAIN_A_SLASH));
     }
 
     Predicate<Repository> protocolPredicate = repository -> repository.getUrl(api.getProtocol()).isPresent();

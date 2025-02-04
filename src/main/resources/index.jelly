@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    Send build notification for commits to SCM-Manager v2
+    Send build notification for commits to SCM-Manager
 </div>

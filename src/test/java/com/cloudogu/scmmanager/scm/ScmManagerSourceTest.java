@@ -47,6 +47,7 @@ import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,9 +86,9 @@ public class ScmManagerSourceTest {
 
   @Before
   public void initMocks() throws IOException, InterruptedException {
-    when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent")).thenReturn(api);
+    when(apiFactory.create(scmSourceOwner, "http://hitchhiker.com/scm", "dent")).thenReturn(api);
     when(api.getBaseUrl()).thenReturn("https://hitchhiker.com/scm");
-    source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiFactory);
+    source = new ScmManagerSource("http://hitchhiker.com/scm", "space/X", "dent", apiFactory);
     source.setOwner(scmSourceOwner);
     captureProcess();
   }
@@ -104,12 +105,30 @@ public class ScmManagerSourceTest {
   }
 
   @Test
+  public void shouldConstructCorrectNamespace() {
+    assertThat(source.getNamespace()).isEqualTo("space");
+    assertThat(source.getName()).isEqualTo("X");
+  }
+
+  @Test
+  public void shouldRejectInvalidRepositoryName() {
+    assertThrows(IllegalArgumentException.class, () -> new ScmManagerSource("http://hitchhiker.com/scm", "space/X/2025", "dent", apiFactory));
+  }
+
+  @Test
+  public void shouldFetchCorrectType() {
+    when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+
+    assertThat(source.getType()).isEqualTo("git");
+  }
+
+  @Test
   public void shouldUseConfiguredValues() throws IOException, InterruptedException {
     when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
 
     source.retrieve(criteria, observer, null, listener);
 
-    verify(apiFactory).create(scmSourceOwner, "http://hithchiker.com/scm", "dent");
+    verify(apiFactory).create(scmSourceOwner, "http://hitchhiker.com/scm", "dent");
   }
 
   @Test
@@ -125,7 +144,7 @@ public class ScmManagerSourceTest {
   }
 
   @Test
-  public void shouldObserverPullRequests() throws IOException, InterruptedException {
+  public void shouldObservePullRequests() throws IOException, InterruptedException {
     when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
     when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest())));
     when(request.isFetchPullRequests()).thenReturn(true);
@@ -317,7 +336,7 @@ public class ScmManagerSourceTest {
 
   @Test
   public void shouldSupportBranchCategory() {
-    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new BranchDiscoveryTrait()));
+    source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new ScmManagerBranchDiscoveryTrait()));
     assertThat(source.isCategoryTraitEnabled(UncategorizedSCMHeadCategory.DEFAULT));
   }
 

@@ -33,9 +33,12 @@ import jenkins.scm.impl.form.NamedArrayList;
 import jenkins.scm.impl.trait.Discovery;
 import jenkins.scm.impl.trait.Selection;
 import jenkins.util.NonLocalizable;
+import lombok.Getter;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -46,17 +49,22 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutionException;
 
 public class ScmManagerSource extends SCMSource {
 
+  @Getter
   private final String serverUrl;
   private final String namespace;
   private final String name;
-  private final String type;
+  private String type = null;
+
+  @Getter
   private final String credentialsId;
 
   private LinkBuilder linkBuilder;
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
 
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
@@ -83,8 +91,13 @@ public class ScmManagerSource extends SCMSource {
     String[] parts = repository.split("/| \\(|\\)");
     this.namespace = parts[0];
     this.name = parts[1];
-    this.type = parts[2];
     this.apiFactory = apiFactory;
+
+    if (parts.length > 2) {
+      throw new IllegalArgumentException("Repositories must not contain a slash!");
+    }
+
+    LOG.debug("Created ScmManagerSource {}/{}", this.namespace, this.name);
   }
 
   @NonNull
@@ -107,8 +120,23 @@ public class ScmManagerSource extends SCMSource {
     return name;
   }
 
+  /**
+   * Since the type can only be fetched after the construction of {@link ScmManagerSource}, types must
+   * be accessed via this getter.
+   *
+   * @return Type
+   */
   String getType() {
-    return type;
+    if (this.type == null) {
+      try {
+        this.type = createApi().getRepository(namespace, name).get().getType();
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(
+          String.format("Type of repository %s/%s could not be loaded.",
+            this.namespace, this.name), e);
+      }
+    }
+    return this.type;
   }
 
   @Override
@@ -122,6 +150,7 @@ public class ScmManagerSource extends SCMSource {
 
   @VisibleForTesting
   void handleRequest(@NonNull SCMHeadObserver observer, SCMHeadEvent<?> event, ScmManagerSourceRequest request) throws InterruptedException, IOException {
+    LOG.debug("Handle request {}", request);
     Iterable<ScmManagerObservable> candidates = null;
 
     ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(
@@ -134,13 +163,16 @@ public class ScmManagerSource extends SCMSource {
     // for now we trigger a full scan for deletions
     // TODO improve handling of deletions
     if (event == null || event.getType() != SCMEvent.Type.REMOVED) {
+      LOG.debug("Head event is null or not 'removed'");
       Set<SCMHead> includes = observer.getIncludes();
       if (includes != null && includes.size() == 1) {
+        LOG.debug("Pick specific candidate");
         candidates = handler.getSpecificCandidatesFromSourceControl(request, includes.iterator().next());
       }
     }
 
     if (candidates == null) {
+      LOG.debug("Pick list of candidates");
       candidates = handler.getAllCandidatesFromSourceControl(request);
       request.prepareForFullScan(candidates);
     }
@@ -168,10 +200,10 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   @Override
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
-    if (head instanceof ScmManagerHead) {
+    if (head instanceof ScmManagerHead scmManagerHead) {
       SCMBuilderProvider.Context ctx = new SCMBuilderProvider.Context(
         getLinkBuilder(),
-        (ScmManagerHead) head,
+        scmManagerHead,
         revision,
         credentialsId
       );
@@ -180,27 +212,21 @@ public class ScmManagerSource extends SCMSource {
     throw new IllegalArgumentException("Could not handle unknown SCMHead: " + head);
   }
 
-  public String getServerUrl() {
-    return serverUrl;
-  }
-
   public String getRepository() {
-    return String.format("%s/%s (%s)", namespace, name, type);
+    return String.format("%s/%s (%s)", namespace, name, getType());
   }
 
-  public String getCredentialsId() {
-    return credentialsId;
-  }
+  static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
 
   static {
-    Icons.register("icon-scm-manager-link");
+    Icons.register(ICON_SCM_MANAGER_LINK);
   }
 
   @NonNull
   @Override
   protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(revision))
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision))
     );
   }
 
@@ -208,7 +234,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(head))
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head))
     );
   }
 
@@ -216,13 +242,13 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().repo())
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo())
     );
   }
 
   @Override
   protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
-    return isCategoryTraitEnabled(category) && SCMBuilderProvider.byType(type).isSupported(category);
+    return isCategoryTraitEnabled(category) && SCMBuilderProvider.byType(getType()).isSupported(category);
   }
 
   @VisibleForTesting
@@ -241,7 +267,7 @@ public class ScmManagerSource extends SCMSource {
     } else if (category instanceof ChangeRequestSCMHeadCategory) {
       return PullRequestDiscoveryTrait.class;
     }
-    return BranchDiscoveryTrait.class;
+    return ScmManagerBranchDiscoveryTrait.class;
   }
 
   private LinkBuilder getLinkBuilder() {
@@ -269,12 +295,12 @@ public class ScmManagerSource extends SCMSource {
       List<String> typeList = SCMBuilderProvider.all()
         .stream()
         .map(SCMBuilderProvider::getType)
-        .collect(Collectors.toList());
+        .toList();
       String types = Joiner.on(", ").join(typeList);
       return String.format("SCM-Manager (%s)", types);
     }
 
-    @SuppressWarnings("unused") // used By stapler
+    @SuppressWarnings({"unused", "java:S1452"}) // used By stapler / wildcard issue unavoidable due to Jenkins class
     public List<NamedArrayList<? extends SCMSourceTraitDescriptor>> getTraitsDescriptorLists() {
       // we use a LinkedHashSet to deduplicate and keep order
       List<SCMSourceTraitDescriptor> all = findAllAvailableTraits();
@@ -329,20 +355,21 @@ public class ScmManagerSource extends SCMSource {
   private record CriteriaWitness(ScmManagerSourceRequest request) implements SCMSourceRequest.Witness {
 
     @Override
-      public void record(@NonNull SCMHead scmHead, SCMRevision revision, boolean isMatch) {
-        PrintStream logger = request.listener().getLogger();
-        logger.append("    ").append(scmHead.getName()).append(": ");
-        if (revision == null) {
-          logger.println("Skipped");
+    @SuppressWarnings("java:S6213") // could not be changed yet due to Jenkins class
+    public void record(@NonNull SCMHead scmHead, SCMRevision revision, boolean isMatch) {
+      PrintStream logger = request.listener().getLogger();
+      logger.append("    ").append(scmHead.getName()).append(": ");
+      if (revision == null) {
+        logger.println("Skipped");
+      } else {
+        if (isMatch) {
+          logger.println("Met criteria");
         } else {
-          if (isMatch) {
-            logger.println("Met criteria");
-          } else {
-            logger.println("Does not meet criteria");
-          }
+          logger.println("Does not meet criteria");
         }
       }
-
     }
+
+  }
 
 }
