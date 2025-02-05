@@ -68,9 +68,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
   private String serverUrl;
   private String credentialsId;
-  private AutoCompletionCandidates returnedCandidates = new AutoCompletionCandidates();
 
   private AutoCompletionFormMessage autocompletionFormMessage = null;
+  private boolean isRepositoryNotFound = false;
   private record AutoCompletionFormMessage(String message, FormValidation.Kind kind) {}
 
   private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
@@ -107,20 +107,23 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
   @SuppressWarnings("unused") // used by Stapler
   public FormValidation doCheckRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) {
     if(autocompletionFormMessage != null) {
-      return switch (autocompletionFormMessage.kind) {
-        case ERROR -> FormValidation.error(autocompletionFormMessage.message);
-        case WARNING -> FormValidation.warning(autocompletionFormMessage.message);
-        case OK -> FormValidation.ok(autocompletionFormMessage.message);
-      };
+      FormValidation validationMessage = null;
+      switch (autocompletionFormMessage.kind) {
+        case ERROR -> validationMessage = FormValidation.error(autocompletionFormMessage.message);
+        case WARNING -> validationMessage = FormValidation.warning(autocompletionFormMessage.message);
+        case OK -> validationMessage = FormValidation.ok(autocompletionFormMessage.message);
+      }
+      autocompletionFormMessage = null;
+      return validationMessage;
     }
-    boolean isEmpty = this.returnedCandidates.getValues().isEmpty()
-      || returnedCandidates.getValues().stream().filter(c -> c.equals(value)).findFirst().isEmpty();
-    if(isEmpty) {
-      return FormValidation.warning("No repositories found.");
+
+    if(isRepositoryNotFound) {
+      return FormValidation.warning("No repository found.");
     } else {
       return FormValidation.ok();
     }
   }
+
 
   @SuppressWarnings("unused") // used by Stapler
   public AutoCompletionCandidates doAutoCompleteRepository(@AncestorInPath SCMSourceOwner context, @QueryParameter String value) throws InterruptedException {
@@ -145,16 +148,18 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     String version = api.index().get().getVersion();
 
+    AutoCompletionCandidates returnedCandidates;
+
     // filter all repositories that do not support the protocol
     if(isLegacyAutoCompleteVersion(version)) {
-      AutoCompletionCandidates candidates = autoCompleteRepositoryWithSingleNamespaceScope(api, value);
-      returnedCandidates = candidates;
-      return candidates;
+      returnedCandidates = autoCompleteRepositoryWithSingleNamespaceScope(api, value);
     } else {
-      AutoCompletionCandidates candidates = autoCompleteRepository(api, value);
-      returnedCandidates = candidates;
-      return candidates;
+      returnedCandidates = autoCompleteRepository(api, value);
     }
+
+    this.isRepositoryNotFound = returnedCandidates.getValues().isEmpty();
+
+    return returnedCandidates;
   }
 
   /**
@@ -214,6 +219,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
       throw new ExecutionException(new Exception(NOT_CONTAIN_A_SLASH));
     } else if(combinedValue.endsWith("/")) {
       repositoryString = "";
+    } else if(split.length == 2){
+      repositoryString = split[1];
     }
 
     return new NamespaceAndName(namespaceString, repositoryString);

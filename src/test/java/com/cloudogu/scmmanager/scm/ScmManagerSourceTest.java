@@ -123,6 +123,11 @@ public class ScmManagerSourceTest {
   }
 
   @Test
+  public void shouldReturnCorrectRepositoryName() {
+    assertThat(source.getRepository()).isEqualTo("space/X");
+  }
+
+  @Test
   public void shouldUseConfiguredValues() throws IOException, InterruptedException {
     when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
 

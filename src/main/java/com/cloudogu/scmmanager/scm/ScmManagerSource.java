@@ -213,7 +213,7 @@ public class ScmManagerSource extends SCMSource {
   }
 
   public String getRepository() {
-    return String.format("%s/%s (%s)", namespace, name, getType());
+    return String.format("%s/%s", namespace, name);
   }
 
   static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";

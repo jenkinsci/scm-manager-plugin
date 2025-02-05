@@ -50,8 +50,6 @@
     <jenkins.version>${jenkins.baseline}.2</jenkins.version>
     <gitHubRepo>jenkinsci/scm-manager-plugin</gitHubRepo>
 
-    <hpi.compatibleSinceVersion>1.4.0</hpi.compatibleSinceVersion>
-
     <!-- Other version other than BOM properties required for this plugin -->
     <edison.version>2.1.1</edison.version>
     <edison-joda.version>2.10.2</edison-joda.version>
@@ -286,6 +284,13 @@
     </dependency>
 
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
       <version>${mockwebserver.version}</version>
@@ -421,6 +426,7 @@
       <!-- TODO improve jobdsl syntax -->
       <optional>true</optional>
     </dependency>
+
   </dependencies>
 
   <developers>
