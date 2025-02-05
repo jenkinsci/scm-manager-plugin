@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.1</version>
+    <version>5.6</version>
     <relativePath/>
   </parent>
 
@@ -29,6 +29,7 @@
       <url>https://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
+
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/${gitHubRepo}</connection>
     <developerConnection>scm:git:https://github.com/${gitHubRepo}</developerConnection>
@@ -45,8 +46,11 @@
 
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run.
        ~ Keep in mind to update the BOM dependency below accordingly. -->
-    <jenkins.version>2.479.2</jenkins.version>
+    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.2</jenkins.version>
     <gitHubRepo>jenkinsci/scm-manager-plugin</gitHubRepo>
+
+    <hpi.compatibleSinceVersion>1.4.0</hpi.compatibleSinceVersion>
 
     <!-- Other version other than BOM properties required for this plugin -->
     <edison.version>2.1.1</edison.version>
@@ -95,7 +99,7 @@
            See also: https://github.com/jenkinsci/bom#usage  -->
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.479.x</artifactId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
         <version>3875.v1df09947cde6</version>
         <type>pom</type>
         <scope>import</scope>
