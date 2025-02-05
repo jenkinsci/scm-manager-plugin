@@ -36,6 +36,8 @@ import jenkins.util.NonLocalizable;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -46,6 +48,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class ScmManagerSource extends SCMSource {
@@ -53,10 +56,13 @@ public class ScmManagerSource extends SCMSource {
   private final String serverUrl;
   private final String namespace;
   private final String name;
-  private final String type;
+  private String type;
   private final String credentialsId;
 
   private LinkBuilder linkBuilder;
+
+  private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
+  private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
 
   @NonNull
   private List<SCMSourceTrait> traits = new ArrayList<>();
@@ -80,11 +86,16 @@ public class ScmManagerSource extends SCMSource {
     this.serverUrl = serverUrl;
     this.credentialsId = credentialsId;
 
-    String[] parts = repository.split("/| \\(|\\)");
+    String[] parts = repository.split("/");
     this.namespace = parts[0];
     this.name = parts[1];
-    this.type = parts[2];
     this.apiFactory = apiFactory;
+
+    if (parts.length > 2) {
+      throw new IllegalArgumentException("Repositories must not contain a slash!");
+    }
+
+    LOG.debug("Created ScmManagerSource {}/{}", this.namespace, this.name);
   }
 
   @NonNull
@@ -108,7 +119,16 @@ public class ScmManagerSource extends SCMSource {
   }
 
   String getType() {
-    return type;
+    if (this.type == null) {
+      try {
+        this.type = createApi().getRepository(namespace, name).get().getType();
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(
+          String.format("Type of repository %s/%s could not be loaded.",
+            this.namespace, this.name), e);
+      }
+    }
+    return this.type;
   }
 
   @Override
@@ -168,10 +188,10 @@ public class ScmManagerSource extends SCMSource {
   @NonNull
   @Override
   public SCM build(@NonNull SCMHead head, SCMRevision revision) {
-    if (head instanceof ScmManagerHead) {
+    if (head instanceof ScmManagerHead scmManagerHead) {
       SCMBuilderProvider.Context ctx = new SCMBuilderProvider.Context(
         getLinkBuilder(),
-        (ScmManagerHead) head,
+        scmManagerHead,
         revision,
         credentialsId
       );
@@ -185,7 +205,7 @@ public class ScmManagerSource extends SCMSource {
   }
 
   public String getRepository() {
-    return String.format("%s/%s (%s)", namespace, name, type);
+    return String.format("%s/%s (%s)", namespace, name, getType());
   }
 
   public String getCredentialsId() {
@@ -200,7 +220,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(revision))
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision))
     );
   }
 
@@ -208,7 +228,7 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().create(head))
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head))
     );
   }
 
@@ -216,13 +236,13 @@ public class ScmManagerSource extends SCMSource {
   @Override
   protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
     return Collections.singletonList(
-      new ScmManagerLink("icon-scm-manager-link", getLinkBuilder().repo())
+      new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo())
     );
   }
 
   @Override
   protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
-    return isCategoryTraitEnabled(category) && SCMBuilderProvider.byType(type).isSupported(category);
+    return isCategoryTraitEnabled(category) && SCMBuilderProvider.byType(getType()).isSupported(category);
   }
 
   @VisibleForTesting
