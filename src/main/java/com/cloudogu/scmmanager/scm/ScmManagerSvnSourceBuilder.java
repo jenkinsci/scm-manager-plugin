@@ -7,47 +7,47 @@ import jenkins.scm.api.trait.SCMSourceBuilder;
 
 public class ScmManagerSvnSourceBuilder extends SCMSourceBuilder<ScmManagerSvnSourceBuilder, SCMSource> {
 
-  private final String serverUrl;
-  private final String repository;
-  private final String credentialsId;
+    private final String serverUrl;
+    private final String repository;
+    private final String credentialsId;
 
-  private String id;
-  private String includes;
-  private String excludes;
+    private String id;
+    private String includes;
+    private String excludes;
 
-  public ScmManagerSvnSourceBuilder(String projectName, String serverUrl, String repository, String credentialsId) {
-    super(SCMSource.class, projectName);
-    this.serverUrl = serverUrl;
-    this.repository = repository;
-    this.credentialsId = credentialsId;
-  }
-
-  public ScmManagerSvnSourceBuilder withId(String id) {
-    this.id = id;
-    return this;
-  }
-
-  public ScmManagerSvnSourceBuilder withIncludes(String includes) {
-    this.includes = includes;
-    return this;
-  }
-
-  public ScmManagerSvnSourceBuilder withExcludes(String excludes) {
-    this.excludes = excludes;
-    return this;
-  }
-
-  @NonNull
-  @Override
-  public SCMSource build() {
-    ScmManagerSvnSource source = new ScmManagerSvnSource(id, serverUrl, repository, credentialsId);
-    if (!Strings.isNullOrEmpty(includes)) {
-      source.setIncludes(includes);
+    public ScmManagerSvnSourceBuilder(String projectName, String serverUrl, String repository, String credentialsId) {
+        super(SCMSource.class, projectName);
+        this.serverUrl = serverUrl;
+        this.repository = repository;
+        this.credentialsId = credentialsId;
     }
-    if (!Strings.isNullOrEmpty(excludes)) {
-      source.setExcludes(excludes);
+
+    public ScmManagerSvnSourceBuilder withId(String id) {
+        this.id = id;
+        return this;
     }
-    source.setTraits(traits());
-    return source;
-  }
+
+    public ScmManagerSvnSourceBuilder withIncludes(String includes) {
+        this.includes = includes;
+        return this;
+    }
+
+    public ScmManagerSvnSourceBuilder withExcludes(String excludes) {
+        this.excludes = excludes;
+        return this;
+    }
+
+    @NonNull
+    @Override
+    public SCMSource build() {
+        ScmManagerSvnSource source = new ScmManagerSvnSource(id, serverUrl, repository, credentialsId);
+        if (!Strings.isNullOrEmpty(includes)) {
+            source.setIncludes(includes);
+        }
+        if (!Strings.isNullOrEmpty(excludes)) {
+            source.setExcludes(excludes);
+        }
+        source.setTraits(traits());
+        return source;
+    }
 }

@@ -4,6 +4,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
 public interface ScmManagerObservable {
-  SCMHead head();
-  SCMRevision revision();
+    SCMHead head();
+
+    SCMRevision revision();
 }

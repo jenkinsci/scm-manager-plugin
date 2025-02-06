@@ -172,3 +172,15 @@ Start the local Jenkins instance:
 ```bash
 mvn hpi:run
 ```
+
+### Plugin Update
+At times, it may become necessary to update the Jenkins version of this
+plugin. Take following steps into account:
+
+* On mvnrepository - io.jenkins.tools.bom, pick the LTS version you want to update this plugin to.
+You can see all available LTS BOMs in [this list on mvnrepository.com](https://mvnrepository.com/artifact/io.jenkins.tools.bom).
+  * Enter the values into the io.jenkins.tools.bom:bom-{version} dependency.
+* Manually update the versions listed in the temporary section. You can pick the version numbers from the respective artifact list of
+the BOM version on mvnrepository.com.
+* Also consider to update the version of org.jenkins-ci.plugins:plugin (the parent).
+Check out the latest version [here](https://mvnrepository.com/artifact/org.jenkins-ci.plugins/plugin).
