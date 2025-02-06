@@ -55,7 +55,7 @@ public class ScmManagerSource extends SCMSource {
     private final String serverUrl;
     private final String namespace;
     private final String name;
-    private String type;
+    private final String type;
     private final String credentialsId;
 
     private LinkBuilder linkBuilder;
@@ -86,7 +86,9 @@ public class ScmManagerSource extends SCMSource {
         this.apiFactory = apiFactory;
 
         if (parts.length > 2) {
-            throw new IllegalArgumentException("Repositories must not contain a slash!");
+            type = parts[2];
+        } else {
+            type = determineType();
         }
 
         LOG.debug("Created ScmManagerSource {}/{}", this.namespace, this.name);
@@ -113,15 +115,16 @@ public class ScmManagerSource extends SCMSource {
     }
 
     String getType() {
-        if (this.type == null) {
-            try {
-                this.type = createApi().getRepository(namespace, name).get().getType();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(
-                        String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
-            }
-        }
         return this.type;
+    }
+
+    private String determineType() {
+        try {
+            return createApi().getRepository(namespace, name).get().getType();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(
+                    String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
+        }
     }
 
     @Override
@@ -196,7 +199,7 @@ public class ScmManagerSource extends SCMSource {
     }
 
     public String getRepository() {
-        return String.format("%s/%s", namespace, name);
+        return String.format("%s/%s/%s", namespace, name, type);
     }
 
     public String getCredentialsId() {

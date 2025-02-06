@@ -77,7 +77,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         }
         String[] namespaceNameParts = value.split("/");
         if (namespaceNameParts.length != 2) {
-            return FormValidation.error("Please enter a valid repository in the form namespace/name");
+            return FormValidation.error(
+                    "Please enter a valid repository in the form namespace/name or select one from the dropdown.");
         }
         try {
             ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
