@@ -1,8 +1,7 @@
 package com.cloudogu.scmmanager.info;
 
-import jenkins.model.Jenkins;
-
 import java.util.Optional;
+import jenkins.model.Jenkins;
 
 abstract class AbstractScmInformationResolverProvider implements JobInformationResolverProvider {
 

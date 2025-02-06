@@ -3,10 +3,9 @@ package com.cloudogu.scmmanager.scm.jobdsl;
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
-import jenkins.scm.api.trait.SCMSourceTrait;
-
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.scm.api.trait.SCMSourceTrait;
 
 public class ScmManagerBranchSourceContext extends BranchSourceContext {
 

@@ -6,11 +6,10 @@ import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.SubversionChangeLogSet;
 import hudson.scm.SubversionRepositoryBrowser;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class ScmManagerSvnRepositoryBrowser extends SubversionRepositoryBrowser {
 

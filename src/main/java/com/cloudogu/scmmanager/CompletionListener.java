@@ -4,7 +4,6 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 

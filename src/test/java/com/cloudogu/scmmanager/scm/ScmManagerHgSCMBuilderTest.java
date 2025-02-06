@@ -1,11 +1,11 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmManagerHgSCMBuilder.findAndCreateBrowser;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import hudson.plugins.mercurial.browser.HgBrowser;
 import hudson.plugins.mercurial.browser.ScmManager;
 import org.junit.Test;
-
-import static com.cloudogu.scmmanager.scm.ScmManagerHgSCMBuilder.findAndCreateBrowser;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScmManagerHgSCMBuilderTest {
 

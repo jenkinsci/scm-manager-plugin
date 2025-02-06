@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
-import com.google.common.base.Strings;
 import javaposse.jobdsl.dsl.Context;
 import javaposse.jobdsl.dsl.Preconditions;
 

@@ -3,7 +3,6 @@ package com.cloudogu.scmmanager;
 import com.cloudogu.scmmanager.info.JobInformation;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
-
 import java.util.List;
 
 public class NotificationAction implements Action {
