@@ -1,32 +1,28 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Changeset;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerFile;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
-import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 import com.cloudogu.scmmanager.scm.api.Tag;
-import jenkins.scm.api.SCMFile;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMProbeStat;
-import jenkins.scm.api.SCMRevision;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import static com.cloudogu.scmmanager.scm.ScmTestData.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import jenkins.scm.api.SCMFile;
+import jenkins.scm.api.SCMHead;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerApiProbeTest {
@@ -113,9 +109,7 @@ public class ScmManagerApiProbeTest {
     }
 
     private CompletableFuture<ScmManagerFile> futureFile(String path, SCMFile.Type type) {
-        return CompletableFuture.completedFuture(
-            new ScmManagerFile(path, type)
-        );
+        return CompletableFuture.completedFuture(new ScmManagerFile(path, type));
     }
 
     private void mockApiChangeset(String revision, Date date) {

@@ -2,12 +2,11 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.RecordedRequestDispatcher;
+import java.io.IOException;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
-
-import java.io.IOException;
 
 public class ApiClientTestBase {
 
@@ -32,8 +31,7 @@ public class ApiClientTestBase {
     }
 
     protected ApiClient apiClient() {
-        HttpAuthentication noAuthentication = requestBuilder -> {
-        };
+        HttpAuthentication noAuthentication = requestBuilder -> {};
         return new HttpApiClient(client, noAuthentication, this::serverUrl);
     }
 
@@ -50,5 +48,4 @@ public class ApiClientTestBase {
         }
         return pathInjection[pathInjectionIndex++];
     }
-
 }

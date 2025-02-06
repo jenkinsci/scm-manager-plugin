@@ -1,9 +1,17 @@
 package com.cloudogu.scmmanager;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.Extension;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,15 +19,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationServiceTest {
@@ -41,13 +40,11 @@ public class NotificationServiceTest {
         String rootUrl = jenkins.jenkins.getRootUrl();
 
         BuildStatus status = BuildStatus.success(
-            "scm-manager-plugin",
-            "scm-manager-plugin",
-            "http://localhost:8080/jenkins/job/scm-manager-plugin/42"
-        );
+                "scm-manager-plugin", "scm-manager-plugin", "http://localhost:8080/jenkins/job/scm-manager-plugin/42");
         when(buildStatusFactory.create(rootUrl, run, Result.SUCCESS)).thenReturn(status);
 
-        JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
+        JobInformation information =
+                new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
         mockJobInformation(information);
         notificationService.notify(run, Result.SUCCESS);
 
@@ -72,7 +69,8 @@ public class NotificationServiceTest {
 
     @Test
     public void testNotifyWithoutBuildStatus() {
-        JobInformation information = new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
+        JobInformation information =
+                new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
         mockJobInformation(information);
 
         notificationService.notify(run, Result.SUCCESS);
@@ -119,5 +117,4 @@ public class NotificationServiceTest {
             this.buildStatus = buildStatus;
         }
     }
-
 }

@@ -7,11 +7,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.plugins.mercurial.MercurialSCMBuilder;
 import hudson.plugins.mercurial.MercurialSCMSource;
 import hudson.plugins.mercurial.browser.HgBrowser;
+import java.lang.reflect.Constructor;
 import jenkins.scm.api.SCMRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Constructor;
 
 public class ScmManagerHgSCMBuilder extends MercurialSCMBuilder<ScmManagerHgSCMBuilder> {
 
@@ -48,5 +47,4 @@ public class ScmManagerHgSCMBuilder extends MercurialSCMBuilder<ScmManagerHgSCMB
         }
         return null;
     }
-
 }

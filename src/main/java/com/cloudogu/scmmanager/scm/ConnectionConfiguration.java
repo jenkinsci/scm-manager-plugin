@@ -16,13 +16,12 @@ import hudson.model.Queue;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import jenkins.scm.api.SCMSourceOwner;
-import org.acegisecurity.Authentication;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import jenkins.scm.api.SCMSourceOwner;
+import org.acegisecurity.Authentication;
 
 class ConnectionConfiguration {
 
@@ -30,13 +29,16 @@ class ConnectionConfiguration {
         if (context == null || !context.hasPermission(Item.CONFIGURE)) {
             return new StandardUsernameListBoxModel().includeCurrentValue(value);
         }
-        Authentication authentication = context instanceof Queue.Task
-            ? ((Queue.Task) context).getDefaultAuthentication()
-            : ACL.SYSTEM;
+        Authentication authentication =
+                context instanceof Queue.Task ? ((Queue.Task) context).getDefaultAuthentication() : ACL.SYSTEM;
         return new StandardUsernameListBoxModel()
-            .includeEmptyValue()
-            .includeAs(authentication, context, findSupportedCredentials(serverUrl), URIRequirementBuilder.fromUri(value).build())
-            .includeCurrentValue(value);
+                .includeEmptyValue()
+                .includeAs(
+                        authentication,
+                        context,
+                        findSupportedCredentials(serverUrl),
+                        URIRequirementBuilder.fromUri(value).build())
+                .includeCurrentValue(value);
     }
 
     private static Class<? extends StandardUsernameCredentials> findSupportedCredentials(String serverUrl) {
@@ -50,7 +52,9 @@ class ConnectionConfiguration {
         return supportedCredentials;
     }
 
-    static FormValidation validateCredentialsId(ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value) throws InterruptedException, ExecutionException {
+    static FormValidation validateCredentialsId(
+            ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value)
+            throws InterruptedException, ExecutionException {
         if (checkServerUrl(apiFactory, serverUrl).kind != FormValidation.Kind.OK) {
             return FormValidation.error("server url is required");
         }
@@ -64,18 +68,18 @@ class ConnectionConfiguration {
             return FormValidation.error("credentials not valid for connection type");
         }
         CompletableFuture<HalRepresentation> future = client.index();
-        return future
-            .thenApply(index -> {
-                if (index.getLinks().getLinkBy("me").isPresent()) {
-                    return FormValidation.ok();
-                }
-                return FormValidation.error("login failed");
-            })
-            .exceptionally(e -> FormValidation.error(e.getMessage()))
-            .get();
+        return future.thenApply(index -> {
+                    if (index.getLinks().getLinkBy("me").isPresent()) {
+                        return FormValidation.ok();
+                    }
+                    return FormValidation.error("login failed");
+                })
+                .exceptionally(e -> FormValidation.error(e.getMessage()))
+                .get();
     }
 
-    static FormValidation checkServerUrl(ScmManagerApiFactory apiFactory, String value) throws InterruptedException, ExecutionException {
+    static FormValidation checkServerUrl(ScmManagerApiFactory apiFactory, String value)
+            throws InterruptedException, ExecutionException {
         String trimmedValue = value == null ? null : value.trim();
         if (Strings.isNullOrEmpty(trimmedValue)) {
             return FormValidation.error("server url is required");
@@ -100,23 +104,23 @@ class ConnectionConfiguration {
 
         ScmManagerApi api = apiFactory.anonymous(value);
         CompletableFuture<HalRepresentation> future = api.index();
-        return future
-            .thenApply(index -> {
-                if (index.getLinks().getLinkBy("login").isPresent()) {
-                    return FormValidation.ok();
-                }
-                return FormValidation.error("api has no login link");
-            })
-            .exceptionally(e -> {
-                if (e.getCause() instanceof IllegalReturnStatusException && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
-                    return FormValidation.ok("Credentials needed");
-                } else if (e.getCause() instanceof JsonParseException) {
-                    return FormValidation.error(
-                        "This does not seem to be a valid SCM-Manager url, or this is not the root URL of SCM-Manager " +
-                            "(maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.");
-                }
-                return FormValidation.error(e.getMessage());
-            })
-            .get();
+        return future.thenApply(index -> {
+                    if (index.getLinks().getLinkBy("login").isPresent()) {
+                        return FormValidation.ok();
+                    }
+                    return FormValidation.error("api has no login link");
+                })
+                .exceptionally(e -> {
+                    if (e.getCause() instanceof IllegalReturnStatusException
+                            && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
+                        return FormValidation.ok("Credentials needed");
+                    } else if (e.getCause() instanceof JsonParseException) {
+                        return FormValidation.error(
+                                "This does not seem to be a valid SCM-Manager url, or this is not the root URL of SCM-Manager "
+                                        + "(maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.");
+                    }
+                    return FormValidation.error(e.getMessage());
+                })
+                .get();
     }
 }

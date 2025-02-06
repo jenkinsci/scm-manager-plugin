@@ -5,13 +5,12 @@ import hudson.model.Run;
 import hudson.plugins.mercurial.MercurialSCM;
 import hudson.plugins.mercurial.MercurialSCMSource;
 import hudson.scm.SCM;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HgScmInformationResolver implements ScmInformationResolver {
 
@@ -45,8 +44,8 @@ public class HgScmInformationResolver implements ScmInformationResolver {
             return Collections.singleton(createInformation(hg, revision, source));
         }
 
-        Collection<String> remoteBases = SourceUtil
-            .getSources(run, MercurialSCMSource.class, MercurialSCMSource::getSource);
+        Collection<String> remoteBases =
+                SourceUtil.getSources(run, MercurialSCMSource.class, MercurialSCMSource::getSource);
 
         if (remoteBases.isEmpty()) {
             LOG.trace("source owner has no sources, skip collecting information");

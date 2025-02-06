@@ -1,15 +1,14 @@
 package com.cloudogu.scmmanager.scm;
 
-import hudson.plugins.git.GitChangeSet;
-import hudson.scm.EditType;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.plugins.git.GitChangeSet;
+import hudson.scm.EditType;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ScmManagerGitRepositoryBrowserTest {
 
@@ -69,7 +68,9 @@ public class ScmManagerGitRepositoryBrowserTest {
         when(path.getDst()).thenReturn(pathName);
         when(path.getChangeSet().getParentCommit()).thenReturn("sw21");
 
-        assertThat(browser.getDiffLink(path)).hasPath("/code/changeset/sw21").hasAnchor("diff-people/Padmé Amidala.json");
+        assertThat(browser.getDiffLink(path))
+                .hasPath("/code/changeset/sw21")
+                .hasAnchor("diff-people/Padmé Amidala.json");
     }
 
     @Test
@@ -127,5 +128,4 @@ public class ScmManagerGitRepositoryBrowserTest {
         when(changeSet.getId()).thenReturn(revision);
         return changeSet;
     }
-
 }

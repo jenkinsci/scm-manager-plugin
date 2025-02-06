@@ -1,15 +1,15 @@
 package com.cloudogu.scmmanager.info;
 
-import org.junit.Test;
-
 import static com.cloudogu.scmmanager.info.URIs.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
 
 public class URIsTest {
 
     @Test
     public void shouldNotModifyURI() {
-        String[] uris = new String[]{
+        String[] uris = new String[] {
             "http://hitchhiker.com:8080", "http://hitchhiker.com:8080/path",
             "https://hitchhiker.com:8443", "https://hitchhiker.com:8443/some/path",
             "http://hitchhiker.com:80", "http://hitchhiker.com:80/path",
@@ -49,5 +49,4 @@ public class URIsTest {
     public void shouldRemoveHashParameters() {
         assertThat(normalize("http://hitchhiker.com:8080/path#abc")).isEqualTo("http://hitchhiker.com:8080/path");
     }
-
 }

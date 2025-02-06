@@ -1,22 +1,21 @@
 package com.cloudogu.scmmanager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.info.JobInformation;
 import com.cloudogu.scmmanager.info.ScmInformationService;
 import hudson.model.Run;
 import hudson.scm.SCM;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CheckoutListenerTest {
@@ -61,5 +60,4 @@ public class CheckoutListenerTest {
         NotificationAction action = actionCaptor.getValue();
         assertThat(action.getJobInformation()).isSameAs(information);
     }
-
 }

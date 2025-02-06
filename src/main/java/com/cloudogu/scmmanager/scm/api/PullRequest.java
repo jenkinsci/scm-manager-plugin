@@ -2,17 +2,19 @@ package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Objects;
 
 public class PullRequest extends HalRepresentation implements ScmManagerObservable {
 
     @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String id;
+
     @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String source;
+
     @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String target;
+
     private CloneInformation cloneInformation;
 
     private Branch sourceBranch;
@@ -20,8 +22,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     private ScmManagerPullRequestHead head;
 
-    PullRequest() {
-    }
+    PullRequest() {}
 
     public PullRequest(String id, Branch targetBranch, Branch sourceBranch, CloneInformation cloneInformation) {
         this.id = id;
@@ -59,7 +60,11 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
     @Override
     public ScmManagerPullRequestHead head() {
         if (head == null) {
-            head = new ScmManagerPullRequestHead(cloneInformation, id, new ScmManagerHead(cloneInformation, target), new ScmManagerHead(cloneInformation, source));
+            head = new ScmManagerPullRequestHead(
+                    cloneInformation,
+                    id,
+                    new ScmManagerHead(cloneInformation, target),
+                    new ScmManagerHead(cloneInformation, source));
         }
         return head;
     }
@@ -75,13 +80,13 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         PullRequest that = (PullRequest) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(source, that.source) &&
-            Objects.equals(target, that.target) &&
-            Objects.equals(cloneInformation, that.cloneInformation) &&
-            Objects.equals(sourceBranch, that.sourceBranch) &&
-            Objects.equals(targetBranch, that.targetBranch) &&
-            Objects.equals(head, that.head);
+        return Objects.equals(id, that.id)
+                && Objects.equals(source, that.source)
+                && Objects.equals(target, that.target)
+                && Objects.equals(cloneInformation, that.cloneInformation)
+                && Objects.equals(sourceBranch, that.sourceBranch)
+                && Objects.equals(targetBranch, that.targetBranch)
+                && Objects.equals(head, that.head);
     }
 
     @Override

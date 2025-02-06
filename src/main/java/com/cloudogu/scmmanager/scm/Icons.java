@@ -8,15 +8,10 @@ public final class Icons {
 
     private static final String URL_PATTERN = "plugin/scm-manager/images/%s/%s.png";
 
-    private Icons() {
-    }
+    private Icons() {}
 
     private static Icon icon(String name, Size size) {
-        return new Icon(
-            name + " " + size.className,
-            String.format(URL_PATTERN, size.id, name),
-            size.style
-        );
+        return new Icon(name + " " + size.className, String.format(URL_PATTERN, size.id, name), size.style);
     }
 
     public static void register(String name) {
@@ -58,5 +53,4 @@ public final class Icons {
             return style;
         }
     }
-
 }

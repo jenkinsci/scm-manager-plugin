@@ -1,5 +1,12 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.branch;
+import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.*;
+
 import com.cloudogu.scmmanager.scm.api.Branch;
 import com.cloudogu.scmmanager.scm.api.Changeset;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
@@ -16,6 +23,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -35,19 +47,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import static com.cloudogu.scmmanager.scm.ScmTestData.branch;
-import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerSourceTest {
@@ -81,11 +80,13 @@ public class ScmManagerSourceTest {
 
     @Mock
     private ScmManagerApi api;
+
     private ScmManagerSource source;
 
     @Before
     public void initMocks() throws IOException, InterruptedException {
-        when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent")).thenReturn(api);
+        when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent"))
+                .thenReturn(api);
         when(api.getBaseUrl()).thenReturn("https://hitchhiker.com/scm");
         source = new ScmManagerSource("http://hithchiker.com/scm", "space/X/git", "dent", apiFactory);
         source.setOwner(scmSourceOwner);
@@ -93,14 +94,12 @@ public class ScmManagerSourceTest {
     }
 
     private void captureProcess() throws IOException, InterruptedException {
-        when(
-            request.process(
-                head.capture(),
-                revision.capture(),
-                any(SCMSourceRequest.ProbeLambda.class),
-                any(SCMSourceRequest.Witness.class)
-            )
-        ).thenReturn(false);
+        when(request.process(
+                        head.capture(),
+                        revision.capture(),
+                        any(SCMSourceRequest.ProbeLambda.class),
+                        any(SCMSourceRequest.Witness.class)))
+                .thenReturn(false);
     }
 
     @Test
@@ -121,7 +120,10 @@ public class ScmManagerSourceTest {
         source.handleRequest(observer, null, request);
 
         assertThat(head.getValue().getName()).isEqualTo("feature/hog");
-        assertThat(revision.getValue()).isInstanceOf(ScmManagerRevision.class).extracting("revision").isEqualTo("42");
+        assertThat(revision.getValue())
+                .isInstanceOf(ScmManagerRevision.class)
+                .extracting("revision")
+                .isEqualTo("42");
     }
 
     @Test
@@ -151,7 +153,8 @@ public class ScmManagerSourceTest {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getBranch(REPOSITORY, "develop")).thenReturn(completedFuture(new Branch("develop", "42")));
         when(request.isFetchBranches()).thenReturn(true);
-        when(observer.getIncludes()).thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
 
         source.handleRequest(observer, null, request);
 
@@ -162,7 +165,8 @@ public class ScmManagerSourceTest {
     @Test
     public void shouldDoNothingIfBranchChangesWithoutRequestingThem() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
-        when(observer.getIncludes()).thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
 
         source.handleRequest(observer, null, request);
 
@@ -171,12 +175,12 @@ public class ScmManagerSourceTest {
     }
 
     private void verifyThatNothingIsProcessed() throws IOException, InterruptedException {
-        verify(request, never()).process(
-            any(SCMHead.class),
-            any(SCMRevision.class),
-            any(SCMSourceRequest.ProbeLambda.class),
-            any(SCMSourceRequest.Witness.class)
-        );
+        verify(request, never())
+                .process(
+                        any(SCMHead.class),
+                        any(SCMRevision.class),
+                        any(SCMSourceRequest.ProbeLambda.class),
+                        any(SCMSourceRequest.Witness.class));
     }
 
     @Test
@@ -211,14 +215,12 @@ public class ScmManagerSourceTest {
     public void shouldObserveOnlyChangedPullRequest() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getPullRequest(REPOSITORY, "42")).thenReturn(completedFuture(createPullRequest()));
-        when(observer.getIncludes()).thenReturn(Collections.singleton(
-            new ScmManagerPullRequestHead(
-                CLONE_INFORMATION,
-                "42",
-                new ScmManagerHead(CLONE_INFORMATION, "main"),
-                new ScmManagerHead(CLONE_INFORMATION, "develop")
-            )
-        ));
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerPullRequestHead(
+                        CLONE_INFORMATION,
+                        "42",
+                        new ScmManagerHead(CLONE_INFORMATION, "main"),
+                        new ScmManagerHead(CLONE_INFORMATION, "develop"))));
         when(request.isFetchPullRequests()).thenReturn(true);
 
         source.handleRequest(observer, null, request);
@@ -228,25 +230,18 @@ public class ScmManagerSourceTest {
     }
 
     private PullRequest createPullRequest() {
-        return new PullRequest(
-            "42",
-            new Branch("main", "21"),
-            new Branch("develop", "42"),
-            CLONE_INFORMATION
-        );
+        return new PullRequest("42", new Branch("main", "21"), new Branch("develop", "42"), CLONE_INFORMATION);
     }
 
     @Test
     public void shouldDoNothingIfPullRequestChangesWithoutRequestingThem() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
-        when(observer.getIncludes()).thenReturn(Collections.singleton(
-            new ScmManagerPullRequestHead(
-                CLONE_INFORMATION,
-                "42",
-                new ScmManagerHead(CLONE_INFORMATION, "main"),
-                new ScmManagerHead(CLONE_INFORMATION, "develop")
-            )
-        ));
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerPullRequestHead(
+                        CLONE_INFORMATION,
+                        "42",
+                        new ScmManagerHead(CLONE_INFORMATION, "main"),
+                        new ScmManagerHead(CLONE_INFORMATION, "develop"))));
 
         source.handleRequest(observer, null, request);
 
@@ -266,7 +261,10 @@ public class ScmManagerSourceTest {
         source.handleRequest(observer, event, request);
 
         assertThat(head.getValue().getName()).isEqualTo("feature/hog");
-        assertThat(revision.getValue()).isInstanceOf(ScmManagerRevision.class).extracting("revision").isEqualTo("42");
+        assertThat(revision.getValue())
+                .isInstanceOf(ScmManagerRevision.class)
+                .extracting("revision")
+                .isEqualTo("42");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -320,5 +318,4 @@ public class ScmManagerSourceTest {
         source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new BranchDiscoveryTrait()));
         assertThat(source.isCategoryTraitEnabled(UncategorizedSCMHeadCategory.DEFAULT));
     }
-
 }

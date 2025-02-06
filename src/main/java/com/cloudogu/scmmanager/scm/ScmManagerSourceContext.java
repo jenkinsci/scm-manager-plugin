@@ -14,8 +14,7 @@ public class ScmManagerSourceContext extends SCMSourceContext<ScmManagerSourceCo
     private boolean wantTags;
     private boolean wantPullRequests;
 
-    public ScmManagerSourceContext(@CheckForNull SCMSourceCriteria criteria,
-                                   @NonNull SCMHeadObserver observer) {
+    public ScmManagerSourceContext(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer) {
         super(criteria, observer);
     }
 
@@ -30,7 +29,6 @@ public class ScmManagerSourceContext extends SCMSourceContext<ScmManagerSourceCo
     public boolean wantPullRequests() {
         return wantPullRequests;
     }
-
 
     public ScmManagerSourceContext wantBranches(boolean include) {
         wantBranches = wantBranches || include;

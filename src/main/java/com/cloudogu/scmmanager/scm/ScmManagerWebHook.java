@@ -1,9 +1,22 @@
 package com.cloudogu.scmmanager.scm;
 
+import static jenkins.scm.api.SCMEvent.Type.REMOVED;
+import static jenkins.scm.api.SCMEvent.Type.UPDATED;
+
 import com.google.common.annotations.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMSourceEvent;
 import net.sf.json.JSONArray;
@@ -12,20 +25,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Function;
-
-import static jenkins.scm.api.SCMEvent.Type.REMOVED;
-import static jenkins.scm.api.SCMEvent.Type.UPDATED;
 
 @Extension
 public class ScmManagerWebHook implements UnprotectedRootAction {
@@ -60,13 +59,26 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
                 return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type'");
             }
             fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
-            fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
+            fireIfPresent(
+                    form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
             fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
             fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
-            fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
-            fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(REMOVED, form, pullRequests));
-            fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
-            fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(UPDATED, form, pullRequests));
+            fireIfPresent(
+                    form,
+                    "deletedPullRequests",
+                    pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
+            fireIfPresent(
+                    form,
+                    "deletedPullRequests",
+                    pullRequests -> new ScmManagerBranchEventFromPullRequest(REMOVED, form, pullRequests));
+            fireIfPresent(
+                    form,
+                    "createOrModifiedPullRequests",
+                    pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
+            fireIfPresent(
+                    form,
+                    "createOrModifiedPullRequests",
+                    pullRequests -> new ScmManagerBranchEventFromPullRequest(UPDATED, form, pullRequests));
 
             if (form.containsKey("createdOrModifiedBranches")) {
                 // the creation or the change of a branch can also lead to a new source for navigators
@@ -85,9 +97,11 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
         ScmManagerSourceEvent.from(form).forEach(this::fireNow);
     }
 
-    void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
+    void fireIfPresent(
+            JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
         if (form.containsKey(arrayName)) {
-            JSONArray array = form.optJSONArray(arrayName); // we have to use optJSONArray, because we can have null values
+            JSONArray array =
+                    form.optJSONArray(arrayName); // we have to use optJSONArray, because we can have null values
             if (array != null && !array.isEmpty()) {
                 List<JSONObject> objects = new ArrayList<>();
                 for (int i = 0; i < array.size(); ++i) {
@@ -114,7 +128,8 @@ public class ScmManagerWebHook implements UnprotectedRootAction {
 
     @Extension
     public static class CrumbExclusionImpl extends CrumbExclusion {
-        public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+        public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain)
+                throws IOException, ServletException {
             String pathInfo = req.getPathInfo();
             if (pathInfo != null && pathInfo.equals("/" + URL_NAME + "/" + ENDPOINT)) {
                 chain.doFilter(req, resp);

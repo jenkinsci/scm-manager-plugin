@@ -1,13 +1,11 @@
 package com.cloudogu.scmmanager.scm.api;
 
+import static java.util.Collections.emptyList;
+
 import com.cloudogu.scmmanager.scm.PluginNotUpToDateException;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import jenkins.scm.api.SCMFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +15,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
+import jenkins.scm.api.SCMFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScmManagerApi {
 
@@ -39,29 +38,41 @@ public class ScmManagerApi {
     }
 
     public CompletableFuture<List<Namespace>> getNamespaces() {
-        return client.get("/api/v2/namespaces", "application/vnd.scmm-namespaceCollection+json;v=2", NamespaceCollection.class)
-            .thenApply(collection -> collection.get_embedded().getNamespaces());
+        return client.get(
+                        "/api/v2/namespaces",
+                        "application/vnd.scmm-namespaceCollection+json;v=2",
+                        NamespaceCollection.class)
+                .thenApply(collection -> collection.get_embedded().getNamespaces());
     }
 
     public CompletableFuture<List<Repository>> getRepositories() {
         // TODO pageSize?
-        return client.get("/api/v2/repositories?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
-            .thenApply(collection -> collection.get_embedded().getRepositories());
+        return client.get(
+                        "/api/v2/repositories?pageSize=2000&sortBy=namespace&sortBy=name",
+                        "application/vnd.scmm-repositoryCollection+json;v=2",
+                        RepositoryCollection.class)
+                .thenApply(collection -> collection.get_embedded().getRepositories());
     }
 
     public CompletableFuture<List<Repository>> getRepositories(String namespace) {
         String url = String.format("/api/v2/repositories/%s", namespace);
         // TODO pageSize?
-        return client.get(url + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
-            .thenApply(collection -> collection.get_embedded().getRepositories());
+        return client.get(
+                        url + "?pageSize=2000&sortBy=namespace&sortBy=name",
+                        "application/vnd.scmm-repositoryCollection+json;v=2",
+                        RepositoryCollection.class)
+                .thenApply(collection -> collection.get_embedded().getRepositories());
     }
 
     public CompletableFuture<List<Repository>> getRepositories(Namespace namespace) {
         Optional<Link> repositoriesLink = namespace.getLinks().getLinkBy("repositories");
         if (repositoriesLink.isPresent()) {
             // TODO pageSize?
-            return client.get(repositoriesLink.get().getHref() + "?pageSize=2000&sortBy=namespace&sortBy=name", "application/vnd.scmm-repositoryCollection+json;v=2", RepositoryCollection.class)
-                .thenApply(collection -> collection.get_embedded().getRepositories());
+            return client.get(
+                            repositoriesLink.get().getHref() + "?pageSize=2000&sortBy=namespace&sortBy=name",
+                            "application/vnd.scmm-repositoryCollection+json;v=2",
+                            RepositoryCollection.class)
+                    .thenApply(collection -> collection.get_embedded().getRepositories());
         }
         return CompletableFuture.completedFuture(emptyList());
     }
@@ -74,13 +85,17 @@ public class ScmManagerApi {
     public CompletableFuture<List<Branch>> getBranches(Repository repository) {
         Optional<Link> branchesLink = repository.getLinks().getLinkBy("branches");
         if (branchesLink.isPresent()) {
-            return client.get(branchesLink.get().getHref(), "application/vnd.scmm-branchCollection+json;v=2", BranchCollection.class)
-                .thenApply(branchCollection -> branchCollection.get_embedded().getBranches())
-                .thenApply(branches -> {
-                        branches.forEach(branch -> branch.setCloneInformation(repository.getCloneInformation(client.getProtocol())));
+            return client.get(
+                            branchesLink.get().getHref(),
+                            "application/vnd.scmm-branchCollection+json;v=2",
+                            BranchCollection.class)
+                    .thenApply(
+                            branchCollection -> branchCollection.get_embedded().getBranches())
+                    .thenApply(branches -> {
+                        branches.forEach(branch ->
+                                branch.setCloneInformation(repository.getCloneInformation(client.getProtocol())));
                         return branches;
-                    }
-                );
+                    });
         }
         return CompletableFuture.completedFuture(emptyList());
     }
@@ -88,13 +103,19 @@ public class ScmManagerApi {
     public CompletableFuture<List<Tag>> getTags(Repository repository) {
         Optional<Link> tagsLink = repository.getLinks().getLinkBy("tags");
         if (tagsLink.isPresent()) {
-            return client.get(tagsLink.get().getHref(), "application/vnd.scmm-tagCollection+json;v=2", TagCollection.class)
-                .thenApply(tags -> tags.get_embedded().getTags().stream()
-                    .map(prepareTag(repository))
-                    .collect(Collectors.toList()))
-                .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
-                    .thenApply(future -> completableFutures.stream().filter(cf -> !cf.isCompletedExceptionally()).map(CompletableFuture::join)
-                        .collect(Collectors.toList())));
+            return client.get(
+                            tagsLink.get().getHref(),
+                            "application/vnd.scmm-tagCollection+json;v=2",
+                            TagCollection.class)
+                    .thenApply(tags -> tags.get_embedded().getTags().stream()
+                            .map(prepareTag(repository))
+                            .collect(Collectors.toList()))
+                    .thenCompose(completableFutures -> CompletableFuture.allOf(
+                                    completableFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(future -> completableFutures.stream()
+                                    .filter(cf -> !cf.isCompletedExceptionally())
+                                    .map(CompletableFuture::join)
+                                    .collect(Collectors.toList())));
         }
         return CompletableFuture.completedFuture(emptyList());
     }
@@ -106,11 +127,14 @@ public class ScmManagerApi {
             if (tag.getDate() != null) {
                 return CompletableFuture.completedFuture(tag);
             } else if (changesetLink.isPresent()) {
-                return client.get(changesetLink.get().getHref(), "application/vnd.scmm-changeset+json;v=2", Changeset.class)
-                    .thenApply(changeset -> {
-                        tag.setChangeset(changeset);
-                        return tag;
-                    });
+                return client.get(
+                                changesetLink.get().getHref(),
+                                "application/vnd.scmm-changeset+json;v=2",
+                                Changeset.class)
+                        .thenApply(changeset -> {
+                            tag.setChangeset(changeset);
+                            return tag;
+                        });
             }
             throw new IllegalStateException("could not find changeset link on tag " + tag.getName());
         };
@@ -119,7 +143,8 @@ public class ScmManagerApi {
     public CompletableFuture<Changeset> getChangeset(Repository repository, String revision) {
         Optional<Link> changesetsLink = repository.getLinks().getLinkBy("changesets");
         if (changesetsLink.isPresent()) {
-            return client.get(concat(changesetsLink.get(), revision), "application/vnd.scmm-changeset+json;v=2", Changeset.class);
+            return client.get(
+                    concat(changesetsLink.get(), revision), "application/vnd.scmm-changeset+json;v=2", Changeset.class);
         }
         throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
     }
@@ -127,25 +152,20 @@ public class ScmManagerApi {
     public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
         Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
         if (pullRequestLink.isPresent()) {
-            return
-                client
-                    .get(pullRequestLink.get().getHref() + "?status=OPEN", "application/vnd.scmm-pullRequestCollection+json;v=2", PullRequestCollection.class)
-                    .thenApply(
-                        pullRequestCollection -> pullRequestCollection
-                            .get_embedded()
-                            .getPullRequests()
-                            .stream()
+            return client.get(
+                            pullRequestLink.get().getHref() + "?status=OPEN",
+                            "application/vnd.scmm-pullRequestCollection+json;v=2",
+                            PullRequestCollection.class)
+                    .thenApply(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
                             .map(preparePullRequest(repository))
                             .filter(cf -> !cf.isCompletedExceptionally())
-                            .collect(Collectors.toList())
-                    )
-                    .thenCompose(completableFutures -> CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[0]))
-                        .thenApply(
-                            future -> completableFutures
-                                .stream()
-                                .filter(cf -> !cf.isCompletedExceptionally())
-                                .map(CompletableFuture::join)
-                                .collect(Collectors.toList())));
+                            .collect(Collectors.toList()))
+                    .thenCompose(completableFutures -> CompletableFuture.allOf(
+                                    completableFutures.toArray(new CompletableFuture[0]))
+                            .thenApply(future -> completableFutures.stream()
+                                    .filter(cf -> !cf.isCompletedExceptionally())
+                                    .map(CompletableFuture::join)
+                                    .collect(Collectors.toList())));
         }
         return CompletableFuture.completedFuture(Collections.emptyList());
     }
@@ -154,20 +174,27 @@ public class ScmManagerApi {
         return pullRequest -> {
             pullRequest.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
 
-            CompletableFuture<Void> source =
-                client
-                    .get(getPullRequestLink(pullRequest, "sourceBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+            CompletableFuture<Void> source = client.get(
+                            getPullRequestLink(pullRequest, "sourceBranch"),
+                            "application/vnd.scmm-branch+json;v=2",
+                            Branch.class)
                     .thenAccept(pullRequest::setSourceBranch);
-            CompletableFuture<Void> target =
-                client
-                    .get(getPullRequestLink(pullRequest, "targetBranch"), "application/vnd.scmm-branch+json;v=2", Branch.class)
+            CompletableFuture<Void> target = client.get(
+                            getPullRequestLink(pullRequest, "targetBranch"),
+                            "application/vnd.scmm-branch+json;v=2",
+                            Branch.class)
                     .thenAccept(pullRequest::setTargetBranch);
 
             try {
                 source.join();
                 target.join();
             } catch (Exception e) {
-                LOG.info("failed to fetch source or target branch of pull request {} in repository {}/{}", pullRequest.getId(), repository.getNamespace(), repository.getName(), e);
+                LOG.info(
+                        "failed to fetch source or target branch of pull request {} in repository {}/{}",
+                        pullRequest.getId(),
+                        repository.getNamespace(),
+                        repository.getName(),
+                        e);
                 return CompletableFuture.failedFuture(e);
             }
 
@@ -176,30 +203,39 @@ public class ScmManagerApi {
     }
 
     private String getPullRequestLink(HalRepresentation hal, String linkName) {
-        return hal.getLinks().getLinkBy(linkName)
-            .orElseThrow(() -> new PluginNotUpToDateException("could not find link '" + linkName + "', ensure the scm-review-plugin is up-to-date"))
-            .getHref();
+        return hal.getLinks()
+                .getLinkBy(linkName)
+                .orElseThrow(() -> new PluginNotUpToDateException(
+                        "could not find link '" + linkName + "', ensure the scm-review-plugin is up-to-date"))
+                .getHref();
     }
 
     public CompletableFuture<Tag> getTag(Repository repository, String tagName) {
         Optional<Link> link = repository.getLinks().getLinkBy("tags");
-        return link.map(value -> client.get(concat(value, encode(tagName)), "application/vnd.scmm-tag+json;v=2", Tag.class)
-            .thenCompose(prepareTag(repository))).orElse(null);
+        return link.map(value -> client.get(
+                                concat(value, encode(tagName)), "application/vnd.scmm-tag+json;v=2", Tag.class)
+                        .thenCompose(prepareTag(repository)))
+                .orElse(null);
     }
 
     public CompletableFuture<PullRequest> getPullRequest(Repository repository, String id) {
         Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
-        return pullRequestLink.map(link -> client.get(concat(link, id), "application/vnd.scmm-pullRequest+json;v=2", PullRequest.class)
-            .thenCompose(preparePullRequest(repository))).orElse(null);
+        return pullRequestLink
+                .map(link -> client.get(
+                                concat(link, id), "application/vnd.scmm-pullRequest+json;v=2", PullRequest.class)
+                        .thenCompose(preparePullRequest(repository)))
+                .orElse(null);
     }
 
     public CompletableFuture<Branch> getBranch(Repository repository, String name) {
         Optional<Link> link = repository.getLinks().getLinkBy("branches");
-        return link.map(value -> client.get(concat(value, encode(name)), "application/vnd.scmm-branch+json;v=2", Branch.class)
-            .thenApply(branch -> {
-                branch.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
-                return branch;
-            })).orElse(null);
+        return link.map(value -> client.get(
+                                concat(value, encode(name)), "application/vnd.scmm-branch+json;v=2", Branch.class)
+                        .thenApply(branch -> {
+                            branch.setCloneInformation(repository.getCloneInformation(client.getProtocol()));
+                            return branch;
+                        }))
+                .orElse(null);
     }
 
     private String encode(String value) {
@@ -214,17 +250,22 @@ public class ScmManagerApi {
         Optional<Link> sourcesLink = repository.getLinks().getLinkBy("sources");
         if (sourcesLink.isPresent()) {
 
-            return client.get(concat(sourcesLink.get(), revision, path), "application/vnd.scmm-source+json;v=2", FileObject.class)
-                .thenApply(fileObject -> new ScmManagerFile(fileObject.getPath(), fileObject.isDirectory() ? SCMFile.Type.DIRECTORY : SCMFile.Type.REGULAR_FILE))
-                .exceptionally(ex -> {
-                    if (ex.getCause() instanceof IllegalReturnStatusException) {
-                        int statusCode = ((IllegalReturnStatusException) ex.getCause()).getStatusCode();
-                        if (statusCode == 404) {
-                            return new ScmManagerFile(path, SCMFile.Type.NONEXISTENT);
+            return client.get(
+                            concat(sourcesLink.get(), revision, path),
+                            "application/vnd.scmm-source+json;v=2",
+                            FileObject.class)
+                    .thenApply(fileObject -> new ScmManagerFile(
+                            fileObject.getPath(),
+                            fileObject.isDirectory() ? SCMFile.Type.DIRECTORY : SCMFile.Type.REGULAR_FILE))
+                    .exceptionally(ex -> {
+                        if (ex.getCause() instanceof IllegalReturnStatusException) {
+                            int statusCode = ((IllegalReturnStatusException) ex.getCause()).getStatusCode();
+                            if (statusCode == 404) {
+                                return new ScmManagerFile(path, SCMFile.Type.NONEXISTENT);
+                            }
                         }
-                    }
-                    throw new IllegalStateException("failed to get file object", ex);
-                });
+                        throw new IllegalStateException("failed to get file object", ex);
+                    });
         }
         throw new IllegalStateException("could not find changesets link on repository " + repository.getName());
     }

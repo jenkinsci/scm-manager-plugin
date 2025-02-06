@@ -8,8 +8,7 @@ public class Changeset {
     private String id;
     private Date date;
 
-    Changeset() {
-    }
+    Changeset() {}
 
     public Changeset(String id, Date date) {
         this.id = id;
@@ -29,8 +28,7 @@ public class Changeset {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Changeset changeset = (Changeset) o;
-        return Objects.equals(id, changeset.id) &&
-            Objects.equals(date, changeset.date);
+        return Objects.equals(id, changeset.id) && Objects.equals(date, changeset.date);
     }
 
     @Override

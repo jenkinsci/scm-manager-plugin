@@ -28,8 +28,7 @@ public class CloneInformation implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CloneInformation that = (CloneInformation) o;
-        return type.equals(that.type) &&
-            url.equals(that.url);
+        return type.equals(that.type) && url.equals(that.url);
     }
 
     @Override

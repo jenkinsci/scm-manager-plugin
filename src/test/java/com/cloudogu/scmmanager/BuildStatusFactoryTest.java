@@ -1,22 +1,21 @@
 package com.cloudogu.scmmanager;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.util.SortedMap;
 import net.sf.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.SortedMap;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BuildStatusFactoryTest {
@@ -114,9 +113,6 @@ public class BuildStatusFactoryTest {
         }
 
         @Override
-        protected void removeRun(Run run) {
-
-        }
+        protected void removeRun(Run run) {}
     }
-
 }

@@ -4,16 +4,15 @@ import com.cloudogu.scmmanager.info.JobInformation;
 import com.google.common.base.Strings;
 import hudson.model.Result;
 import hudson.model.Run;
-import jenkins.model.Jenkins;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import jenkins.model.Jenkins;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class NotificationService {
 
@@ -39,11 +38,10 @@ class NotificationService {
             return;
         }
 
-        List<JobInformation> informationList = actions
-            .stream()
-            .map(NotificationAction::getJobInformation)
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
+        List<JobInformation> informationList = actions.stream()
+                .map(NotificationAction::getJobInformation)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
         if (informationList.isEmpty()) {
             LOG.info("no scm information could be extracted from build {}", run);
             return;
@@ -77,5 +75,4 @@ class NotificationService {
             }
         }
     }
-
 }

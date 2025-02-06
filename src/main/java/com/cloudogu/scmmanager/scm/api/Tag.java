@@ -2,7 +2,6 @@ package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.Date;
 import java.util.Objects;
 
@@ -10,6 +9,7 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
 
     @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String name;
+
     @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String revision;
 
@@ -18,8 +18,7 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
     private CloneInformation cloneInformation;
     private ScmManagerTag head;
 
-    Tag() {
-    }
+    Tag() {}
 
     public Tag(String name, String revision, Changeset changeset, CloneInformation cloneInformation) {
         this.name = name;
@@ -72,11 +71,11 @@ public class Tag extends HalRepresentation implements ScmManagerObservable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Tag tag = (Tag) o;
-        return Objects.equals(name, tag.name) &&
-            Objects.equals(revision, tag.revision) &&
-            Objects.equals(date, tag.date) &&
-            Objects.equals(cloneInformation, tag.cloneInformation) &&
-            Objects.equals(head, tag.head);
+        return Objects.equals(name, tag.name)
+                && Objects.equals(revision, tag.revision)
+                && Objects.equals(date, tag.date)
+                && Objects.equals(cloneInformation, tag.cloneInformation)
+                && Objects.equals(head, tag.head);
     }
 
     @Override

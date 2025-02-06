@@ -1,5 +1,8 @@
 package com.cloudogu.scmmanager.scm;
 
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
+
 import com.cloudbees.plugins.credentials.CredentialsUnavailableException;
 import com.cloudogu.scmmanager.scm.api.ExecutionExceptions;
 import com.cloudogu.scmmanager.scm.api.Namespace;
@@ -14,6 +17,16 @@ import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMNavigatorDescriptor;
@@ -36,25 +49,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.inject.Inject;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
-
 public class ScmManagerNavigator extends SCMNavigator {
 
     public static final String ALL_NAMESPACES_LABEL = "--all--";
 
-    private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER = plugin -> Jenkins.get().getPlugin(plugin) != null;
+    private static final Predicate<String> DEFAULT_DEPENDENCY_CHECKER =
+            plugin -> Jenkins.get().getPlugin(plugin) != null;
 
     private final String projectName;
     private final String serverUrl;
@@ -77,7 +77,13 @@ public class ScmManagerNavigator extends SCMNavigator {
         this(projectName, serverUrl, namespace, credentialsId, DEFAULT_DEPENDENCY_CHECKER, new ScmManagerApiFactory());
     }
 
-    public ScmManagerNavigator(String projectName, String serverUrl, String namespace, String credentialsId, Predicate<String> dependencyChecker, ScmManagerApiFactory apiFactory) {
+    public ScmManagerNavigator(
+            String projectName,
+            String serverUrl,
+            String namespace,
+            String credentialsId,
+            Predicate<String> dependencyChecker,
+            ScmManagerApiFactory apiFactory) {
         this.projectName = projectName;
         this.serverUrl = serverUrl;
         this.namespace = namespace;
@@ -117,9 +123,8 @@ public class ScmManagerNavigator extends SCMNavigator {
     @Override
     public void visitSources(SCMSourceObserver observer) throws IOException, InterruptedException {
         TaskListener listener = observer.getListener();
-        try (ScmManagerNavigatorRequest request = new ScmManagerNavigatorContext()
-            .withTraits(traits)
-            .newRequest(this, observer)) {
+        try (ScmManagerNavigatorRequest request =
+                new ScmManagerNavigatorContext().withTraits(traits).newRequest(this, observer)) {
 
             ScmManagerApi api = apiFactory.create(observer.getContext(), serverUrl, credentialsId);
             try {
@@ -129,9 +134,9 @@ public class ScmManagerNavigator extends SCMNavigator {
                 } else {
                     repositoryRequest = api.getRepositories(namespace);
                 }
-                List<Repository> repositories = repositoryRequest.get()
-                    .stream().filter(filterUnsupportedRepositories())
-                    .collect(Collectors.toList());
+                List<Repository> repositories = repositoryRequest.get().stream()
+                        .filter(filterUnsupportedRepositories())
+                        .collect(Collectors.toList());
                 for (Repository repository : repositories) {
                     final String subProjectName;
                     if (isForAllNamespaces()) {
@@ -139,7 +144,11 @@ public class ScmManagerNavigator extends SCMNavigator {
                     } else {
                         subProjectName = repository.getName();
                     }
-                    if (request.process(subProjectName, new ScmManagerSourceFactory(request, repository), null, new NavigatorWitness(listener))) {
+                    if (request.process(
+                            subProjectName,
+                            new ScmManagerSourceFactory(request, repository),
+                            null,
+                            new NavigatorWitness(listener))) {
                         // the observer has seen enough and doesn't want to see anymore
                         return;
                     }
@@ -154,8 +163,10 @@ public class ScmManagerNavigator extends SCMNavigator {
     }
 
     @Override
-    public void visitSources(SCMSourceObserver observer, SCMSourceEvent<?> event) throws IOException, InterruptedException {
-        if (event instanceof ScmManagerSourceEvent && ((ScmManagerSourceEvent) event).getPayload().isGlobal()) {
+    public void visitSources(SCMSourceObserver observer, SCMSourceEvent<?> event)
+            throws IOException, InterruptedException {
+        if (event instanceof ScmManagerSourceEvent
+                && ((ScmManagerSourceEvent) event).getPayload().isGlobal()) {
             visitSources(observer);
         } else {
             super.visitSources(observer, event);
@@ -210,9 +221,7 @@ public class ScmManagerNavigator extends SCMNavigator {
         @NonNull
         @Override
         public SCMSource create(@NonNull String projectName) {
-            String repoId = Joiner.on("/").join(
-                repository.getNamespace(), repository.getName(), repository.getType()
-            );
+            String repoId = Joiner.on("/").join(repository.getNamespace(), repository.getName(), repository.getType());
             String id = getId() + "::" + repoId;
             if ("svn".equals(repository.getType())) {
                 return createSvnSource(projectName, id);
@@ -222,18 +231,18 @@ public class ScmManagerNavigator extends SCMNavigator {
 
         private SCMSource createSvnSource(String projectName, String id) {
             return new ScmManagerSvnSourceBuilder(projectName, serverUrl, repository.mustGetUrl("http"), credentialsId)
-                .withId(id)
-                .withRequest(request)
-                .withIncludes(request.getSvnIncludes())
-                .withExcludes(request.getSvnExcludes())
-                .build();
+                    .withId(id)
+                    .withRequest(request)
+                    .withIncludes(request.getSvnIncludes())
+                    .withExcludes(request.getSvnExcludes())
+                    .build();
         }
 
         private SCMSource createSource(String projectName, String id, String repoId) {
             return new ScmManagerSourceBuilder(projectName, serverUrl, repoId, credentialsId)
-                .withId(id)
-                .withRequest(request)
-                .build();
+                    .withId(id)
+                    .withRequest(request)
+                    .build();
         }
     }
 
@@ -278,22 +287,33 @@ public class ScmManagerNavigator extends SCMNavigator {
         }
 
         @SuppressWarnings("unused") // used By stapler
-        public ListBoxModel doFillCredentialsIdItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
+        public ListBoxModel doFillCredentialsIdItems(
+                @AncestorInPath SCMSourceOwner context,
+                @QueryParameter String serverUrl,
+                @QueryParameter String value) {
             return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
         }
 
         @SuppressWarnings("unused") // used By stapler
-        public FormValidation doCheckCredentialsId(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) throws InterruptedException, ExecutionException {
+        public FormValidation doCheckCredentialsId(
+                @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
+                throws InterruptedException, ExecutionException {
             return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
         }
 
         @SuppressWarnings("unused") // used By stapler
-        public FormValidation doCheckServerUrl(@QueryParameter String value) throws InterruptedException, ExecutionException {
+        public FormValidation doCheckServerUrl(@QueryParameter String value)
+                throws InterruptedException, ExecutionException {
             return ConnectionConfiguration.checkServerUrl(apiFactory, value);
         }
 
         @SuppressWarnings("unused") // used By stapler
-        public ListBoxModel doFillNamespaceItems(@AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String credentialsId, @QueryParameter String value) throws InterruptedException, ExecutionException {
+        public ListBoxModel doFillNamespaceItems(
+                @AncestorInPath SCMSourceOwner context,
+                @QueryParameter String serverUrl,
+                @QueryParameter String credentialsId,
+                @QueryParameter String value)
+                throws InterruptedException, ExecutionException {
             if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
                 return createEmptyNamespaceSelect(value);
             }
@@ -306,14 +326,10 @@ public class ScmManagerNavigator extends SCMNavigator {
             }
             ListBoxModel model = new ListBoxModel();
             model.add(ALL_NAMESPACES_LABEL);
-            api
-                .getNamespaces()
-                .exceptionally(e -> emptyList())
-                .get()
-                .stream()
-                .map(Namespace::getNamespace)
-                .sorted()
-                .forEach(n -> model.add(n));
+            api.getNamespaces().exceptionally(e -> emptyList()).get().stream()
+                    .map(Namespace::getNamespace)
+                    .sorted()
+                    .forEach(n -> model.add(n));
             return model;
         }
 
@@ -327,7 +343,8 @@ public class ScmManagerNavigator extends SCMNavigator {
 
         @SuppressWarnings({"unused", "rawtypes"}) // used By stapler, generic hell
         public List<NamedArrayList<? extends SCMTraitDescriptor>> getTraitsDescriptorLists() {
-            List<NamedArrayList<? extends SCMTraitDescriptor>> all = new ArrayList<>(delegate.getTraitsDescriptorLists());
+            List<NamedArrayList<? extends SCMTraitDescriptor>> all =
+                    new ArrayList<>(delegate.getTraitsDescriptorLists());
             if (Subversion.isSupported()) {
                 appendSubVersionTrait(all);
             }
@@ -336,8 +353,10 @@ public class ScmManagerNavigator extends SCMNavigator {
 
         @SuppressWarnings({"unchecked", "rawtypes"}) // generic hell
         private void appendSubVersionTrait(List<NamedArrayList<? extends SCMTraitDescriptor>> all) {
-            Optional<SCMNavigatorTraitDescriptor> descriptor = SCMNavigatorTrait._for(null, ScmManagerNavigatorContext.class, null)
-                .stream().filter(desc -> desc instanceof ScmManagerSvnNavigatorTrait.DescriptorImpl).findFirst();
+            Optional<SCMNavigatorTraitDescriptor> descriptor =
+                    SCMNavigatorTrait._for(null, ScmManagerNavigatorContext.class, null).stream()
+                            .filter(desc -> desc instanceof ScmManagerSvnNavigatorTrait.DescriptorImpl)
+                            .findFirst();
             if (descriptor.isPresent()) {
                 for (NamedArrayList list : all) {
                     if ("Within repository".equals(list.getName())) {
@@ -360,9 +379,7 @@ public class ScmManagerNavigator extends SCMNavigator {
         @NonNull
         @Override
         protected SCMSourceCategory[] createCategories() {
-            return new SCMSourceCategory[]{
-                new UncategorizedSCMSourceCategory(new NonLocalizable("Repositories"))
-            };
+            return new SCMSourceCategory[] {new UncategorizedSCMSourceCategory(new NonLocalizable("Repositories"))};
         }
     }
 
@@ -384,4 +401,3 @@ public class ScmManagerNavigator extends SCMNavigator {
         }
     }
 }
-

@@ -1,20 +1,19 @@
 package com.cloudogu.scmmanager;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.Session;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmV2SshNotifierTest {
@@ -70,5 +69,4 @@ public class ScmV2SshNotifierTest {
         buildStatus.setStatus(BuildStatus.StatusType.SUCCESS);
         return buildStatus;
     }
-
 }

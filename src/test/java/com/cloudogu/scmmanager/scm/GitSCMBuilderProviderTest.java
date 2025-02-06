@@ -1,14 +1,13 @@
 package com.cloudogu.scmmanager.scm;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 
 public class GitSCMBuilderProviderTest {
 
@@ -29,5 +28,4 @@ public class GitSCMBuilderProviderTest {
         assertThat(provider.isSupported(ChangeRequestSCMHeadCategory.DEFAULT)).isTrue();
         assertThat(provider.isSupported(UncategorizedSCMHeadCategory.DEFAULT)).isTrue();
     }
-
 }

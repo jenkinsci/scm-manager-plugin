@@ -1,12 +1,11 @@
 package com.cloudogu.scmmanager;
 
-import com.cloudogu.scmmanager.info.JobInformation;
-import org.junit.Test;
-
-import java.util.Optional;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import com.cloudogu.scmmanager.info.JobInformation;
+import java.util.Optional;
+import org.junit.Test;
 
 public class ScmMigratedV1NotifierProviderTest {
 
@@ -47,5 +46,4 @@ public class ScmMigratedV1NotifierProviderTest {
     private JobInformation createInformation(String url) {
         return new JobInformation("migrated", url, "abc", "v1", false);
     }
-
 }

@@ -1,5 +1,8 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
+import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerNavigator;
@@ -9,9 +12,6 @@ import javaposse.jobdsl.dsl.DslScriptException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class NavigatorExtensionTest {
 
@@ -32,9 +32,8 @@ public class NavigatorExtensionTest {
         assertThat(scmNavigator.getServerUrl()).isEqualTo("https://scm.hitchhiker.com/scm");
         assertThat(scmNavigator.getCredentialsId()).isEqualTo("secret");
         assertThat(scmNavigator.getNamespace()).isEqualTo("spaceships");
-        assertContainsOnlyInstancesOf(scmNavigator.getTraits(),
-            ScmManagerBranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class
-        );
+        assertContainsOnlyInstancesOf(
+                scmNavigator.getTraits(), ScmManagerBranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class);
     }
 
     @Test
@@ -51,9 +50,8 @@ public class NavigatorExtensionTest {
         });
 
         ScmManagerNavigator scmNavigator = extension.scmManagerNamespace(null);
-        assertContainsOnlyInstancesOf(scmNavigator.getTraits(),
-            TagDiscoveryTrait.class, ScmManagerSvnNavigatorTrait.class
-        );
+        assertContainsOnlyInstancesOf(
+                scmNavigator.getTraits(), TagDiscoveryTrait.class, ScmManagerSvnNavigatorTrait.class);
     }
 
     @Test
@@ -66,17 +64,18 @@ public class NavigatorExtensionTest {
                 context.namespace("spaceships");
                 context.discoverBranches(false);
                 context.discoverPullRequest(false);
-                context.discoverSvn(() -> {
-                });
+                context.discoverSvn(() -> {});
             } else if (ctx instanceof ScmManagerNavigatorContext.SubversionContext) {
-                ScmManagerNavigatorContext.SubversionContext context = (ScmManagerNavigatorContext.SubversionContext) ctx;
+                ScmManagerNavigatorContext.SubversionContext context =
+                        (ScmManagerNavigatorContext.SubversionContext) ctx;
                 context.includes("tags");
                 context.excludes("tags/0.*");
             }
         });
 
         ScmManagerNavigator scmNavigator = extension.scmManagerNamespace(null);
-        ScmManagerSvnNavigatorTrait trait = (ScmManagerSvnNavigatorTrait) scmNavigator.getTraits().get(0);
+        ScmManagerSvnNavigatorTrait trait =
+                (ScmManagerSvnNavigatorTrait) scmNavigator.getTraits().get(0);
         assertThat(trait.getIncludes()).isEqualTo("tags");
         assertThat(trait.getExcludes()).isEqualTo("tags/0.*");
     }
@@ -91,5 +90,4 @@ public class NavigatorExtensionTest {
 
         extension.scmManagerNamespace(null);
     }
-
 }

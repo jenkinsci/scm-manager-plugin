@@ -1,13 +1,12 @@
 package com.cloudogu.scmmanager.scm;
 
+import static java.util.stream.Collectors.toList;
+
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
+import java.util.Collection;
 import jenkins.scm.api.SCMHead;
 import net.sf.json.JSONObject;
-
-import java.util.Collection;
-
-import static java.util.stream.Collectors.toList;
 
 public class ScmManagerBranchEventFromPullRequest extends ScmManagerHeadEvent {
 
@@ -15,7 +14,8 @@ public class ScmManagerBranchEventFromPullRequest extends ScmManagerHeadEvent {
 
     ScmManagerBranchEventFromPullRequest(Type type, JSONObject form, Collection<JSONObject> pullRequests) {
         super(correspondingTypeForBranch(type), form);
-        this.names = pullRequests.stream().map(branch -> branch.getString("source")).collect(toList());
+        this.names =
+                pullRequests.stream().map(branch -> branch.getString("source")).collect(toList());
     }
 
     private static Type correspondingTypeForBranch(Type type) {
@@ -35,6 +35,8 @@ public class ScmManagerBranchEventFromPullRequest extends ScmManagerHeadEvent {
 
     @Override
     Collection<SCMHead> heads(CloneInformation cloneInformation) {
-        return names.stream().map(name -> new ScmManagerHead(cloneInformation, name)).collect(toList());
+        return names.stream()
+                .map(name -> new ScmManagerHead(cloneInformation, name))
+                .collect(toList());
     }
 }

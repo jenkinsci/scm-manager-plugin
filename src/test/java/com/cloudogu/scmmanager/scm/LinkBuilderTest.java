@@ -1,15 +1,14 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import org.junit.Test;
-
-import static com.cloudogu.scmmanager.scm.ScmTestData.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 public class LinkBuilderTest {
 
@@ -115,6 +114,4 @@ public class LinkBuilderTest {
             }
         });
     }
-
-
 }

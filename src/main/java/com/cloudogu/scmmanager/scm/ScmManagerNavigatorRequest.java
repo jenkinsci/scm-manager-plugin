@@ -10,7 +10,10 @@ public class ScmManagerNavigatorRequest extends SCMNavigatorRequest {
     private final String svnIncludes;
     private final String svnExcludes;
 
-    protected ScmManagerNavigatorRequest(@NonNull SCMNavigator source, @NonNull ScmManagerNavigatorContext context, @NonNull SCMSourceObserver observer) {
+    protected ScmManagerNavigatorRequest(
+            @NonNull SCMNavigator source,
+            @NonNull ScmManagerNavigatorContext context,
+            @NonNull SCMSourceObserver observer) {
         super(source, context, observer);
         this.svnIncludes = context.getSvnIncludes();
         this.svnExcludes = context.getSvnExcludes();

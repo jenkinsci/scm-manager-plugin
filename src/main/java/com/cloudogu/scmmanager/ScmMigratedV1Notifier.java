@@ -5,6 +5,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import hudson.model.Run;
 import io.jenkins.plugins.okhttp.api.JenkinsOkHttpClient;
+import java.io.IOException;
+import java.util.Optional;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -12,9 +14,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Optional;
 
 public class ScmMigratedV1Notifier implements Notifier {
 
@@ -41,7 +40,9 @@ public class ScmMigratedV1Notifier implements Notifier {
         if (client != null) {
             return client;
         }
-        return JenkinsOkHttpClient.newClientBuilder(new OkHttpClient.Builder().followRedirects(false).build()).build();
+        return JenkinsOkHttpClient.newClientBuilder(
+                        new OkHttpClient.Builder().followRedirects(false).build())
+                .build();
     }
 
     @VisibleForTesting
@@ -58,7 +59,8 @@ public class ScmMigratedV1Notifier implements Notifier {
 
     @Override
     public void notify(String revision, BuildStatus buildStatus) {
-        Request.Builder request = new Request.Builder().url(information.getUrl()).get();
+        Request.Builder request =
+                new Request.Builder().url(information.getUrl()).get();
         authenticationFactory.createHttp(run, information.getCredentialsId()).authenticate(request);
         getClient().newCall(request.build()).enqueue(new Callback() {
 
@@ -89,12 +91,8 @@ public class ScmMigratedV1Notifier implements Notifier {
         ScmV2NotifierProvider provider = getV2NotifierProvider();
         provider.setAuthenticationFactory(authenticationFactory);
 
-        JobInformation redirectedInformation = new JobInformation(
-            information.getType(),
-            location,
-            revision,
-            information.getCredentialsId(),
-            false);
+        JobInformation redirectedInformation =
+                new JobInformation(information.getType(), location, revision, information.getCredentialsId(), false);
 
         Optional<ScmV2Notifier> scmV2Notifier = provider.get(run, redirectedInformation);
         if (scmV2Notifier.isPresent()) {

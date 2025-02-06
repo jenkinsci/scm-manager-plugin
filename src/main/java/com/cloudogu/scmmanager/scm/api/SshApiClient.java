@@ -12,14 +12,13 @@ import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class SshApiClient extends ApiClient {
 
@@ -42,7 +41,11 @@ public class SshApiClient extends ApiClient {
         this(OkHttpClientBuilder.build(), new SshConnectionFactory(), sshUrl, authentication);
     }
 
-    public SshApiClient(OkHttpClient client, SshConnectionFactory connectionFactory, String sshUrl, SSHAuthentication authentication) {
+    public SshApiClient(
+            OkHttpClient client,
+            SshConnectionFactory connectionFactory,
+            String sshUrl,
+            SSHAuthentication authentication) {
         super("ssh");
         this.client = client;
         this.connectionFactory = connectionFactory;
@@ -56,16 +59,15 @@ public class SshApiClient extends ApiClient {
 
         // we can not use the supplier directly, the guava version which is provided by jenkins
         // does not yet implement the java.util.Supplier
-        return CompletableFuture.supplyAsync(() -> fetcher.get())
-            .thenCompose(token -> {
-                String apiUrl = createApiUrl(token.getApiUrl(), url);
+        return CompletableFuture.supplyAsync(() -> fetcher.get()).thenCompose(token -> {
+            String apiUrl = createApiUrl(token.getApiUrl(), url);
 
-                Request.Builder requestBuilder = new Request.Builder().get().url(apiUrl);
-                BearerHttpAuthentication.authenticate(requestBuilder, token.getAccessToken());
-                requestBuilder.addHeader("Accept", contentType);
+            Request.Builder requestBuilder = new Request.Builder().get().url(apiUrl);
+            BearerHttpAuthentication.authenticate(requestBuilder, token.getAccessToken());
+            requestBuilder.addHeader("Accept", contentType);
 
-                return execute(client, requestBuilder, type);
-            });
+            return execute(client, requestBuilder, type);
+        });
     }
 
     @Override
@@ -104,17 +106,19 @@ public class SshApiClient extends ApiClient {
 
     private static AccessToken executeTokenCommand(SshConnection connection) {
         try {
-            return connection.command(ACCESS_TOKEN_COMMAND)
-                .withOutput(AccessToken.class)
-                .json();
+            return connection
+                    .command(ACCESS_TOKEN_COMMAND)
+                    .withOutput(AccessToken.class)
+                    .json();
         } catch (IOException e) {
             throw new SshConnectionFailedException("failed to create ssh connection", e);
         }
     }
 
     private SshConnection createConnection() {
-        return connectionFactory.create(sshUrl)
-            .orElseThrow(() -> new IllegalStateException("could not create ssh connection"));
+        return connectionFactory
+                .create(sshUrl)
+                .orElseThrow(() -> new IllegalStateException("could not create ssh connection"));
     }
 
     @SuppressFBWarnings("EQ_DOESNT_OVERRIDE_EQUALS") // we do not need equality checks
@@ -122,8 +126,7 @@ public class SshApiClient extends ApiClient {
 
         private String accessToken;
 
-        public AccessToken() {
-        }
+        public AccessToken() {}
 
         AccessToken(Links links, String accessToken) {
             super(links);
@@ -139,9 +142,10 @@ public class SshApiClient extends ApiClient {
         }
 
         public String getApiUrl() {
-            return getLinks().getLinkBy("index")
-                .map(Link::getHref)
-                .orElseThrow(() -> new IllegalStateException("no index link found"));
+            return getLinks()
+                    .getLinkBy("index")
+                    .map(Link::getHref)
+                    .orElseThrow(() -> new IllegalStateException("no index link found"));
         }
     }
 }

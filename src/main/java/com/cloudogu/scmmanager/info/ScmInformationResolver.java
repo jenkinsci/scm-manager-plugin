@@ -1,13 +1,12 @@
 package com.cloudogu.scmmanager.info;
 
-import hudson.model.Job;
-import hudson.model.Run;
-import jenkins.triggers.SCMTriggerItem;
-
-import java.util.Collection;
-
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+
+import hudson.model.Job;
+import hudson.model.Run;
+import java.util.Collection;
+import jenkins.triggers.SCMTriggerItem;
 
 public interface ScmInformationResolver extends JobInformationResolver {
 
@@ -15,7 +14,9 @@ public interface ScmInformationResolver extends JobInformationResolver {
     default Collection<JobInformation> resolve(Run<?, ?> run, Job<?, ?> job) {
         SCMTriggerItem trigger = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(job);
         if (trigger != null) {
-            return trigger.getSCMs().stream().flatMap(scm -> resolve(run, scm).stream()).collect(toList());
+            return trigger.getSCMs().stream()
+                    .flatMap(scm -> resolve(run, scm).stream())
+                    .collect(toList());
         }
         return emptyList();
     }

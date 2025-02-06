@@ -1,6 +1,5 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
-import com.google.common.base.Strings;
 import javaposse.jobdsl.dsl.Preconditions;
 
 public class BranchSourceContext extends ScmManagerContext {
@@ -29,5 +28,4 @@ public class BranchSourceContext extends ScmManagerContext {
         Preconditions.checkNotNullOrEmpty(id, "id is required");
         Preconditions.checkNotNullOrEmpty(repository, "repository is required");
     }
-
 }

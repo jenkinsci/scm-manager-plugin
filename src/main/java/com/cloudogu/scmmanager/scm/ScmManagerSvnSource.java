@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.scm.SubversionSCM;
 import hudson.scm.subversion.UpdateUpdater;
+import java.util.List;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMRevision;
@@ -13,8 +14,6 @@ import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import jenkins.scm.impl.subversion.SubversionSCMSource;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.util.List;
 
 public class ScmManagerSvnSource extends SubversionSCMSource {
 
@@ -70,16 +69,26 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
         }
 
         List<SubversionSCM.ModuleLocation> locations = SubversionSCM.ModuleLocation.parse(
-            new String[]{remote.toString()}, new String[]{getCredentialsId()}, new String[]{"."},
-            null, null, null
-        );
+                new String[] {remote.toString()},
+                new String[] {getCredentialsId()},
+                new String[] {"."},
+                null,
+                null,
+                null);
 
         return new SubversionSCM(
-            locations, new UpdateUpdater(), new ScmManagerSvnRepositoryBrowser(repoLink),
-            null, null, null, null,
-            null, false, false, null,
-            false
-        );
+                locations,
+                new UpdateUpdater(),
+                new ScmManagerSvnRepositoryBrowser(repoLink),
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                false,
+                null,
+                false);
     }
 
     @Extension(optional = true)
@@ -107,9 +116,7 @@ public class ScmManagerSvnSource extends SubversionSCMSource {
         @NonNull
         @Override
         protected SCMHeadCategory[] createCategories() {
-            return new SCMHeadCategory[]{
-                UncategorizedSCMHeadCategory.DEFAULT
-            };
+            return new SCMHeadCategory[] {UncategorizedSCMHeadCategory.DEFAULT};
         }
     }
 }

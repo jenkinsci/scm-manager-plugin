@@ -1,10 +1,9 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class ScmV2SshNotifier implements Notifier {
 
@@ -36,12 +35,11 @@ public class ScmV2SshNotifier implements Notifier {
         }
     }
 
-    private void executeStatusUpdateCommand(NamespaceAndName repository, String revision, BuildStatus buildStatus) throws IOException {
+    private void executeStatusUpdateCommand(NamespaceAndName repository, String revision, BuildStatus buildStatus)
+            throws IOException {
         String cmd = createCommand(repository, revision);
         setBuildStatusTypeIfNull(buildStatus);
-        connection.command(cmd)
-            .withInput(buildStatus).xml()
-            .exec();
+        connection.command(cmd).withInput(buildStatus).xml().exec();
     }
 
     private String createCommand(NamespaceAndName repository, String revision) {

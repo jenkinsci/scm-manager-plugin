@@ -8,9 +8,8 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 import com.cloudogu.scmmanager.scm.api.Tag;
-import jenkins.scm.api.SCMHead;
-
 import java.util.concurrent.CompletableFuture;
+import jenkins.scm.api.SCMHead;
 
 public class HeadResolver {
 
@@ -31,7 +30,8 @@ public class HeadResolver {
         } else if (head instanceof ScmManagerHead) {
             return api.getBranch(repository, head.getName()).thenApply(Branch::revision);
         } else {
-            throw new IllegalArgumentException(head.getName() + " in not an instance of " + ScmManagerHead.class.getName());
+            throw new IllegalArgumentException(
+                    head.getName() + " in not an instance of " + ScmManagerHead.class.getName());
         }
     }
 }

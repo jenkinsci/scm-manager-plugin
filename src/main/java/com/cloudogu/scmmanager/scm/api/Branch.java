@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
-
 import java.util.Objects;
 
 public class Branch extends HalRepresentation implements ScmManagerObservable {
@@ -13,8 +12,7 @@ public class Branch extends HalRepresentation implements ScmManagerObservable {
 
     private ScmManagerHead head;
 
-    Branch() {
-    }
+    Branch() {}
 
     public Branch(String name, String revision) {
         this.name = name;
@@ -52,10 +50,10 @@ public class Branch extends HalRepresentation implements ScmManagerObservable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Branch branch = (Branch) o;
-        return Objects.equals(cloneInformation, branch.cloneInformation) &&
-            Objects.equals(name, branch.name) &&
-            Objects.equals(revision, branch.revision) &&
-            Objects.equals(head, branch.head);
+        return Objects.equals(cloneInformation, branch.cloneInformation)
+                && Objects.equals(name, branch.name)
+                && Objects.equals(revision, branch.revision)
+                && Objects.equals(head, branch.head);
     }
 
     @Override

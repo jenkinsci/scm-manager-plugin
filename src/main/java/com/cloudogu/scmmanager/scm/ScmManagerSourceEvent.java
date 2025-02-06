@@ -1,15 +1,14 @@
 package com.cloudogu.scmmanager.scm;
 
+import static java.util.Collections.singleton;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Arrays;
+import java.util.Collection;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceEvent;
 import net.sf.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static java.util.Collections.singleton;
 
 public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSourceEvent.TriggerPayload> {
 
@@ -17,7 +16,8 @@ public abstract class ScmManagerSourceEvent extends SCMSourceEvent<ScmManagerSou
 
     public static Collection<ScmManagerSourceEvent> from(JSONObject form) {
         if (form.containsKey("namespace") && form.containsKey("name")) {
-            return Arrays.asList(new ScmManagerSingleSourceEvent(form), new ScmManagerSingleSourceForGlobalInstanceEvent(form));
+            return Arrays.asList(
+                    new ScmManagerSingleSourceEvent(form), new ScmManagerSingleSourceForGlobalInstanceEvent(form));
         } else {
             return singleton(new ScmManagerGlobalSourceEvent(form));
         }

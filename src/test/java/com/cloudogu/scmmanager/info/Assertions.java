@@ -4,8 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 final class Assertions {
 
-    private Assertions() {
-    }
+    private Assertions() {}
 
     static void info(JobInformation info, String type, String rev, String url, String credentials) {
         assertEquals(type, info.getType());

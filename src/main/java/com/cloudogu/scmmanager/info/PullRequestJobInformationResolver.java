@@ -1,20 +1,19 @@
 package com.cloudogu.scmmanager.info;
 
+import static java.util.stream.Collectors.toList;
+
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+import java.util.Collection;
+import java.util.Collections;
 import jenkins.branch.Branch;
 import jenkins.scm.api.SCMHead;
 import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Collections;
-
-import static java.util.stream.Collectors.toList;
 
 public class PullRequestJobInformationResolver implements JobInformationResolver {
 
@@ -57,14 +56,19 @@ public class PullRequestJobInformationResolver implements JobInformationResolver
             return Collections.emptyList();
         }
 
-        return ((GitSCM) scm).getUserRemoteConfigs().stream().map(urc ->
-            new JobInformation(
-                TYPE,
-                ((ScmManagerPullRequestHead) scmHead).getCloneInformation().getUrl(),
-                ((ScmManagerPullRequestHead) scmHead).getId(),
-                urc.getCredentialsId(),
-                true,
-                ((ScmManagerPullRequestHead) scmHead).getSource().getName()
-            )).collect(toList());
+        return ((GitSCM) scm)
+                .getUserRemoteConfigs().stream()
+                        .map(urc -> new JobInformation(
+                                TYPE,
+                                ((ScmManagerPullRequestHead) scmHead)
+                                        .getCloneInformation()
+                                        .getUrl(),
+                                ((ScmManagerPullRequestHead) scmHead).getId(),
+                                urc.getCredentialsId(),
+                                true,
+                                ((ScmManagerPullRequestHead) scmHead)
+                                        .getSource()
+                                        .getName()))
+                        .collect(toList());
     }
 }

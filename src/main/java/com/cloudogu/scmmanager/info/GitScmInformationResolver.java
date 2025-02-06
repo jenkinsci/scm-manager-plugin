@@ -8,16 +8,15 @@ import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
 import hudson.scm.SCM;
-import jenkins.plugins.git.GitSCMSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import jenkins.plugins.git.GitSCMSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Extension(optional = true) // We don't know why, but this is necessary
 public class GitScmInformationResolver implements ScmInformationResolver {
@@ -46,29 +45,26 @@ public class GitScmInformationResolver implements ScmInformationResolver {
             return createInformation(git, revision.get());
         }
 
-        Collection<String> remoteBases = SourceUtil
-            .getSources(run, GitSCMSource.class, GitSCMSource::getRemote);
+        Collection<String> remoteBases = SourceUtil.getSources(run, GitSCMSource.class, GitSCMSource::getRemote);
 
         if (remoteBases.isEmpty()) {
             LOG.trace("source owner has no sources, skip collecting information");
             return Collections.emptyList();
         }
 
-        return createInformation(git, revision.get())
-            .stream()
-            .filter(jobInformation -> {
-                boolean contains = remoteBases.contains(URIs.normalize(jobInformation.getUrl()));
-                if (!contains) {
-                    LOG.trace(
-                        "skip {}, because it is not part of the source owner {}. Maybe it is a library.",
-                        jobInformation.getUrl(), remoteBases
-                    );
-                }
-                return contains;
-            })
-            .collect(Collectors.toList());
+        return createInformation(git, revision.get()).stream()
+                .filter(jobInformation -> {
+                    boolean contains = remoteBases.contains(URIs.normalize(jobInformation.getUrl()));
+                    if (!contains) {
+                        LOG.trace(
+                                "skip {}, because it is not part of the source owner {}. Maybe it is a library.",
+                                jobInformation.getUrl(),
+                                remoteBases);
+                    }
+                    return contains;
+                })
+                .collect(Collectors.toList());
     }
-
 
     private List<JobInformation> createInformation(GitSCM git, String revision) {
         List<JobInformation> information = new ArrayList<>();

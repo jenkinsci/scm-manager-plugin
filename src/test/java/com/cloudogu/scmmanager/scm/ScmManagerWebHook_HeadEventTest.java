@@ -1,9 +1,23 @@
 package com.cloudogu.scmmanager.scm;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.servlet.ServletException;
 import jenkins.scm.api.SCMHead;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -20,26 +34,12 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerWebHook_HeadEventTest {
 
     @Mock
     StaplerRequest request;
+
     @Mock
     StaplerResponse response;
 
@@ -47,6 +47,7 @@ public class ScmManagerWebHook_HeadEventTest {
 
     @Spy
     ScmManagerWebHook hook;
+
     @Captor
     ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
 
@@ -213,7 +214,9 @@ public class ScmManagerWebHook_HeadEventTest {
         httpResponse.generateResponse(request, response, null);
         verify(response).setStatus(200);
 
-        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream()
+                .flatMap(event -> event.heads(new CloneInformation("git", "")).stream())
+                .collect(Collectors.toList());
         assertThat(heads).hasSize(2);
 
         assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
@@ -237,7 +240,9 @@ public class ScmManagerWebHook_HeadEventTest {
         httpResponse.generateResponse(request, response, null);
         verify(response).setStatus(200);
 
-        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream()
+                .flatMap(event -> event.heads(new CloneInformation("git", "")).stream())
+                .collect(Collectors.toList());
         assertThat(heads).hasSize(2);
 
         assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);

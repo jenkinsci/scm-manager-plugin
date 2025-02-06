@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
-
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,8 +16,7 @@ public class Repository extends HalRepresentation implements Serializable {
 
     private CloneInformation cloneInformation;
 
-    public Repository() {
-    }
+    public Repository() {}
 
     public Repository(String namespace, String name, String type) {
         this.namespace = namespace;
@@ -48,13 +46,13 @@ public class Repository extends HalRepresentation implements Serializable {
 
     public Optional<String> getUrl(String protocol) {
         return getLinks()
-            .getLinkBy("protocol", l -> protocol.equals(l.getName()))
-            .map(Link::getHref);
+                .getLinkBy("protocol", l -> protocol.equals(l.getName()))
+                .map(Link::getHref);
     }
 
     public String mustGetUrl(String protocol) {
         return getUrl(protocol)
-            .orElseThrow(() -> new IllegalStateException("could not find protocol link of type " + protocol));
+                .orElseThrow(() -> new IllegalStateException("could not find protocol link of type " + protocol));
     }
 
     public CloneInformation getCloneInformation(String protocol) {
@@ -70,10 +68,10 @@ public class Repository extends HalRepresentation implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Repository that = (Repository) o;
-        return Objects.equals(namespace, that.namespace) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(type, that.type) &&
-            Objects.equals(cloneInformation, that.cloneInformation);
+        return Objects.equals(namespace, that.namespace)
+                && Objects.equals(name, that.name)
+                && Objects.equals(type, that.type)
+                && Objects.equals(cloneInformation, that.cloneInformation);
     }
 
     @Override

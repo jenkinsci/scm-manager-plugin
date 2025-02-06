@@ -3,12 +3,11 @@ package com.cloudogu.scmmanager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.Session;
-
-import javax.xml.bind.JAXB;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
+import javax.xml.bind.JAXB;
 
 public class SshConnection implements AutoCloseable {
 
@@ -102,7 +101,6 @@ public class SshConnection implements AutoCloseable {
                 if (session != null) {
                     session.close();
                 }
-
             }
         }
     }
@@ -112,7 +110,6 @@ public class SshConnection implements AutoCloseable {
         private final Command command;
         private final Object object;
         private Marshaller marshaller;
-
 
         private Input(Command command, Object object) {
             this.command = command;

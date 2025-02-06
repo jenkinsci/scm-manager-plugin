@@ -7,14 +7,13 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.scm.SCM;
+import java.util.Collection;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.trait.SCMBuilder;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
-
-import java.util.Collection;
 
 abstract class SCMBuilderProvider implements ExtensionPoint {
 
@@ -99,5 +98,4 @@ abstract class SCMBuilderProvider implements ExtensionPoint {
             return linkBuilder;
         }
     }
-
 }

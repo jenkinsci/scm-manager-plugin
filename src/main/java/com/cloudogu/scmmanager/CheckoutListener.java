@@ -9,11 +9,10 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
-
-import javax.annotation.CheckForNull;
-import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.inject.Inject;
 
 @Extension
 public class CheckoutListener extends SCMListener {
@@ -32,7 +31,13 @@ public class CheckoutListener extends SCMListener {
     }
 
     @Override
-    public void onCheckout(Run<?, ?> run, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) {
+    public void onCheckout(
+            Run<?, ?> run,
+            SCM scm,
+            FilePath workspace,
+            TaskListener listener,
+            @CheckForNull File changelogFile,
+            @CheckForNull SCMRevisionState pollingBaseline) {
         List<JobInformation> jobInformation = informationService.resolve(run, scm);
         run.addAction(new NotificationAction(jobInformation));
         notificationService.notify(run, null);

@@ -1,11 +1,10 @@
 package com.cloudogu.scmmanager.scm;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 public class IconsTest {
 
@@ -18,7 +17,7 @@ public class IconsTest {
         iconAssertions.assertAllSizes();
     }
 
-    private final static class IconAssertions {
+    private static final class IconAssertions {
 
         private final IconSet iconSet;
         private final String name;
@@ -40,5 +39,4 @@ public class IconsTest {
             assertThat(icon.getUrl()).contains(size.getId());
         }
     }
-
 }

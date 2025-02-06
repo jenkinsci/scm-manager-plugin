@@ -2,18 +2,16 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ExecutionExceptions {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionExceptions.class);
 
-    private ExecutionExceptions() {
-    }
+    private ExecutionExceptions() {}
 
     public static void log(ExecutionException e) {
         Throwable cause = e.getCause();

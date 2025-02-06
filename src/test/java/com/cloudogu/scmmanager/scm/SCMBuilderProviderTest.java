@@ -1,13 +1,13 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.context;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.cloudogu.scmmanager.scm.api.Repository;
 import jenkins.scm.api.trait.SCMBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static com.cloudogu.scmmanager.scm.ScmTestData.context;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SCMBuilderProviderTest {
 
@@ -50,5 +50,4 @@ public class SCMBuilderProviderTest {
     public void shouldFailToCreateContextForUnknownType() {
         SCMBuilderProvider.from(context("tsf"));
     }
-
 }

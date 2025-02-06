@@ -4,10 +4,6 @@ import com.google.common.base.Strings;
 import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
-import jenkins.scm.impl.subversion.SubversionSCMSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import jenkins.scm.impl.subversion.SubversionSCMSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SvnScmInformationResolver implements ScmInformationResolver {
 
@@ -50,30 +49,30 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
             return configurations;
         }
 
-        Collection<String> remoteBases = SourceUtil
-            .getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
+        Collection<String> remoteBases =
+                SourceUtil.getSources(run, SubversionSCMSource.class, SubversionSCMSource::getRemoteBase);
 
         if (remoteBases.isEmpty()) {
             LOG.trace("source owner has no sources, skip collecting information");
             return Collections.emptyList();
         }
 
-        return configurations
-            .stream()
-            .filter(jobInformation -> remoteBases.stream().anyMatch(remoteBase -> {
-                boolean valid = URIs.normalize(jobInformation.getUrl()).startsWith(remoteBase);
-                if (!valid) {
-                    LOG.trace(
-                        "skip {}, because it does not start of the source owner {}. Maybe it is a library.",
-                        jobInformation.getUrl(), remoteBases
-                    );
-                }
-                return valid;
-            }))
-            .collect(Collectors.toList());
+        return configurations.stream()
+                .filter(jobInformation -> remoteBases.stream().anyMatch(remoteBase -> {
+                    boolean valid = URIs.normalize(jobInformation.getUrl()).startsWith(remoteBase);
+                    if (!valid) {
+                        LOG.trace(
+                                "skip {}, because it does not start of the source owner {}. Maybe it is a library.",
+                                jobInformation.getUrl(),
+                                remoteBases);
+                    }
+                    return valid;
+                }))
+                .collect(Collectors.toList());
     }
 
-    private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
+    private void appendInformation(
+            List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
         if (locations.length == 1) {
             appendInformation(configurations, locations[0], env.get("SVN_REVISION"));
         } else if (locations.length > 1) {
@@ -81,13 +80,15 @@ public class SvnScmInformationResolver implements ScmInformationResolver {
         }
     }
 
-    private void appendMultipleInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
+    private void appendMultipleInformation(
+            List<JobInformation> configurations, SubversionSCM.ModuleLocation[] locations, Map<String, String> env) {
         for (int i = 0; i < locations.length; i++) {
             appendInformation(configurations, locations[i], env.get("SVN_REVISION_" + (i + 1)));
         }
     }
 
-    private void appendInformation(List<JobInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
+    private void appendInformation(
+            List<JobInformation> configurations, SubversionSCM.ModuleLocation location, String revision) {
         String url = location.getURL();
         if (Strings.isNullOrEmpty(url)) {
             LOG.trace("svn location does not contain url");

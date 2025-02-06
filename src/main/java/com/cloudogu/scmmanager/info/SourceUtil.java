@@ -3,30 +3,26 @@ package com.cloudogu.scmmanager.info;
 import com.cloudogu.scmmanager.scm.ScmManagerSource;
 import hudson.model.Item;
 import hudson.model.Run;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMSourceOwner;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceOwner;
 
 public final class SourceUtil {
 
-    private SourceUtil() {
-    }
+    private SourceUtil() {}
 
-    static <T extends SCMSource> List<String> getSources(Run<?, ?> run, Class<T> sourceType, Function<T, String> urlExtractor) {
+    static <T extends SCMSource> List<String> getSources(
+            Run<?, ?> run, Class<T> sourceType, Function<T, String> urlExtractor) {
         return extractSourceOwner(run)
-            .map(sourceOwner ->
-                sourceOwner
-                    .getSCMSources()
-                    .stream()
-                    .filter(scmSource -> canExtract(scmSource, sourceType))
-                    .map(scmSource -> extractAndNormalize(scmSource, sourceType, urlExtractor))
-                    .collect(Collectors.toList())
-            ).orElse(Collections.emptyList());
+                .map(sourceOwner -> sourceOwner.getSCMSources().stream()
+                        .filter(scmSource -> canExtract(scmSource, sourceType))
+                        .map(scmSource -> extractAndNormalize(scmSource, sourceType, urlExtractor))
+                        .collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
@@ -47,7 +43,8 @@ public final class SourceUtil {
         return sourceType.isAssignableFrom(scmSource.getClass()) || scmSource instanceof ScmManagerSource;
     }
 
-    private static <T> String extractAndNormalize(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
+    private static <T> String extractAndNormalize(
+            SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
         String url = extract(scmSource, sourceType, urlExtractor);
         return URIs.normalize(url);
     }

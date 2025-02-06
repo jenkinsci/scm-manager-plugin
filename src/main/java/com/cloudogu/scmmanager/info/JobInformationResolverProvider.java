@@ -2,9 +2,8 @@ package com.cloudogu.scmmanager.info;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
-
 import java.util.Optional;
+import jenkins.model.Jenkins;
 
 public interface JobInformationResolverProvider extends ExtensionPoint {
 
@@ -13,5 +12,4 @@ public interface JobInformationResolverProvider extends ExtensionPoint {
     static ExtensionList<JobInformationResolverProvider> all() {
         return Jenkins.get().getExtensionList(JobInformationResolverProvider.class);
     }
-
 }

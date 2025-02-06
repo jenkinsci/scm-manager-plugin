@@ -3,7 +3,6 @@ package com.cloudogu.scmmanager.info;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.scm.SCM;
-
 import java.util.Collection;
 
 public interface JobInformationResolver {

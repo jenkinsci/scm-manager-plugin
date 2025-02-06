@@ -9,13 +9,12 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMProbe;
-import jenkins.scm.api.SCMProbeStat;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMProbe;
+import jenkins.scm.api.SCMProbeStat;
 
 public class ScmManagerApiProbe extends SCMProbe {
 
@@ -29,7 +28,11 @@ public class ScmManagerApiProbe extends SCMProbe {
 
     private Date lastModified;
 
-    public ScmManagerApiProbe(@NonNull ScmManagerApi api, @NonNull Repository repository, @NonNull SCMHead head, @CheckForNull ScmManagerRevision revision) {
+    public ScmManagerApiProbe(
+            @NonNull ScmManagerApi api,
+            @NonNull Repository repository,
+            @NonNull SCMHead head,
+            @CheckForNull ScmManagerRevision revision) {
         this.api = api;
         this.repository = repository;
         this.head = head;

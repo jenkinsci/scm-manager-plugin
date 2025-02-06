@@ -15,6 +15,7 @@ public final class BuildStatus {
     // field name is required for marshaling to json
     @SuppressWarnings("squid:S00115")
     private String type = "jenkins";
+
     private StatusType status;
 
     private BuildStatus(String name, String displayName, String url, StatusType status) {
@@ -24,8 +25,7 @@ public final class BuildStatus {
         this.status = status;
     }
 
-    BuildStatus() {
-    }
+    BuildStatus() {}
 
     public String getName() {
         return name;
@@ -68,7 +68,11 @@ public final class BuildStatus {
     }
 
     public enum StatusType {
-        PENDING, ABORTED, UNSTABLE, FAILURE, SUCCESS
+        PENDING,
+        ABORTED,
+        UNSTABLE,
+        FAILURE,
+        SUCCESS
     }
 
     static BuildStatus pending(String name, String displayName, String url) {
@@ -90,5 +94,4 @@ public final class BuildStatus {
     static BuildStatus failure(String name, String displayName, String url) {
         return new BuildStatus(name, displayName, url, StatusType.FAILURE);
     }
-
 }

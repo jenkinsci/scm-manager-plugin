@@ -1,21 +1,20 @@
 package com.cloudogu.scmmanager;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import com.google.common.base.Strings;
 import com.trilead.ssh2.Connection;
-
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-
 public class SshConnectionFactory {
 
-    private static final Pattern PATTERN = Pattern.compile("^ssh://(.*@)?([^/:]+)(:[0-9]*)?(:?/repo/([^/]+)/([^/]+))?/?$");
+    private static final Pattern PATTERN =
+            Pattern.compile("^ssh://(.*@)?([^/:]+)(:[0-9]*)?(:?/repo/([^/]+)/([^/]+))?/?$");
 
-    public SshConnectionFactory() {
-    }
+    public SshConnectionFactory() {}
 
     public Optional<SshConnection> create(String url) {
         Matcher matcher = PATTERN.matcher(url);
@@ -26,10 +25,7 @@ public class SshConnectionFactory {
     }
 
     private SshConnection createSshConnection(Matcher matcher) {
-        return new SshConnection(
-            createConnection(matcher),
-            createRepository(matcher)
-        );
+        return new SshConnection(createConnection(matcher), createRepository(matcher));
     }
 
     private Connection createConnection(Matcher matcher) {
@@ -57,5 +53,4 @@ public class SshConnectionFactory {
             return new NamespaceAndName(namespace, name);
         }
     }
-
 }

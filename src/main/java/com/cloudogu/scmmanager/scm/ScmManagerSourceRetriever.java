@@ -15,10 +15,6 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 import com.cloudogu.scmmanager.scm.api.Tag;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
-import jenkins.scm.api.trait.SCMSourceTrait;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -26,6 +22,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.trait.SCMSourceTrait;
 
 public class ScmManagerSourceRetriever {
 
@@ -39,9 +38,11 @@ public class ScmManagerSourceRetriever {
         this.traits = traits;
     }
 
-    public Iterable<ScmManagerObservable> getSpecificCandidatesFromSourceControl(ScmManagerSourceRequest request, SCMHead head) throws InterruptedException {
+    public Iterable<ScmManagerObservable> getSpecificCandidatesFromSourceControl(
+            ScmManagerSourceRequest request, SCMHead head) throws InterruptedException {
         try {
-            CompletableFuture<? extends ScmManagerObservable> candidate = getSpecificCandidateFromSourceControl(request, head);
+            CompletableFuture<? extends ScmManagerObservable> candidate =
+                    getSpecificCandidateFromSourceControl(request, head);
             if (candidate != null) {
                 return Collections.singleton(candidate.get());
             }
@@ -53,7 +54,8 @@ public class ScmManagerSourceRetriever {
         return Collections.emptySet();
     }
 
-    private CompletableFuture<? extends ScmManagerObservable> getSpecificCandidateFromSourceControl(ScmManagerSourceRequest request, SCMHead head) {
+    private CompletableFuture<? extends ScmManagerObservable> getSpecificCandidateFromSourceControl(
+            ScmManagerSourceRequest request, SCMHead head) {
         if (head instanceof ScmManagerTag) {
             if (request.isFetchTags()) {
                 return api.getTag(repository, head.getName());
@@ -73,24 +75,30 @@ public class ScmManagerSourceRetriever {
     }
 
     private boolean shouldIgnoreBranchBecauseRelatedPullRequestExists(String branchName) {
-        if (traits.stream().anyMatch(t -> t instanceof PullRequestDiscoveryTrait && ((PullRequestDiscoveryTrait) t).isExcludeBranchesWithPRs())) {
+        if (traits.stream()
+                .anyMatch(t -> t instanceof PullRequestDiscoveryTrait
+                        && ((PullRequestDiscoveryTrait) t).isExcludeBranchesWithPRs())) {
             CompletableFuture<List<PullRequest>> pullRequests = api.getPullRequests(repository);
             return pullRequests.join().stream().anyMatch(p -> p.getSource().equals(branchName));
         }
         return false;
     }
 
-    public Iterable<ScmManagerObservable> getAllCandidatesFromSourceControl(ScmManagerSourceRequest request) throws InterruptedException {
+    public Iterable<ScmManagerObservable> getAllCandidatesFromSourceControl(ScmManagerSourceRequest request)
+            throws InterruptedException {
         try {
-            CompletableFuture<List<Branch>> branchesFuture = request.isFetchBranches() ? api.getBranches(repository) : CompletableFuture.completedFuture(Collections.emptyList());
-            CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags() ? api.getTags(repository) : CompletableFuture.completedFuture(Collections.emptyList());
-            CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests() ? api.getPullRequests(repository) : CompletableFuture.completedFuture(Collections.emptyList());
+            CompletableFuture<List<Branch>> branchesFuture = request.isFetchBranches()
+                    ? api.getBranches(repository)
+                    : CompletableFuture.completedFuture(Collections.emptyList());
+            CompletableFuture<List<Tag>> tagsFuture = request.isFetchTags()
+                    ? api.getTags(repository)
+                    : CompletableFuture.completedFuture(Collections.emptyList());
+            CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests()
+                    ? api.getPullRequests(repository)
+                    : CompletableFuture.completedFuture(Collections.emptyList());
 
-            CompletableFuture.allOf(
-                branchesFuture,
-                tagsFuture,
-                pullRequestFuture
-            ).join();
+            CompletableFuture.allOf(branchesFuture, tagsFuture, pullRequestFuture)
+                    .join();
 
             List<ScmManagerObservable> observables = new ArrayList<>();
 
@@ -119,7 +127,8 @@ public class ScmManagerSourceRetriever {
         return new ScmManagerApiProbe(api, repository, head, rev);
     }
 
-    static ScmManagerSourceRetriever create(ScmManagerApi api, String namespace, String name, List<SCMSourceTrait> traits) {
+    static ScmManagerSourceRetriever create(
+            ScmManagerApi api, String namespace, String name, List<SCMSourceTrait> traits) {
         return new ScmManagerSourceRetriever(api, Futures.resolveUnchecked(api.getRepository(namespace, name)), traits);
     }
 }

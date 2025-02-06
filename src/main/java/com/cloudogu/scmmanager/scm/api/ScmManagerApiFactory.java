@@ -11,8 +11,7 @@ import hudson.model.ItemGroup;
 
 public class ScmManagerApiFactory {
 
-    private static final HttpAuthentication ANONYMOUS_AUTHENTICATION = requestBuilder -> {
-    };
+    private static final HttpAuthentication ANONYMOUS_AUTHENTICATION = requestBuilder -> {};
 
     private final CredentialsLookup credentialsLookup;
 
@@ -43,7 +42,8 @@ public class ScmManagerApiFactory {
         } else if (serverUrl.startsWith("ssh")) {
             return new SshApiClientFactory(serverUrl, credentialsId);
         } else {
-            throw new IllegalArgumentException("unsupported server url '" + serverUrl + "' only http or ssh urls are supported");
+            throw new IllegalArgumentException(
+                    "unsupported server url '" + serverUrl + "' only http or ssh urls are supported");
         }
     }
 
@@ -52,7 +52,6 @@ public class ScmManagerApiFactory {
         ApiClient create(Item item);
 
         ApiClient create(ItemGroup<?> item);
-
     }
 
     private class HttpApiClientFactory implements ApiClientFactory {
@@ -104,5 +103,4 @@ public class ScmManagerApiFactory {
             return new SshApiClient(serverUrl, SSHAuthentication.from(credentials));
         }
     }
-
 }

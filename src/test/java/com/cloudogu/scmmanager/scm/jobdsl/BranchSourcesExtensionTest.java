@@ -1,5 +1,11 @@
 package com.cloudogu.scmmanager.scm.jobdsl;
 
+import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerSource;
@@ -9,6 +15,8 @@ import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import javaposse.jobdsl.dsl.DslScriptException;
 import jenkins.branch.BranchSource;
 import org.junit.Rule;
@@ -17,15 +25,6 @@ import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BranchSourcesExtensionTest {
@@ -51,9 +50,11 @@ public class BranchSourcesExtensionTest {
 
         assertThat(source.getRepository()).isEqualTo("hitchhiker/hog (git)");
         assertThat(source.getId()).isEqualTo("42");
-        assertContainsOnlyInstancesOf(source.getTraits(),
-            ScmManagerBranchDiscoveryTrait.class, PullRequestDiscoveryTrait.class, TagDiscoveryTrait.class
-        );
+        assertContainsOnlyInstancesOf(
+                source.getTraits(),
+                ScmManagerBranchDiscoveryTrait.class,
+                PullRequestDiscoveryTrait.class,
+                TagDiscoveryTrait.class);
         verifyNoMoreInteractions(apiFactory);
     }
 
@@ -98,10 +99,9 @@ public class BranchSourcesExtensionTest {
         ScmManagerApi api = mock(ScmManagerApi.class);
         Repository repository = mock(Repository.class);
         when(repository.getType()).thenReturn("git");
-        when(apiFactory.create(jenkinsRule.getInstance(), "https://scm.hitchhiker.com", "secret")).thenReturn(api);
-        when(api.getRepository("hitchhiker", "hog")).thenReturn(CompletableFuture.completedFuture(
-            repository
-        ));
+        when(apiFactory.create(jenkinsRule.getInstance(), "https://scm.hitchhiker.com", "secret"))
+                .thenReturn(api);
+        when(api.getRepository("hitchhiker", "hog")).thenReturn(CompletableFuture.completedFuture(repository));
 
         BranchSource branchSource = extension.scmManager(null);
         ScmManagerSource source = (ScmManagerSource) branchSource.getSource();

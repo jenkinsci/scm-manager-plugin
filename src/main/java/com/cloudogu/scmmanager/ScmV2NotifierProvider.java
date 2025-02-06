@@ -1,24 +1,24 @@
 package com.cloudogu.scmmanager;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+
 import com.cloudogu.scmmanager.info.JobInformation;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Run;
-
-import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import javax.inject.Inject;
 
 @Extension
 public class ScmV2NotifierProvider implements NotifierProvider {
 
-    private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/repo/([A-Za-z0-9.\\-_]+)/([A-Za-z0-9.\\-_]+)(?:/.*)?$");
+    private static final Pattern PATTERN = Pattern.compile(
+            "^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/repo/([A-Za-z0-9.\\-_]+)/([A-Za-z0-9.\\-_]+)(?:/.*)?$");
 
     private AuthenticationFactory authenticationFactory;
 
@@ -37,12 +37,18 @@ public class ScmV2NotifierProvider implements NotifierProvider {
         return empty();
     }
 
-    private ScmV2Notifier createNotifier(Run<?, ?> run, JobInformation information, String url, Matcher matcher) throws MalformedURLException {
+    private ScmV2Notifier createNotifier(Run<?, ?> run, JobInformation information, String url, Matcher matcher)
+            throws MalformedURLException {
         URL instance = createInstanceURL(url, matcher);
         NamespaceAndName namespaceAndName = createNamespaceAndName(matcher);
 
         HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, information.getCredentialsId());
-        return new ScmV2Notifier(instance, namespaceAndName, httpAuthentication, information.isPullRequest(), information.getSourceBranch());
+        return new ScmV2Notifier(
+                instance,
+                namespaceAndName,
+                httpAuthentication,
+                information.isPullRequest(),
+                information.getSourceBranch());
     }
 
     private NamespaceAndName createNamespaceAndName(Matcher matcher) {

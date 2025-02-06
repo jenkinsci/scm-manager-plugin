@@ -4,14 +4,13 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.TaskListener;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.trait.SCMSourceRequest;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.trait.SCMSourceRequest;
 
 public class ScmManagerSourceRequest extends SCMSourceRequest {
 
@@ -28,7 +27,8 @@ public class ScmManagerSourceRequest extends SCMSourceRequest {
      * @param context  the context.
      * @param listener the (optional) {@link TaskListener}.
      */
-    protected ScmManagerSourceRequest(@NonNull ScmManagerSource source, @NonNull ScmManagerSourceContext context, TaskListener listener) {
+    protected ScmManagerSourceRequest(
+            @NonNull ScmManagerSource source, @NonNull ScmManagerSourceContext context, TaskListener listener) {
         super(source, context, listener);
         this.fetchBranches = context.wantBranches();
         this.fetchTags = context.wantTags();

@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
+import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
 import jenkins.scm.api.trait.SCMHeadFilter;
@@ -16,8 +17,6 @@ import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.trait.Discovery;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import javax.annotation.Nonnull;
 
 public class PullRequestDiscoveryTrait extends SCMSourceTrait {
 
@@ -80,15 +79,14 @@ public class PullRequestDiscoveryTrait extends SCMSourceTrait {
                         return true;
                     }
                 }
-
             }
             return false;
         }
 
         private boolean isBranchHead(@Nonnull SCMHead head) {
             return head instanceof ScmManagerHead
-                && !(head instanceof ScmManagerTag)
-                && !(head instanceof ScmManagerPullRequestHead);
+                    && !(head instanceof ScmManagerTag)
+                    && !(head instanceof ScmManagerPullRequestHead);
         }
     }
 }

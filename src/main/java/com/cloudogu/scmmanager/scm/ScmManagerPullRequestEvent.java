@@ -1,14 +1,13 @@
 package com.cloudogu.scmmanager.scm;
 
+import static java.util.stream.Collectors.toList;
+
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
+import java.util.Collection;
 import jenkins.scm.api.SCMHead;
 import net.sf.json.JSONObject;
-
-import java.util.Collection;
-
-import static java.util.stream.Collectors.toList;
 
 public class ScmManagerPullRequestEvent extends ScmManagerHeadEvent {
 
@@ -21,13 +20,13 @@ public class ScmManagerPullRequestEvent extends ScmManagerHeadEvent {
 
     @Override
     Collection<SCMHead> heads(CloneInformation cloneInformation) {
-        return pullRequests.stream().map(pullRequest ->
-            new ScmManagerPullRequestHead(
-                cloneInformation,
-                pullRequest.id,
-                new ScmManagerHead(cloneInformation, pullRequest.target),
-                new ScmManagerHead(cloneInformation, pullRequest.source)
-            )).collect(toList());
+        return pullRequests.stream()
+                .map(pullRequest -> new ScmManagerPullRequestHead(
+                        cloneInformation,
+                        pullRequest.id,
+                        new ScmManagerHead(cloneInformation, pullRequest.target),
+                        new ScmManagerHead(cloneInformation, pullRequest.source)))
+                .collect(toList());
     }
 
     private static class PullRequestFromJson {

@@ -7,13 +7,12 @@ import hudson.plugins.git.GitChangeSet;
 import hudson.plugins.git.browser.GitRepositoryBrowser;
 import hudson.scm.EditType;
 import hudson.scm.RepositoryBrowser;
+import java.io.IOException;
+import java.net.URL;
 import net.sf.json.JSONObject;
 import org.eclipse.jgit.util.QuotedString;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.IOException;
-import java.net.URL;
 
 public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser {
 
@@ -48,7 +47,10 @@ public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser {
 
     @Override
     public URL getDiffLink(GitChangeSet.Path path) throws IOException {
-        if (path.getEditType() != EditType.EDIT || path.getSrc() == null || path.getDst() == null || path.getChangeSet().getParentCommit() == null) {
+        if (path.getEditType() != EditType.EDIT
+                || path.getSrc() == null
+                || path.getDst() == null
+                || path.getChangeSet().getParentCommit() == null) {
             return null;
         }
         return new URL(linkBuilder.diff(path.getChangeSet().getId(), dequote(path)));
@@ -81,11 +83,10 @@ public class ScmManagerGitRepositoryBrowser extends GitRepositoryBrowser {
         }
 
         @Override
-        public ScmManagerGitRepositoryBrowser newInstance(StaplerRequest req, @NonNull JSONObject jsonObject) throws FormException {
-            assert req != null; //see inherited javadoc
+        public ScmManagerGitRepositoryBrowser newInstance(StaplerRequest req, @NonNull JSONObject jsonObject)
+                throws FormException {
+            assert req != null; // see inherited javadoc
             return req.bindJSON(ScmManagerGitRepositoryBrowser.class, jsonObject);
         }
-
     }
-
 }

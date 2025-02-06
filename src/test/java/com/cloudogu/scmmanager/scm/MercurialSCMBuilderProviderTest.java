@@ -1,5 +1,8 @@
 package com.cloudogu.scmmanager.scm;
 
+import static com.cloudogu.scmmanager.scm.ScmTestData.context;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import hudson.plugins.mercurial.traits.CleanMercurialSCMSourceTrait;
 import hudson.plugins.mercurial.traits.MercurialBrowserSCMSourceTrait;
 import jenkins.scm.api.trait.SCMBuilder;
@@ -10,9 +13,6 @@ import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static com.cloudogu.scmmanager.scm.ScmTestData.context;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class MercurialSCMBuilderProviderTest {
 
@@ -44,21 +44,18 @@ public class MercurialSCMBuilderProviderTest {
     @Test
     public void shouldFilterBrowserTrait() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
-        boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl())
-            .stream()
-            .map(SCMSourceTraitDescriptor::getClass)
-            .anyMatch(clazz -> clazz.equals(MercurialBrowserSCMSourceTrait.DescriptorImpl.class));
+        boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl()).stream()
+                .map(SCMSourceTraitDescriptor::getClass)
+                .anyMatch(clazz -> clazz.equals(MercurialBrowserSCMSourceTrait.DescriptorImpl.class));
         assertThat(contains).isFalse();
     }
 
     @Test
     public void shouldContainCleanTrait() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
-        boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl())
-            .stream()
-            .map(SCMSourceTraitDescriptor::getClass)
-            .anyMatch(clazz -> clazz.equals(CleanMercurialSCMSourceTrait.DescriptorImpl.class));
+        boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl()).stream()
+                .map(SCMSourceTraitDescriptor::getClass)
+                .anyMatch(clazz -> clazz.equals(CleanMercurialSCMSourceTrait.DescriptorImpl.class));
         assertThat(contains).isTrue();
     }
-
 }

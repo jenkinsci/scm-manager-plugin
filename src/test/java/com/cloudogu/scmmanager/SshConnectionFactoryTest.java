@@ -1,10 +1,9 @@
 package com.cloudogu.scmmanager;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
 
 public class SshConnectionFactoryTest {
 
@@ -36,7 +35,8 @@ public class SshConnectionFactoryTest {
 
     @Test
     public void shouldCreateSshConnectionWithRepository() {
-        Optional<SshConnection> optionalSshConnection = factory.create("ssh://scm.hitchhiker.com:2222/repo/spaceships/heart-of-gold");
+        Optional<SshConnection> optionalSshConnection =
+                factory.create("ssh://scm.hitchhiker.com:2222/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isPresent();
         SshConnection sshConnection = optionalSshConnection.get();
 
@@ -49,15 +49,16 @@ public class SshConnectionFactoryTest {
 
     @Test
     public void shouldCreateSshConnectionWithDefaultPort() {
-        Optional<SshConnection> optionalSshConnection = factory.create("ssh://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
+        Optional<SshConnection> optionalSshConnection =
+                factory.create("ssh://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isPresent();
         assertThat(optionalSshConnection.get().getConnection().getPort()).isEqualTo(22);
     }
 
     @Test
     public void shouldReturnEmptyForNonSshConnections() {
-        Optional<SshConnection> optionalSshConnection = factory.create("https://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
+        Optional<SshConnection> optionalSshConnection =
+                factory.create("https://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isEmpty();
     }
-
 }

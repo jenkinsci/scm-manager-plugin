@@ -13,7 +13,8 @@ public class JobInformation {
         this(type, url, revision, credentialsId, pullRequest, null);
     }
 
-    public JobInformation(String type, String url, String revision, String credentialsId, boolean pullRequest, String sourceBranch) {
+    public JobInformation(
+            String type, String url, String revision, String credentialsId, boolean pullRequest, String sourceBranch) {
         this.type = type;
         this.url = url;
         this.revision = revision;

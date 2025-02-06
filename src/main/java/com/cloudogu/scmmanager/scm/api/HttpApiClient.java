@@ -3,13 +3,12 @@ package com.cloudogu.scmmanager.scm.api;
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.OkHttpClientBuilder;
 import com.google.common.annotations.VisibleForTesting;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.UnaryOperator;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.function.UnaryOperator;
 
 public class HttpApiClient extends ApiClient {
 
@@ -54,7 +53,8 @@ public class HttpApiClient extends ApiClient {
 
     public <T> CompletableFuture<T> get(String url, String contentType, Class<T> type) {
         LOG.info("get {} from {}", type.getName(), url);
-        Request.Builder requestBuilder = new Request.Builder().url(urlModifier.apply(url)).get();
+        Request.Builder requestBuilder =
+                new Request.Builder().url(urlModifier.apply(url)).get();
         authentication.authenticate(requestBuilder);
         requestBuilder.addHeader("Accept", contentType);
         return execute(client, requestBuilder, type);

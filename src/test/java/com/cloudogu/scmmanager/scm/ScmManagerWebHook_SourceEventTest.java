@@ -1,5 +1,16 @@
 package com.cloudogu.scmmanager.scm;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import javax.servlet.ServletException;
 import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import net.sf.json.JSONArray;
@@ -17,18 +28,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerWebHook_SourceEventTest {
 
@@ -36,6 +35,7 @@ public class ScmManagerWebHook_SourceEventTest {
 
     @Mock
     StaplerRequest request;
+
     @Mock
     StaplerResponse response;
 
@@ -43,6 +43,7 @@ public class ScmManagerWebHook_SourceEventTest {
 
     @Spy
     ScmManagerWebHook hook;
+
     @Captor
     ArgumentCaptor<ScmManagerSourceEvent> sourceEventCaptor;
 
@@ -81,11 +82,16 @@ public class ScmManagerWebHook_SourceEventTest {
 
         verify(hook).fireNow(sourceEventThat(argument -> {
             assertThat(argument.getPayload().isGlobal()).isTrue();
-            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
-            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isTrue();
-            assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
-            assertThat(argument.isMatch(mockSource("http://localhost/scm", "X"))).isTrue();
-            assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space")))
+                    .isFalse();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "X")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth")))
+                    .isTrue();
             assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
             return true;
         }));
@@ -106,8 +112,10 @@ public class ScmManagerWebHook_SourceEventTest {
         verify(response).setStatus(200);
         verify(hook).fireNow(sourceEventThat(argument -> {
             assertThat(argument.getPayload().isGlobal()).isTrue();
-            assertThat(argument.isMatch(mockNavigator("ssh://hitchhiker.com:2222/", "hog"))).isTrue();
-            assertThat(argument.isMatch(mockNavigator("http://hitchhiker.com/scm", "hog"))).isFalse();
+            assertThat(argument.isMatch(mockNavigator("ssh://hitchhiker.com:2222/", "hog")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://hitchhiker.com/scm", "hog")))
+                    .isFalse();
             return true;
         }));
     }
@@ -123,28 +131,32 @@ public class ScmManagerWebHook_SourceEventTest {
         verify(response).setStatus(200);
 
         assertThat(sourceEventCaptor.getAllValues()).hasSize(2);
-        assertThat(sourceEventCaptor.getAllValues().get(0)).matches(
-            argument -> {
-                assertThat(argument.getPayload().isGlobal()).isFalse();
-                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
-                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isFalse();
-                assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
-                assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
-                assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
-                assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
-                return true;
-            }
-        );
-        assertThat(sourceEventCaptor.getAllValues().get(1)).matches(
-            argument -> {
-                assertThat(argument.getPayload().isGlobal()).isFalse();
-                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "--all--"))).isTrue();
-                assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
-                assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
-                assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
-                return true;
-            }
-        );
+        assertThat(sourceEventCaptor.getAllValues().get(0)).matches(argument -> {
+            assertThat(argument.getPayload().isGlobal()).isFalse();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide")))
+                    .isFalse();
+            assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space")))
+                    .isFalse();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth")))
+                    .isFalse();
+            assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+            return true;
+        });
+        assertThat(sourceEventCaptor.getAllValues().get(1)).matches(argument -> {
+            assertThat(argument.getPayload().isGlobal()).isFalse();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "--all--")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive")))
+                    .isTrue();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth")))
+                    .isFalse();
+            assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+            return true;
+        });
     }
 
     private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {

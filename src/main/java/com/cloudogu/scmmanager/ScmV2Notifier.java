@@ -1,6 +1,12 @@
 package com.cloudogu.scmmanager;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 import net.sf.json.JSONObject;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -10,13 +16,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
 
 public class ScmV2Notifier implements Notifier {
 
@@ -33,10 +32,14 @@ public class ScmV2Notifier implements Notifier {
 
     private OkHttpClient client;
 
-    private Consumer<Response> completionListener = response -> {
-    };
+    private Consumer<Response> completionListener = response -> {};
 
-    ScmV2Notifier(URL instance, NamespaceAndName namespaceAndName, HttpAuthentication httpAuthentication, boolean pullRequest, String sourceBranch) {
+    ScmV2Notifier(
+            URL instance,
+            NamespaceAndName namespaceAndName,
+            HttpAuthentication httpAuthentication,
+            boolean pullRequest,
+            String sourceBranch) {
         this.instance = instance;
         this.namespaceAndName = namespaceAndName;
         this.httpAuthentication = httpAuthentication;
@@ -91,25 +94,25 @@ public class ScmV2Notifier implements Notifier {
         httpAuthentication.authenticate(put);
 
         put.header("Content-Type", "application/vnd.scmm-cistatus+json;v=2")
-            .put(RequestBody.create(createRequestBody(buildStatus)));
-        getClient().newCall(put.build())
-            .enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    LOG.warn("failed to notify scm-manager", e);
-                }
+                .put(RequestBody.create(createRequestBody(buildStatus)));
+        getClient().newCall(put.build()).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                LOG.warn("failed to notify scm-manager", e);
+            }
 
-                @Override
-                public void onResponse(Call call, Response response) {
-                    try (response) {
-                        LOG.info(
+            @Override
+            public void onResponse(Call call, Response response) {
+                try (response) {
+                    LOG.info(
                             "status notify for repository {} and revision {} returned {}",
-                            namespaceAndName, revision, response.code()
-                        );
-                        completionListener.accept(response);
-                    }
+                            namespaceAndName,
+                            revision,
+                            response.code());
+                    completionListener.accept(response);
                 }
-            });
+            }
+        });
     }
 
     private byte[] createRequestBody(BuildStatus buildStatus) {
@@ -131,14 +134,14 @@ public class ScmV2Notifier implements Notifier {
     }
 
     private String createUrl(String revision, BuildStatus buildStatus) throws UnsupportedEncodingException {
-        return String.format(getUrl(),
-            instance.toExternalForm(),
-            namespaceAndName.getNamespace(),
-            namespaceAndName.getName(),
-            revision,
-            buildStatus.getType(),
-            URLEncoder.encode(buildStatus.getName(), StandardCharsets.UTF_8.name())
-        );
+        return String.format(
+                getUrl(),
+                instance.toExternalForm(),
+                namespaceAndName.getNamespace(),
+                namespaceAndName.getName(),
+                revision,
+                buildStatus.getType(),
+                URLEncoder.encode(buildStatus.getName(), StandardCharsets.UTF_8.name()));
     }
 
     private String getUrl() {

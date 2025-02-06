@@ -6,17 +6,20 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerTag;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.plugins.git.GitSCM;
+import java.util.Arrays;
 import jenkins.plugins.git.GitSCMBuilder;
 import jenkins.plugins.git.MergeWithGitSCMExtension;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 
-import java.util.Arrays;
-
 public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuilder> {
 
-    public ScmManagerGitSCMBuilder(@NonNull LinkBuilder linkBuilder, @NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
+    public ScmManagerGitSCMBuilder(
+            @NonNull LinkBuilder linkBuilder,
+            @NonNull ScmManagerHead head,
+            SCMRevision revision,
+            String credentialsId) {
         super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
         // clean up
         withoutRefSpecs();
@@ -32,9 +35,8 @@ public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuild
             ScmManagerHead target = prHead.getTarget();
 
             withRefSpecs(Arrays.asList(
-                "+refs/heads/" + source.getName() + ":refs/remotes/origin/" + source.getName(),
-                "+refs/heads/" + target.getName() + ":refs/remotes/origin/" + target.getName()
-            ));
+                    "+refs/heads/" + source.getName() + ":refs/remotes/origin/" + source.getName(),
+                    "+refs/heads/" + target.getName() + ":refs/remotes/origin/" + target.getName()));
 
             // revision is null on initial build
             if (revision != null) {
@@ -63,7 +65,8 @@ public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuild
 
     private void configureMerge(ScmManagerPullRequestHead pr) {
         withHead(pr.getTarget());
-        withExtension(new MergeWithGitSCMExtension("remotes/origin/" + pr.getSource().getName(), getBaseHash()));
+        withExtension(
+                new MergeWithGitSCMExtension("remotes/origin/" + pr.getSource().getName(), getBaseHash()));
     }
 
     private String getBaseHash() {

@@ -5,8 +5,7 @@ import hudson.model.Run;
 
 class BuildStatusFactory {
 
-    BuildStatusFactory() {
-    }
+    BuildStatusFactory() {}
 
     public BuildStatus create(String rootUrl, Run<?, ?> run, Result result) {
         String name = run.getParent().getFullName();
@@ -27,5 +26,4 @@ class BuildStatusFactory {
             return null;
         }
     }
-
 }

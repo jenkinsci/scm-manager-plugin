@@ -6,13 +6,12 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 
 public class LinkBuilder implements Serializable {
 
@@ -73,7 +72,9 @@ public class LinkBuilder implements Serializable {
 
     public String create(@NonNull SCMRevision revision) {
         if (revision instanceof ScmManagerPullRequestRevision) {
-            return sources(((ScmManagerPullRequestRevision) revision).getSourceRevision().getRevision());
+            return sources(((ScmManagerPullRequestRevision) revision)
+                    .getSourceRevision()
+                    .getRevision());
         } else if (revision instanceof ScmManagerRevision) {
             return sources(((ScmManagerRevision) revision).getRevision());
         } else {

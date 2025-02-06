@@ -1,11 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,9 +10,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FuturesTest {
@@ -38,7 +37,6 @@ public class FuturesTest {
     public void shouldThrowIOExceptionAndInterruptCurrentThread() throws ExecutionException, InterruptedException {
         when(future.get()).thenThrow(new InterruptedException("failed"));
         runInThread(() -> {
-
             try {
                 Futures.resolveUnchecked(future);
             } catch (UncheckedIOException ex) {
@@ -46,7 +44,6 @@ public class FuturesTest {
                 assertThat(ex.getCause()).isInstanceOf(IOException.class);
                 assertThat(ex.getCause().getCause()).isInstanceOf(InterruptedException.class);
             }
-
         });
     }
 
@@ -68,10 +65,10 @@ public class FuturesTest {
     }
 
     @Test
-    public void shouldThrowUncheckedIOExceptionAndInterruptCurrentThread() throws ExecutionException, InterruptedException {
+    public void shouldThrowUncheckedIOExceptionAndInterruptCurrentThread()
+            throws ExecutionException, InterruptedException {
         when(future.get()).thenThrow(new InterruptedException("failed"));
         runInThread(() -> {
-
             try {
                 Futures.resolveUnchecked(future);
             } catch (UncheckedIOException ex) {
@@ -79,7 +76,6 @@ public class FuturesTest {
                 assertThat(ex.getCause()).isInstanceOf(IOException.class);
                 assertThat(ex.getCause().getCause()).isInstanceOf(InterruptedException.class);
             }
-
         });
     }
 
@@ -136,5 +132,4 @@ public class FuturesTest {
             throw new IllegalStateException(shouldNotHappen);
         }
     }
-
 }

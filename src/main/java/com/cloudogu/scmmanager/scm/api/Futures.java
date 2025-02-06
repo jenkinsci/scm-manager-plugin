@@ -7,8 +7,7 @@ import java.util.concurrent.ExecutionException;
 
 public final class Futures {
 
-    private Futures() {
-    }
+    private Futures() {}
 
     public static <T> T resolveChecked(CompletableFuture<T> future) throws IOException {
         try {
@@ -39,5 +38,4 @@ public final class Futures {
     private static RuntimeException unchecked(Exception e) {
         return new UncheckedIOException("failed to fetch", new IOException(e));
     }
-
 }

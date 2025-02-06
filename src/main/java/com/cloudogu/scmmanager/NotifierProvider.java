@@ -4,15 +4,14 @@ import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
 import java.util.Optional;
+import jenkins.model.Jenkins;
 
 public interface NotifierProvider extends ExtensionPoint {
 
     @SuppressWarnings("squid:S1452")
-        // we implement this with a concrete Notifier type to simplify unit tests (no casting)
+    // we implement this with a concrete Notifier type to simplify unit tests (no casting)
     Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) throws IOException;
 
     static ExtensionList<NotifierProvider> all() {

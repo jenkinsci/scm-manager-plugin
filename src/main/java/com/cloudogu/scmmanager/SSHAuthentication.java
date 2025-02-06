@@ -4,7 +4,6 @@ import com.cloudbees.jenkins.plugins.sshcredentials.SSHAuthenticator;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.trilead.ssh2.Connection;
 import hudson.util.LogTaskListener;
-
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,9 +24,8 @@ public class SSHAuthentication {
 
     void authenticate(Connection connection) throws IOException {
         try {
-            SSHAuthenticator<Connection, StandardUsernameCredentials> authenticator = SSHAuthenticator.newInstance(
-                connection, credentials, credentials.getUsername()
-            );
+            SSHAuthenticator<Connection, StandardUsernameCredentials> authenticator =
+                    SSHAuthenticator.newInstance(connection, credentials, credentials.getUsername());
             if (!authenticator.authenticate(new LogTaskListener(LOG, Level.INFO))) {
                 throw new SshConnectionFailedException("ssh authentication failed");
             }
@@ -35,6 +33,5 @@ public class SSHAuthentication {
             Thread.currentThread().interrupt();
             throw new SshConnectionFailedException("failed to authenticate", e);
         }
-
     }
 }

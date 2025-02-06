@@ -5,13 +5,12 @@ import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnNavigatorTrait;
 import com.cloudogu.scmmanager.scm.Subversion;
 import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
+import java.util.ArrayList;
+import java.util.List;
 import javaposse.jobdsl.dsl.Context;
 import javaposse.jobdsl.dsl.DslContext;
 import javaposse.jobdsl.dsl.Preconditions;
 import jenkins.scm.api.trait.SCMTrait;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ScmManagerNavigatorContext extends ScmManagerContext {
 
@@ -92,6 +91,5 @@ public class ScmManagerNavigatorContext extends ScmManagerContext {
         public void excludes(String excludes) {
             svnExcludes = excludes;
         }
-
     }
 }

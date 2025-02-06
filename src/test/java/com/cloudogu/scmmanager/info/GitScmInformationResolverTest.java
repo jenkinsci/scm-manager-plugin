@@ -1,25 +1,24 @@
 package com.cloudogu.scmmanager.info;
 
+import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import hudson.model.Run;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
 import hudson.plugins.mercurial.MercurialSCM;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-
-import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GitScmInformationResolverTest {
@@ -80,9 +79,8 @@ public class GitScmInformationResolverTest {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one", "https://scm.scm-manager.org/repo/ns/two");
         applyRevision("abc42");
         applyUrcs(
-            urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
-            urc("https://scm.scm-manager.org:443/repo/ns/two", "scm-two")
-        );
+                urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
+                urc("https://scm.scm-manager.org:443/repo/ns/two", "scm-two"));
 
         Collection<JobInformation> information = resolver.resolve(run, git);
         assertEquals(2, information.size());
@@ -96,9 +94,8 @@ public class GitScmInformationResolverTest {
     public void testResolveWithoutSourceOwner() {
         applyRevision("abc42");
         applyUrcs(
-            urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
-            urc("https://scm.scm-manager.org/repo/ns/two", "scm-two")
-        );
+                urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
+                urc("https://scm.scm-manager.org/repo/ns/two", "scm-two"));
 
         Collection<JobInformation> information = resolver.resolve(run, git);
         assertEquals(2, information.size());
@@ -125,5 +122,4 @@ public class GitScmInformationResolverTest {
 
         when(git.getBuildData(run)).thenReturn(buildData);
     }
-
 }

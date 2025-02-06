@@ -1,8 +1,15 @@
 package com.cloudogu.scmmanager.scm;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
 import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
@@ -12,15 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerSourceRequestTest {
@@ -62,7 +60,8 @@ public class ScmManagerSourceRequestTest {
 
     @Test
     public void shouldCollectPullRequestWhenPreparingForFullScan() {
-        Set<ScmManagerObservable> observables = heads.stream().map(TestingObservable::new).collect(Collectors.toSet());
+        Set<ScmManagerObservable> observables =
+                heads.stream().map(TestingObservable::new).collect(Collectors.toSet());
 
         ScmManagerSourceRequest request = new ScmManagerSourceRequest(source, context, null);
         request.prepareForFullScan(observables);
@@ -87,5 +86,4 @@ public class ScmManagerSourceRequestTest {
             return null;
         }
     }
-
 }

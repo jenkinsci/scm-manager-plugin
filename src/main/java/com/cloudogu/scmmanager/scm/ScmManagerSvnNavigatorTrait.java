@@ -45,6 +45,7 @@ public class ScmManagerSvnNavigatorTrait extends SCMNavigatorTrait {
 
         @SuppressWarnings("unused") // used by stapler
         public static final String DEFAULT_INCLUDES = Subversion.DEFAULT_INCLUDES;
+
         @SuppressWarnings("unused") // used by stapler
         public static final String DEFAULT_EXCLUDES = Subversion.DEFAULT_EXCLUDES;
 

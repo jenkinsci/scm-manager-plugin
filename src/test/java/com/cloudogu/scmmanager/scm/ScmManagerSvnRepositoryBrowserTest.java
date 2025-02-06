@@ -1,16 +1,15 @@
 package com.cloudogu.scmmanager.scm;
 
-import hudson.scm.EditType;
-import hudson.scm.SubversionChangeLogSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Answers;
-
-import java.io.IOException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import hudson.scm.EditType;
+import hudson.scm.SubversionChangeLogSet;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Answers;
 
 public class ScmManagerSvnRepositoryBrowserTest {
 
@@ -72,6 +71,4 @@ public class ScmManagerSvnRepositoryBrowserTest {
         when(svnPath.getValue()).thenReturn(path);
         return svnPath;
     }
-
-
 }

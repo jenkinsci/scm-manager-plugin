@@ -9,7 +9,10 @@ public class ScmManagerPullRequestRevision extends ChangeRequestSCMRevision<ScmM
 
     private final ScmManagerRevision sourceRevision;
 
-    public ScmManagerPullRequestRevision(@NonNull ScmManagerPullRequestHead pullRequest, @NonNull ScmManagerRevision targetRevision, @NonNull ScmManagerRevision sourceRevision) {
+    public ScmManagerPullRequestRevision(
+            @NonNull ScmManagerPullRequestHead pullRequest,
+            @NonNull ScmManagerRevision targetRevision,
+            @NonNull ScmManagerRevision sourceRevision) {
         super(pullRequest, targetRevision);
         this.sourceRevision = sourceRevision;
     }
@@ -24,8 +27,7 @@ public class ScmManagerPullRequestRevision extends ChangeRequestSCMRevision<ScmM
             return false;
         }
         ScmManagerPullRequestRevision other = (ScmManagerPullRequestRevision) o;
-        return getHead().equals(other.getHead())
-            && sourceRevision.equals(other.sourceRevision);
+        return getHead().equals(other.getHead()) && sourceRevision.equals(other.sourceRevision);
     }
 
     @Override

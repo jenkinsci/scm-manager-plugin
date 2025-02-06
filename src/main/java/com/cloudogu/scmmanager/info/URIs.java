@@ -4,8 +4,7 @@ import java.net.URI;
 
 final class URIs {
 
-    private URIs() {
-    }
+    private URIs() {}
 
     static String normalize(String value) {
         URI uri = URI.create(value);
@@ -20,8 +19,6 @@ final class URIs {
                 port = 22;
             }
         }
-        return String.format(
-            "%s://%s:%d%s", scheme, uri.getHost(), port, uri.getPath()
-        );
+        return String.format("%s://%s:%d%s", scheme, uri.getHost(), port, uri.getPath());
     }
 }

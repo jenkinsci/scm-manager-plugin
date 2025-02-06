@@ -1,5 +1,13 @@
 package com.cloudogu.scmmanager.scm;
 
+import static de.otto.edison.hal.Link.link;
+import static de.otto.edison.hal.Link.linkBuilder;
+import static de.otto.edison.hal.Links.linkingTo;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -12,6 +20,9 @@ import hudson.model.TaskListener;
 import hudson.scm.SCM;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
@@ -28,19 +39,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
-
-import static de.otto.edison.hal.Link.link;
-import static de.otto.edison.hal.Link.linkBuilder;
-import static de.otto.edison.hal.Links.linkingTo;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerSourceDescriptorTest {
@@ -68,7 +66,8 @@ public class ScmManagerSourceDescriptorTest {
 
     @Before
     public void mockApiClient() {
-        when(apiFactory.create(any(Item.class), requestedUrl.capture(), requestedCredentials.capture())).thenReturn(api);
+        when(apiFactory.create(any(Item.class), requestedUrl.capture(), requestedCredentials.capture()))
+                .thenReturn(api);
         when(apiFactory.anonymous(requestedUrl.capture())).thenReturn(api);
 
         when(api.getProtocol()).thenReturn("http");
@@ -112,7 +111,8 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldRejectServerUrlWithoutLoginLink() throws InterruptedException, ExecutionException {
-        HalRepresentation index = new HalRepresentation(linkingTo().single(link("any", "http://example.com/")).build());
+        HalRepresentation index = new HalRepresentation(
+                linkingTo().single(link("any", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index);
         FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
@@ -124,7 +124,8 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldHandleRedirectResponseForIndexRequest() throws InterruptedException, ExecutionException {
-        ScmManagerApiTestMocks.mockError(new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
+        ScmManagerApiTestMocks.mockError(
+                new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
 
         FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
@@ -168,12 +169,15 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldAcceptWorkingCredentials() throws InterruptedException, ExecutionException {
-        HalRepresentation index = new HalRepresentation(linkingTo().single(link("login", "http://example.com/")).build());
-        HalRepresentation indexWithLogIn = new HalRepresentation(linkingTo().single(link("me", "http://example.com/")).build());
+        HalRepresentation index = new HalRepresentation(
+                linkingTo().single(link("login", "http://example.com/")).build());
+        HalRepresentation indexWithLogIn = new HalRepresentation(
+                linkingTo().single(link("me", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index, indexWithLogIn);
 
         SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
-        FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        FormValidation formValidation =
+                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -184,7 +188,8 @@ public class ScmManagerSourceDescriptorTest {
     public void shouldRejectWrongCredentials() throws InterruptedException, ExecutionException {
         mockCorrectIndex();
 
-        FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        FormValidation formValidation =
+                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -207,7 +212,8 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
-        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", "hitchhiker/guide");
+        ComboBoxModel model =
+                descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", "hitchhiker/guide");
 
         assertThat(model.stream()).containsExactly("hitchhiker/guide");
     }
@@ -274,15 +280,20 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     private Link httpLink() {
-        return linkBuilder("protocol", "https://hitchhiker.com/scm").withName("http").build();
+        return linkBuilder("protocol", "https://hitchhiker.com/scm")
+                .withName("http")
+                .build();
     }
 
     private Link sshLink() {
-        return linkBuilder("protocol", "ssh://hitchhiker.com/scm").withName("ssh").build();
+        return linkBuilder("protocol", "ssh://hitchhiker.com/scm")
+                .withName("ssh")
+                .build();
     }
 
     void mockCorrectIndex() {
-        HalRepresentation index = new HalRepresentation(linkingTo().single(link("login", "http://example.com/")).build());
+        HalRepresentation index = new HalRepresentation(
+                linkingTo().single(link("login", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index);
     }
 
@@ -292,9 +303,8 @@ public class ScmManagerSourceDescriptorTest {
     public static class TestingScmManagerSource extends SCMSource {
 
         @Override
-        protected void retrieve(SCMSourceCriteria criteria, SCMHeadObserver observer, SCMHeadEvent<?> event, TaskListener listener) {
-
-        }
+        protected void retrieve(
+                SCMSourceCriteria criteria, SCMHeadObserver observer, SCMHeadEvent<?> event, TaskListener listener) {}
 
         @Override
         public SCM build(SCMHead head, SCMRevision revision) {

@@ -10,13 +10,11 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Queue;
 import hudson.security.ACL;
-
 import java.util.List;
 
 class CredentialsLookup {
 
-    CredentialsLookup() {
-    }
+    CredentialsLookup() {}
 
     public Lookup<StandardUsernameCredentials> ssh(String serverUrl, String credentialsId) {
         if (!serverUrl.startsWith("ssh")) {
@@ -46,41 +44,35 @@ class CredentialsLookup {
 
         public C lookup(Item item) {
             List<C> credentialList = CredentialsProvider.lookupCredentials(
-                type,
-                item,
-                item instanceof Queue.Task
-                    ? ((Queue.Task) item).getDefaultAuthentication()
-                    : ACL.SYSTEM,
-                URIRequirementBuilder.fromUri(serverUrl).build()
-            );
+                    type,
+                    item,
+                    item instanceof Queue.Task ? ((Queue.Task) item).getDefaultAuthentication() : ACL.SYSTEM,
+                    URIRequirementBuilder.fromUri(serverUrl).build());
             return find(credentialList);
         }
 
         public C lookup(ItemGroup<?> itemGroup) {
             List<C> credentialList = CredentialsProvider.lookupCredentials(
-                type,
-                itemGroup,
-                ACL.SYSTEM,
-                URIRequirementBuilder.fromUri(serverUrl).build()
-            );
+                    type,
+                    itemGroup,
+                    ACL.SYSTEM,
+                    URIRequirementBuilder.fromUri(serverUrl).build());
             return find(credentialList);
         }
 
         private C find(List<C> credentialList) {
             C credentials = CredentialsMatchers.firstOrNull(
-                credentialList,
-                CredentialsMatchers.allOf(
-                    CredentialsMatchers.withId(credentialsId),
-                    CredentialsMatchers.anyOf(CredentialsMatchers.instanceOf(type))
-                )
-            );
+                    credentialList,
+                    CredentialsMatchers.allOf(
+                            CredentialsMatchers.withId(credentialsId),
+                            CredentialsMatchers.anyOf(CredentialsMatchers.instanceOf(type))));
 
             if (credentials == null) {
-                throw new CredentialsUnavailableException(String.format("could not find credentials %s of type %s", credentialsId, type));
+                throw new CredentialsUnavailableException(
+                        String.format("could not find credentials %s of type %s", credentialsId, type));
             }
 
             return credentials;
         }
-
     }
 }

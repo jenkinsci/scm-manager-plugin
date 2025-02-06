@@ -15,5 +15,4 @@ public abstract class ScmManagerSourceTraitDescriptor extends SCMSourceTraitDesc
     public Class<? extends SCMSource> getSourceClass() {
         return ScmManagerSource.class;
     }
-
 }

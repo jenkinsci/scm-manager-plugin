@@ -3,6 +3,10 @@ package com.cloudogu.scmmanager.scm;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.scm.SCM;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -12,11 +16,6 @@ import jenkins.scm.api.SCMSource;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.Stapler;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
 
     private final String namespace;
@@ -25,13 +24,16 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
     private final ServerIdentification identification;
 
     ScmManagerHeadEvent(Type changeType, JSONObject form) {
-        this(changeType, form.getString("namespace"),
-            form.getString("name"),
-            form.getString("type"),
-            new ServerIdentification(form));
+        this(
+                changeType,
+                form.getString("namespace"),
+                form.getString("name"),
+                form.getString("type"),
+                new ServerIdentification(form));
     }
 
-    ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, ServerIdentification identification) {
+    ScmManagerHeadEvent(
+            Type changeType, String namespace, String name, String type, ServerIdentification identification) {
         super(changeType, new TriggerPayload(namespace, name), SCMEvent.originOf(Stapler.getCurrentRequest()));
         this.namespace = namespace;
         this.name = name;
@@ -54,7 +56,8 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
     @Override
     public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
         ScmManagerSource scmManagerSource = (ScmManagerSource) source;
-        CloneInformation cloneInformation = new CloneInformation(scmManagerSource.getType(), scmManagerSource.getServerUrl());
+        CloneInformation cloneInformation =
+                new CloneInformation(scmManagerSource.getType(), scmManagerSource.getServerUrl());
         Collection<SCMHead> heads = heads(cloneInformation);
         HashMap<SCMHead, SCMRevision> map = new HashMap<>();
         heads.forEach(head -> map.put(head, null));
@@ -71,7 +74,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
 
     private boolean isMatch(@NonNull ScmManagerSource source) {
         return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
-            && identification.matches(source.getServerUrl());
+                && identification.matches(source.getServerUrl());
     }
 
     @Override
@@ -93,8 +96,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             TriggerPayload that = (TriggerPayload) o;
-            return Objects.equals(namespace, that.namespace) &&
-                Objects.equals(name, that.name);
+            return Objects.equals(namespace, that.namespace) && Objects.equals(name, that.name);
         }
 
         @Override

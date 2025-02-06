@@ -1,7 +1,18 @@
 package com.cloudogu.scmmanager;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.model.Run;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockWebServer;
@@ -11,18 +22,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScmMigratedV1NotifierTest {
@@ -47,8 +46,7 @@ public class ScmMigratedV1NotifierTest {
 
     @Before
     public void prepareAuthentication() {
-        when(authenticationFactory.createHttp(run, "one"))
-            .thenReturn(response -> response.header("Auth", "Awesome"));
+        when(authenticationFactory.createHttp(run, "one")).thenReturn(response -> response.header("Auth", "Awesome"));
     }
 
     @Test
@@ -107,14 +105,15 @@ public class ScmMigratedV1NotifierTest {
         return v1Notifier;
     }
 
-    private AtomicReference<JobInformation> applyV2Notifier(CountDownLatch cdl, ScmV2Notifier notifier) throws MalformedURLException {
+    private AtomicReference<JobInformation> applyV2Notifier(CountDownLatch cdl, ScmV2Notifier notifier)
+            throws MalformedURLException {
         AtomicReference<JobInformation> reference = new AtomicReference<>();
-        when(v2NotifierProvider.get(Mockito.any(Run.class), Mockito.any(JobInformation.class))).then(ic -> {
-            cdl.countDown();
-            reference.set(ic.getArgument(1));
-            return Optional.ofNullable(notifier);
-        });
+        when(v2NotifierProvider.get(Mockito.any(Run.class), Mockito.any(JobInformation.class)))
+                .then(ic -> {
+                    cdl.countDown();
+                    reference.set(ic.getArgument(1));
+                    return Optional.ofNullable(notifier);
+                });
         return reference;
     }
-
 }

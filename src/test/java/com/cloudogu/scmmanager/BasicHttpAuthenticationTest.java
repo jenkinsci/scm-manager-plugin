@@ -1,13 +1,13 @@
 package com.cloudogu.scmmanager;
 
+import static org.mockito.Mockito.verify;
+
 import hudson.util.Secret;
 import okhttp3.Request;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicHttpAuthenticationTest {
@@ -26,5 +26,4 @@ public class BasicHttpAuthenticationTest {
 
         verify(requestBuilder).header("Authorization", "Basic dHJpbGxpYW46e30=");
     }
-
 }

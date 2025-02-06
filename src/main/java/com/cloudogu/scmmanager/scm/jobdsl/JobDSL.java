@@ -6,8 +6,7 @@ import jenkins.model.Jenkins;
 
 public final class JobDSL {
 
-    private JobDSL() {
-    }
+    private JobDSL() {}
 
     public static <C extends ScmManagerContext> C resolve(Executor executor, Runnable closure, C context) {
         executor.executeInContext(closure, context);

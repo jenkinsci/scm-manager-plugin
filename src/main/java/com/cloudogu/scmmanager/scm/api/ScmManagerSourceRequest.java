@@ -19,7 +19,8 @@ public class ScmManagerSourceRequest extends SCMSourceRequest {
      * @param context  the context.
      * @param listener the (optional) {@link TaskListener}.
      */
-    protected ScmManagerSourceRequest(@NonNull ScmManagerSource source, @NonNull ScmManagerSourceContext context, TaskListener listener) {
+    protected ScmManagerSourceRequest(
+            @NonNull ScmManagerSource source, @NonNull ScmManagerSourceContext context, TaskListener listener) {
         super(source, context, listener);
         this.fetchBranches = context.wantBranches();
         this.fetchTags = context.wantTags();

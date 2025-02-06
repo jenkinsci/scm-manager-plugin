@@ -1,10 +1,20 @@
 package com.cloudogu.scmmanager.info;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.SCM;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import jenkins.triggers.SCMTriggerItem;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,17 +22,6 @@ import org.junit.runner.RunWith;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings("unchecked")
 @RunWith(MockitoJUnitRunner.class)
@@ -91,8 +90,7 @@ public class ScmInformationServiceTest {
                 return Collections.emptyList();
             }
             return Collections.singletonList(
-                new JobInformation("sample", "https://scm.manager.org", "abc", "one", false)
-            );
+                    new JobInformation("sample", "https://scm.manager.org", "abc", "one", false));
         }
     }
 
@@ -103,5 +101,4 @@ public class ScmInformationServiceTest {
             return Optional.of(new SampleScmInformationResolver());
         }
     }
-
 }

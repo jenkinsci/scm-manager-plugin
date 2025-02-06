@@ -3,6 +3,7 @@ package com.cloudogu.scmmanager.scm;
 import com.google.common.base.MoreObjects;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.JellyContext;
 import org.jenkins.ui.icon.Icon;
@@ -10,12 +11,11 @@ import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.Stapler;
 
-import java.util.Objects;
-
 public class ScmManagerLink implements Action, IconSpec {
 
     @NonNull
     private final String iconClassName;
+
     @NonNull
     private final String url;
 
@@ -60,8 +60,7 @@ public class ScmManagerLink implements Action, IconSpec {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ScmManagerLink that = (ScmManagerLink) o;
-        return iconClassName.equals(that.iconClassName) &&
-            url.equals(that.url);
+        return iconClassName.equals(that.iconClassName) && url.equals(that.url);
     }
 
     @Override
@@ -72,8 +71,8 @@ public class ScmManagerLink implements Action, IconSpec {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-            .add("iconClassName", iconClassName)
-            .add("url", url)
-            .toString();
+                .add("iconClassName", iconClassName)
+                .add("url", url)
+                .toString();
     }
 }
