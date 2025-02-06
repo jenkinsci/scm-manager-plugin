@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import static java.util.Collections.emptyList;
 
+import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -11,7 +12,6 @@ import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSourceDescriptor;
@@ -46,17 +46,17 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return validateCredentialsId(context, serverUrl, value);
     }
 
-    @SuppressWarnings("unused") // used By stapler
-    public FormValidation doCheckRepository(@QueryParameter String value)
-            throws InterruptedException, ExecutionException {
-        if (fillRepositoryItemsResult == null) {
-            LOG.debug("No repository result to check");
-            return FormValidation.ok();
-        } else if (!Objects.equals(value, "") && !fillRepositoryItemsResult.model.contains(value)) {
-            return FormValidation.error("This repository does not exist.");
-        }
-        return FormValidation.ok();
-    }
+    //  @SuppressWarnings("unused") // used By stapler
+    //  public FormValidation doCheckRepository(@QueryParameter String value) throws InterruptedException,
+    // ExecutionException {
+    //    if (fillRepositoryItemsResult == null) {
+    //      LOG.debug("No repository result to check");
+    //      return FormValidation.ok();
+    //    } else if (!Objects.equals(value, "") && !fillRepositoryItemsResult.model.contains(value)) {
+    //      return FormValidation.error("This repository does not exist.");
+    //    }
+    //    return FormValidation.ok();
+    //  }
 
     @VisibleForTesting
     FormValidation validateCredentialsId(
@@ -65,15 +65,38 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
+    public FormValidation doCheckRepository(
+            @AncestorInPath SCMSourceOwner context,
+            @QueryParameter String serverUrl,
+            @QueryParameter String credentialsId,
+            @QueryParameter String value)
+            throws InterruptedException, ExecutionException {
+        System.out.println("doCheckRepository: " + value);
+        if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
+            return FormValidation.ok();
+        }
+        String[] namespaceNameParts = value.split("/");
+        if (namespaceNameParts.length != 2) {
+            return FormValidation.error("Please enter a valid repository in the form namespace/name");
+        }
+        try {
+            ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
+            api.getRepository(namespaceNameParts[0], namespaceNameParts[1]).get();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IllegalReturnStatusException
+                    && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 404) {
+                return FormValidation.error("This repository does not exist.");
+            }
+            return FormValidation.error("Error checking repository: " + e.getMessage());
+        }
+        return FormValidation.ok();
+    }
+
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillCredentialsIdItems(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
         return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
-
-    private record FillRepositoryItemsResult(ComboBoxModel model) {}
-
-    private FillRepositoryItemsResult fillRepositoryItemsResult;
 
     @SuppressWarnings("unused") // used By stapler
     public ComboBoxModel doFillRepositoryItems(
@@ -91,9 +114,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @QueryParameter String credentialsId,
             @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-
+        ComboBoxModel model = new ComboBoxModel();
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
-            ComboBoxModel model = new ComboBoxModel();
             if (!Strings.isNullOrEmpty(value)) {
                 model.add(value);
             }
@@ -101,14 +123,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         }
 
         ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
-        ComboBoxModel result = fetchRepositoryItems(api);
-        fillRepositoryItemsResult = new FillRepositoryItemsResult(result);
-        return fetchRepositoryItems(api);
-    }
-
-    private ComboBoxModel fetchRepositoryItems(ScmManagerApi api) throws ExecutionException, InterruptedException {
-        ComboBoxModel model = new ComboBoxModel();
-
         // filter all repositories, which does not support the protocol
         Predicate<Repository> protocolPredicate =
                 repository -> repository.getUrl(api.getProtocol()).isPresent();
@@ -127,7 +141,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     }
 
     protected String createRepositoryOption(Repository repository) {
-        return String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
+        return String.format("%s/%s", repository.getNamespace(), repository.getName());
     }
 
     static {

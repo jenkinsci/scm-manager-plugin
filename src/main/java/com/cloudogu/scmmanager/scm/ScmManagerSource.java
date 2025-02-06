@@ -196,7 +196,7 @@ public class ScmManagerSource extends SCMSource {
     }
 
     public String getRepository() {
-        return String.format("%s/%s (%s)", namespace, name, getType());
+        return String.format("%s/%s", namespace, name);
     }
 
     public String getCredentialsId() {

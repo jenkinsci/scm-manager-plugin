@@ -212,7 +212,7 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldValidateRepositoryOkWithoutAnyPrecedingResult() throws InterruptedException, ExecutionException {
-        FormValidation formValidation = descriptor.doCheckRepository(null);
+        FormValidation formValidation = descriptor.doCheckRepository(null, null, null, null);
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
@@ -226,7 +226,7 @@ public class ScmManagerSourceDescriptorTest {
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
         descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "");
-        FormValidation formValidation = descriptor.doCheckRepository("");
+        FormValidation formValidation = descriptor.doCheckRepository(null, null, null, "");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
@@ -241,7 +241,7 @@ public class ScmManagerSourceDescriptorTest {
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
         descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guidde");
-        FormValidation formValidation = descriptor.doCheckRepository("hitchhiker/guidde");
+        FormValidation formValidation = descriptor.doCheckRepository(null, null, null, "hitchhiker/guidde");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
     }
