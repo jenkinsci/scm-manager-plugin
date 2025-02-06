@@ -4,5 +4,5 @@ import javaposse.jobdsl.dsl.Context;
 
 @FunctionalInterface
 interface Executor {
-  void executeInContext(Runnable runnable, Context context);
+    void executeInContext(Runnable runnable, Context context);
 }

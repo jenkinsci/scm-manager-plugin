@@ -25,6 +25,35 @@
     <url>https://cloudogu.com</url>
   </organization>
 
+  <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>sdorra</id>
+      <name>Sebastian Sdorra</name>
+      <email>sebastian.sdorra@cloudogu.com</email>
+    </developer>
+    <developer>
+      <id>eheimbuch</id>
+      <name>Eduard Heimbuch</name>
+      <email>eduard.heimbuch@cloudogu.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+  </scm>
+
   <properties>
     <java.level>17</java.level>
 
@@ -70,22 +99,6 @@
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
-  <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <distribution>repo</distribution>
-      <url>https://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
-
-  <scm>
-    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>HEAD</tag>
-  </scm>
-
   <dependencyManagement>
     <dependencies>
 
@@ -102,12 +115,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jenkins-ci</groupId>
-        <artifactId>annotation-indexer</artifactId>
-        <version>1.18</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
@@ -117,50 +124,6 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
-      </dependency>
-
-      <!-- BOM-versioned dependencies -->
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plain-credentials</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins.workflow</groupId>
-        <artifactId>workflow-scm-step</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>junit</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>scm-api</artifactId>
-        <version>${scm-api.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>script-security</artifactId>
-        <version>${script-security.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>matrix-project</artifactId>
-        <version>${matrix.version}</version>
       </dependency>
 
       <dependency>
@@ -182,15 +145,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>display-url-api</artifactId>
-        <!-- version provided by BOM -->
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins.plugins</groupId>
-        <artifactId>ionicons-api</artifactId>
-        <!-- version provided by BOM -->
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>annotation-indexer</artifactId>
+        <version>1.18</version>
       </dependency>
 
       <dependency>
@@ -206,6 +163,62 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>display-url-api</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>junit</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>matrix-project</artifactId>
+        <version>${matrix.version}</version>
+      </dependency>
+
+      <!-- BOM-versioned dependencies -->
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plain-credentials</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>scm-api</artifactId>
+        <version>${scm-api.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>script-security</artifactId>
+        <version>${script-security.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-api</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-scm-step</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
+        <groupId>org.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <!-- version provided by BOM -->
+      </dependency>
+
+      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <!-- version provided by BOM -->
@@ -217,117 +230,15 @@
 
   <dependencies>
 
-    <!-- non-Jenkins BOM dependencies; these need an own version -->
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>de.otto.edison</groupId>
       <artifactId>edison-hal</artifactId>
       <version>${edison.version}</version>
     </dependency>
 
-    <!-- Needed for edison -->
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>${edison-joda.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${assertj.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>mockwebserver</artifactId>
-      <version>${mockwebserver.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- scm plugins should be optional -->
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mercurial</artifactId>
-      <optional>true</optional>
-      <!-- version not provided by BOM but kept here for consistency -->
-      <version>${mercurial.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>scm-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- BOM-versioned dependencies -->
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <!-- version provided by BOM -->
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>credentials</artifactId>
-      <!-- version provided by BOM -->
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>ssh-credentials</artifactId>
-      <!-- version provided by BOM -->
-    </dependency>
-
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
-      <artifactId>okhttp-api</artifactId>
-      <!-- version provided by BOM -->
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>trilead-api</artifactId>
+      <artifactId>echarts-api</artifactId>
       <!-- version provided by BOM -->
     </dependency>
 
@@ -339,14 +250,8 @@
 
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
-      <artifactId>echarts-api</artifactId>
+      <artifactId>okhttp-api</artifactId>
       <!-- version provided by BOM -->
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>${cloudbees-folder.version}</version>
     </dependency>
 
     <dependency>
@@ -356,9 +261,36 @@
       <optional>true</optional>
     </dependency>
 
+    <!-- Needed for edison -->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${edison-joda.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>script-security</artifactId>
+      <artifactId>branch-api</artifactId>
+      <!-- version provided by BOM -->
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>cloudbees-folder</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>${cloudbees-folder.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <!-- version provided by BOM -->
     </dependency>
 
     <!-- scm plugins should be optional -->
@@ -367,6 +299,55 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>git</artifactId>
       <optional>true</optional>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>jackson2-api</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>job-dsl</artifactId>
+      <!-- version provided by BOM -->
+      <!-- TODO improve jobdsl syntax -->
+      <optional>true</optional>
+    </dependency>
+
+    <!-- scm plugins should be optional -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mercurial</artifactId>
+      <!-- version not provided by BOM but kept here for consistency -->
+      <version>${mercurial.version}</version>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>scm-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>script-security</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ssh-credentials</artifactId>
+      <!-- version provided by BOM -->
+    </dependency>
+
+    <!-- BOM-versioned dependencies -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
       <!-- version provided by BOM -->
     </dependency>
 
@@ -385,15 +366,14 @@
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>branch-api</artifactId>
+      <artifactId>trilead-api</artifactId>
       <!-- version provided by BOM -->
-      <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>cloudbees-folder</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <version>${workflow-api.version}</version>
     </dependency>
 
     <dependency>
@@ -411,39 +391,59 @@
     </dependency>
 
     <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-api</artifactId>
-      <version>${workflow-api.version}</version>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>jackson2-api</artifactId>
-      <!-- version provided by BOM -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>job-dsl</artifactId>
-      <!-- version provided by BOM -->
-      <!-- TODO improve jobdsl syntax -->
-      <optional>true</optional>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <!-- non-Jenkins BOM dependencies; these need an own version -->
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
+      <version>${mockwebserver.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
-
-  <developers>
-    <developer>
-      <id>sdorra</id>
-      <name>Sebastian Sdorra</name>
-      <email>sebastian.sdorra@cloudogu.com</email>
-    </developer>
-    <developer>
-      <id>eheimbuch</id>
-      <name>Eduard Heimbuch</name>
-      <email>eduard.heimbuch@cloudogu.com</email>
-    </developer>
-  </developers>
 
   <repositories>
     <repository>
@@ -480,10 +480,10 @@
             <version>${jacoco.version}</version>
             <executions>
               <execution>
-                <phase>initialize</phase>
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
+                <phase>initialize</phase>
               </execution>
             </executions>
           </plugin>

@@ -10,46 +10,44 @@ import jenkins.scm.api.trait.SCMSourceContext;
 
 public class ScmManagerSourceContext extends SCMSourceContext<ScmManagerSourceContext, ScmManagerSourceRequest> {
 
-  private boolean wantBranches;
-  private boolean wantTags;
-  private boolean wantPullRequests;
+    private boolean wantBranches;
+    private boolean wantTags;
+    private boolean wantPullRequests;
 
-  public ScmManagerSourceContext(@CheckForNull SCMSourceCriteria criteria,
-                                 @NonNull SCMHeadObserver observer) {
-    super(criteria, observer);
-  }
+    public ScmManagerSourceContext(@CheckForNull SCMSourceCriteria criteria, @NonNull SCMHeadObserver observer) {
+        super(criteria, observer);
+    }
 
-  public boolean wantBranches() {
-    return wantBranches;
-  }
+    public boolean wantBranches() {
+        return wantBranches;
+    }
 
-  public boolean wantTags() {
-    return wantTags;
-  }
+    public boolean wantTags() {
+        return wantTags;
+    }
 
-  public boolean wantPullRequests() {
-    return wantPullRequests;
-  }
+    public boolean wantPullRequests() {
+        return wantPullRequests;
+    }
 
+    public ScmManagerSourceContext wantBranches(boolean include) {
+        wantBranches = wantBranches || include;
+        return this;
+    }
 
-  public ScmManagerSourceContext wantBranches(boolean include) {
-    wantBranches = wantBranches || include;
-    return this;
-  }
+    public ScmManagerSourceContext wantTags(boolean include) {
+        wantTags = wantTags || include;
+        return this;
+    }
 
-  public ScmManagerSourceContext wantTags(boolean include) {
-    wantTags = wantTags || include;
-    return this;
-  }
+    public ScmManagerSourceContext wantPullRequests(boolean include) {
+        wantPullRequests = wantPullRequests || include;
+        return this;
+    }
 
-  public ScmManagerSourceContext wantPullRequests(boolean include) {
-    wantPullRequests = wantPullRequests || include;
-    return this;
-  }
-
-  @NonNull
-  @Override
-  public ScmManagerSourceRequest newRequest(@NonNull SCMSource source, TaskListener listener) {
-    return new ScmManagerSourceRequest((ScmManagerSource) source, this, listener);
-  }
+    @NonNull
+    @Override
+    public ScmManagerSourceRequest newRequest(@NonNull SCMSource source, TaskListener listener) {
+        return new ScmManagerSourceRequest((ScmManagerSource) source, this, listener);
+    }
 }

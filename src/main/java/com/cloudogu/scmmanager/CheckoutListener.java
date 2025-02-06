@@ -9,32 +9,37 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.SCMListener;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
-
-import javax.annotation.CheckForNull;
-import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.inject.Inject;
 
 @Extension
 public class CheckoutListener extends SCMListener {
 
-  private ScmInformationService informationService;
-  private NotificationService notificationService;
+    private ScmInformationService informationService;
+    private NotificationService notificationService;
 
-  @Inject
-  public void setInformationService(ScmInformationService informationService) {
-    this.informationService = informationService;
-  }
+    @Inject
+    public void setInformationService(ScmInformationService informationService) {
+        this.informationService = informationService;
+    }
 
-  @Inject
-  public void setNotificationService(NotificationService notificationService) {
-    this.notificationService = notificationService;
-  }
+    @Inject
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
-  @Override
-  public void onCheckout(Run<?, ?> run, SCM scm, FilePath workspace, TaskListener listener, @CheckForNull File changelogFile, @CheckForNull SCMRevisionState pollingBaseline) {
-    List<JobInformation> jobInformation = informationService.resolve(run, scm);
-    run.addAction(new NotificationAction(jobInformation));
-    notificationService.notify(run, null);
-  }
+    @Override
+    public void onCheckout(
+            Run<?, ?> run,
+            SCM scm,
+            FilePath workspace,
+            TaskListener listener,
+            @CheckForNull File changelogFile,
+            @CheckForNull SCMRevisionState pollingBaseline) {
+        List<JobInformation> jobInformation = informationService.resolve(run, scm);
+        run.addAction(new NotificationAction(jobInformation));
+        notificationService.notify(run, null);
+    }
 }

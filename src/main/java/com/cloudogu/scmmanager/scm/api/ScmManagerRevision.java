@@ -5,38 +5,38 @@ import jenkins.scm.api.SCMRevision;
 
 public class ScmManagerRevision extends SCMRevision {
 
-  private final String revision;
+    private final String revision;
 
-  public ScmManagerRevision(@NonNull ScmManagerHead head, @NonNull String revision) {
-    super(head);
-    this.revision = revision;
-  }
-
-  public String getRevision() {
-    return revision;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public ScmManagerRevision(@NonNull ScmManagerHead head, @NonNull String revision) {
+        super(head);
+        this.revision = revision;
     }
 
-    ScmManagerRevision that = (ScmManagerRevision) o;
+    public String getRevision() {
+        return revision;
+    }
 
-    return revision.equals(that.revision);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-  @Override
-  public int hashCode() {
-    return revision.hashCode();
-  }
+        ScmManagerRevision that = (ScmManagerRevision) o;
 
-  @Override
-  public String toString() {
-    return revision;
-  }
+        return revision.equals(that.revision);
+    }
+
+    @Override
+    public int hashCode() {
+        return revision.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return revision;
+    }
 }

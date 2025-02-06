@@ -7,20 +7,23 @@ import jenkins.scm.api.trait.SCMNavigatorRequest;
 
 public class ScmManagerNavigatorRequest extends SCMNavigatorRequest {
 
-  private final String svnIncludes;
-  private final String svnExcludes;
+    private final String svnIncludes;
+    private final String svnExcludes;
 
-  protected ScmManagerNavigatorRequest(@NonNull SCMNavigator source, @NonNull ScmManagerNavigatorContext context, @NonNull SCMSourceObserver observer) {
-    super(source, context, observer);
-    this.svnIncludes = context.getSvnIncludes();
-    this.svnExcludes = context.getSvnExcludes();
-  }
+    protected ScmManagerNavigatorRequest(
+            @NonNull SCMNavigator source,
+            @NonNull ScmManagerNavigatorContext context,
+            @NonNull SCMSourceObserver observer) {
+        super(source, context, observer);
+        this.svnIncludes = context.getSvnIncludes();
+        this.svnExcludes = context.getSvnExcludes();
+    }
 
-  public String getSvnIncludes() {
-    return svnIncludes;
-  }
+    public String getSvnIncludes() {
+        return svnIncludes;
+    }
 
-  public String getSvnExcludes() {
-    return svnExcludes;
-  }
+    public String getSvnExcludes() {
+        return svnExcludes;
+    }
 }
