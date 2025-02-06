@@ -11,15 +11,15 @@ import static java.util.stream.Collectors.toList;
 
 public class ScmManagerTagEvent extends ScmManagerHeadEvent {
 
-  private Collection<String> names;
+    private Collection<String> names;
 
-  ScmManagerTagEvent(Type type, JSONObject form, Collection<JSONObject> tags) {
-    super(type, form);
-    this.names = tags.stream().map(tag -> tag.getString("name")).collect(toList());
-  }
+    ScmManagerTagEvent(Type type, JSONObject form, Collection<JSONObject> tags) {
+        super(type, form);
+        this.names = tags.stream().map(tag -> tag.getString("name")).collect(toList());
+    }
 
-  @Override
-  Collection<SCMHead> heads(CloneInformation cloneInformation) {
-    return names.stream().map(name -> new ScmManagerTag(cloneInformation, name, System.currentTimeMillis())).collect(toList());
-  }
+    @Override
+    Collection<SCMHead> heads(CloneInformation cloneInformation) {
+        return names.stream().map(name -> new ScmManagerTag(cloneInformation, name, System.currentTimeMillis())).collect(toList());
+    }
 }

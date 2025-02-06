@@ -21,74 +21,74 @@ import javax.annotation.Nonnull;
 
 public class PullRequestDiscoveryTrait extends SCMSourceTrait {
 
-  private final boolean excludeBranchesWithPRs;
+    private final boolean excludeBranchesWithPRs;
 
-  @DataBoundConstructor
-  public PullRequestDiscoveryTrait(boolean excludeBranchesWithPRs) {
-    this.excludeBranchesWithPRs = excludeBranchesWithPRs;
-  }
-
-  /**
-   * Constructor for old versions of this trait, which does not have the excludeBranchesWithPRs option.
-   */
-  public PullRequestDiscoveryTrait() {
-    this(false);
-  }
-
-  public boolean isExcludeBranchesWithPRs() {
-    return excludeBranchesWithPRs;
-  }
-
-  @Override
-  protected void decorateContext(SCMSourceContext<?, ?> context) {
-    ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
-    scmContext.wantPullRequests(true);
-    if (excludeBranchesWithPRs) {
-      scmContext.withFilter(new ExcludePullRequestBranchHeadFilter());
+    @DataBoundConstructor
+    public PullRequestDiscoveryTrait(boolean excludeBranchesWithPRs) {
+        this.excludeBranchesWithPRs = excludeBranchesWithPRs;
     }
-  }
 
-  @Override
-  protected boolean includeCategory(@NonNull SCMHeadCategory category) {
-    return category instanceof ChangeRequestSCMHeadCategory;
-  }
-
-  @Extension
-  @Discovery
-  public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
-
-    @Nonnull
-    @Override
-    public String getDisplayName() {
-      return "Pull Request Discovery";
+    /**
+     * Constructor for old versions of this trait, which does not have the excludeBranchesWithPRs option.
+     */
+    public PullRequestDiscoveryTrait() {
+        this(false);
     }
-  }
 
-  @VisibleForTesting
-  static class ExcludePullRequestBranchHeadFilter extends SCMHeadFilter {
+    public boolean isExcludeBranchesWithPRs() {
+        return excludeBranchesWithPRs;
+    }
 
     @Override
-    @SuppressFBWarnings("BC_UNCONFIRMED_CAST") // type is checked isBranchHead
-    public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
-      if (request instanceof ScmManagerSourceRequest && isBranchHead(head)) {
-        ScmManagerSourceRequest req = (ScmManagerSourceRequest) request;
-        ScmManagerHead branch = (ScmManagerHead) head;
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
+        ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
+        scmContext.wantPullRequests(true);
+        if (excludeBranchesWithPRs) {
+            scmContext.withFilter(new ExcludePullRequestBranchHeadFilter());
+        }
+    }
 
-        for (ScmManagerPullRequestHead pullRequest : req.getPullRequests()) {
-          String source = pullRequest.getSource().getName();
-          if (source.equals(branch.getName())) {
-            return true;
-          }
+    @Override
+    protected boolean includeCategory(@NonNull SCMHeadCategory category) {
+        return category instanceof ChangeRequestSCMHeadCategory;
+    }
+
+    @Extension
+    @Discovery
+    public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "Pull Request Discovery";
+        }
+    }
+
+    @VisibleForTesting
+    static class ExcludePullRequestBranchHeadFilter extends SCMHeadFilter {
+
+        @Override
+        @SuppressFBWarnings("BC_UNCONFIRMED_CAST") // type is checked isBranchHead
+        public boolean isExcluded(@NonNull SCMSourceRequest request, @NonNull SCMHead head) {
+            if (request instanceof ScmManagerSourceRequest && isBranchHead(head)) {
+                ScmManagerSourceRequest req = (ScmManagerSourceRequest) request;
+                ScmManagerHead branch = (ScmManagerHead) head;
+
+                for (ScmManagerPullRequestHead pullRequest : req.getPullRequests()) {
+                    String source = pullRequest.getSource().getName();
+                    if (source.equals(branch.getName())) {
+                        return true;
+                    }
+                }
+
+            }
+            return false;
         }
 
-      }
-      return false;
+        private boolean isBranchHead(@Nonnull SCMHead head) {
+            return head instanceof ScmManagerHead
+                && !(head instanceof ScmManagerTag)
+                && !(head instanceof ScmManagerPullRequestHead);
+        }
     }
-
-    private boolean isBranchHead(@Nonnull SCMHead head) {
-      return head instanceof ScmManagerHead
-        && ! (head instanceof ScmManagerTag)
-        && ! (head instanceof ScmManagerPullRequestHead);
-    }
-  }
 }

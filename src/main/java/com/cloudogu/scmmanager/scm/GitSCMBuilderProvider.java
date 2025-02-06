@@ -17,38 +17,38 @@ import java.util.stream.Collectors;
 @Extension(optional = true)
 public class GitSCMBuilderProvider extends SCMBuilderProvider {
 
-  private static final String TYPE = "git";
-  private static final String DISPLAY_NAME = "Git";
+    private static final String TYPE = "git";
+    private static final String DISPLAY_NAME = "Git";
 
-  public GitSCMBuilderProvider() {
-    super(TYPE, DISPLAY_NAME);
-  }
+    public GitSCMBuilderProvider() {
+        super(TYPE, DISPLAY_NAME);
+    }
 
-  @Override
-  public boolean isSupported(@NonNull SCMHeadCategory category) {
-    return true;
-  }
+    @Override
+    public boolean isSupported(@NonNull SCMHeadCategory category) {
+        return true;
+    }
 
-  @Override
-  public Class<? extends SCM> getScmClass() {
-    return GitSCM.class;
-  }
+    @Override
+    public Class<? extends SCM> getScmClass() {
+        return GitSCM.class;
+    }
 
-  @Override
-  public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
-    return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerGitSCMBuilder.class)
-      .stream()
-      .filter(desc -> !(desc instanceof GitBrowserSCMSourceTrait.DescriptorImpl))
-      .collect(Collectors.toList());
-  }
+    @Override
+    public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
+        return SCMSourceTrait._for(sourceDescriptor, null, ScmManagerGitSCMBuilder.class)
+            .stream()
+            .filter(desc -> !(desc instanceof GitBrowserSCMSourceTrait.DescriptorImpl))
+            .collect(Collectors.toList());
+    }
 
-  @Override
-  protected SCMBuilder<?, ?> create(Context context) {
-    return new ScmManagerGitSCMBuilder(
-      context.getLinkBuilder(),
-      context.getHead(),
-      context.getRevision(),
-      context.getCredentialsId()
-    );
-  }
+    @Override
+    protected SCMBuilder<?, ?> create(Context context) {
+        return new ScmManagerGitSCMBuilder(
+            context.getLinkBuilder(),
+            context.getHead(),
+            context.getRevision(),
+            context.getCredentialsId()
+        );
+    }
 }

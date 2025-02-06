@@ -18,70 +18,70 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScmV2NotifierTest {
 
-  private final MockWebServer server = new MockWebServer();
+    private final MockWebServer server = new MockWebServer();
 
-  @Test
-  public void testNotifyForChangesets() throws IOException, InterruptedException {
-    testNotify("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold", "hitchhiker/heart-of-gold", null);
+    @Test
+    public void testNotifyForChangesets() throws IOException, InterruptedException {
+        testNotify("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold", "hitchhiker/heart-of-gold", null);
 
-    RecordedRequest request = server.takeRequest();
-    assertThat(request.getRequestUrl().encodedPath()).isEqualTo("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold");
-    assertThat(request.getHeader("Authenticated")).isEqualTo("yes; awesome");
-    assertThat(request.getHeader("Content-Type")).isEqualTo("application/vnd.scmm-cistatus+json;v=2");
-    JsonObject jsonElement = JsonParser.parseString(request.getBody().readUtf8()).getAsJsonObject();
-    assertThat(jsonElement.get("type").getAsString()).isEqualTo("jenkins");
-    assertThat(jsonElement.get("name").getAsString()).isEqualTo("hitchhiker/heart-of-gold");
-    assertThat(jsonElement.get("url").getAsString()).isEqualTo("https://hitchhiker.com");
-    assertThat(jsonElement.get("status").getAsString()).isEqualTo("SUCCESS");
-  }
+        RecordedRequest request = server.takeRequest();
+        assertThat(request.getRequestUrl().encodedPath()).isEqualTo("/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold");
+        assertThat(request.getHeader("Authenticated")).isEqualTo("yes; awesome");
+        assertThat(request.getHeader("Content-Type")).isEqualTo("application/vnd.scmm-cistatus+json;v=2");
+        JsonObject jsonElement = JsonParser.parseString(request.getBody().readUtf8()).getAsJsonObject();
+        assertThat(jsonElement.get("type").getAsString()).isEqualTo("jenkins");
+        assertThat(jsonElement.get("name").getAsString()).isEqualTo("hitchhiker/heart-of-gold");
+        assertThat(jsonElement.get("url").getAsString()).isEqualTo("https://hitchhiker.com");
+        assertThat(jsonElement.get("status").getAsString()).isEqualTo("SUCCESS");
+    }
 
-  @Test
-  public void testNotifyForPullRequests() throws IOException, InterruptedException {
-    testNotify("/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fpr-1", "hitchhiker/heart-of-gold", "hitchhiker/pr-1");
+    @Test
+    public void testNotifyForPullRequests() throws IOException, InterruptedException {
+        testNotify("/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fpr-1", "hitchhiker/heart-of-gold", "hitchhiker/pr-1");
 
-    RecordedRequest request = server.takeRequest();
-    assertThat(request.getRequestUrl().encodedPath()).isEqualTo("/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fpr-1");
-    assertThat(request.getHeader("Authenticated")).isEqualTo("yes; awesome");
-    assertThat(request.getHeader("Content-Type")).isEqualTo("application/vnd.scmm-cistatus+json;v=2");
-    JsonObject jsonElement = JsonParser.parseString(request.getBody().readUtf8()).getAsJsonObject();
-    assertThat(jsonElement.get("type").getAsString()).isEqualTo("jenkins");
-    assertThat(jsonElement.get("name").getAsString()).isEqualTo("hitchhiker/pr-1");
-    assertThat(jsonElement.get("url").getAsString()).isEqualTo("https://hitchhiker.com");
-    assertThat(jsonElement.get("status").getAsString()).isEqualTo("SUCCESS");
-    assertThat(jsonElement.get("replaces").getAsString()).isEqualTo("hitchhiker/hitchhiker%2Fheart-of-gold");
-  }
+        RecordedRequest request = server.takeRequest();
+        assertThat(request.getRequestUrl().encodedPath()).isEqualTo("/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fpr-1");
+        assertThat(request.getHeader("Authenticated")).isEqualTo("yes; awesome");
+        assertThat(request.getHeader("Content-Type")).isEqualTo("application/vnd.scmm-cistatus+json;v=2");
+        JsonObject jsonElement = JsonParser.parseString(request.getBody().readUtf8()).getAsJsonObject();
+        assertThat(jsonElement.get("type").getAsString()).isEqualTo("jenkins");
+        assertThat(jsonElement.get("name").getAsString()).isEqualTo("hitchhiker/pr-1");
+        assertThat(jsonElement.get("url").getAsString()).isEqualTo("https://hitchhiker.com");
+        assertThat(jsonElement.get("status").getAsString()).isEqualTo("SUCCESS");
+        assertThat(jsonElement.get("replaces").getAsString()).isEqualTo("hitchhiker/hitchhiker%2Fheart-of-gold");
+    }
 
-  private void testNotify(String notificationUrl, String branch, String pullRequest) throws IOException, InterruptedException {
-    server.enqueue(new MockResponse().setResponseCode(200));
-    server.start();
+    private void testNotify(String notificationUrl, String branch, String pullRequest) throws IOException, InterruptedException {
+        server.enqueue(new MockResponse().setResponseCode(200));
+        server.start();
 
-    URL instanceURL = createInstanceURL();
-    NamespaceAndName namespaceAndName = new NamespaceAndName("ns", "one");
+        URL instanceURL = createInstanceURL();
+        NamespaceAndName namespaceAndName = new NamespaceAndName("ns", "one");
 
-    ScmV2Notifier notifier =
-      new ScmV2Notifier(
-        instanceURL,
-        namespaceAndName, req -> req.header("Authenticated", "yes; awesome"),
-        pullRequest != null,
-        pullRequest == null ? null : branch);
+        ScmV2Notifier notifier =
+            new ScmV2Notifier(
+                instanceURL,
+                namespaceAndName, req -> req.header("Authenticated", "yes; awesome"),
+                pullRequest != null,
+                pullRequest == null ? null : branch);
 
-    CountDownLatch cdl = new CountDownLatch(1);
-    OkHttpClient client = new OkHttpClient();
-    notifier.setClient(client);
-    notifier.setCompletionListener((response -> cdl.countDown()));
+        CountDownLatch cdl = new CountDownLatch(1);
+        OkHttpClient client = new OkHttpClient();
+        notifier.setClient(client);
+        notifier.setCompletionListener((response -> cdl.countDown()));
 
-    BuildStatus status = BuildStatus.success(
-        pullRequest != null ? pullRequest : branch,
-      "hitchhiker >> heart-of-gold",
-      "https://hitchhiker.com"
-    );
+        BuildStatus status = BuildStatus.success(
+            pullRequest != null ? pullRequest : branch,
+            "hitchhiker >> heart-of-gold",
+            "https://hitchhiker.com"
+        );
 
-    notifier.notify("abc", status);
+        notifier.notify("abc", status);
 
-    cdl.await(30, TimeUnit.SECONDS);
-  }
+        cdl.await(30, TimeUnit.SECONDS);
+    }
 
-  private URL createInstanceURL() throws MalformedURLException {
-    return new URL("http", "localhost", server.getPort(), "/scm");
-  }
+    private URL createInstanceURL() throws MalformedURLException {
+        return new URL("http", "localhost", server.getPort(), "/scm");
+    }
 }

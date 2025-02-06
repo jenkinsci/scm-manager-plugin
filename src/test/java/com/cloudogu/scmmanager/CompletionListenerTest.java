@@ -13,23 +13,23 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CompletionListenerTest {
 
-  @Mock
-  private NotificationService notificationService;
+    @Mock
+    private NotificationService notificationService;
 
-  @Mock
-  private Run<?, ?> run;
+    @Mock
+    private Run<?, ?> run;
 
-  @Test
-  public void testNotificationServiceIsCalled() {
-    CompletionListener listener = new CompletionListener();
-    listener.setNotificationService(notificationService);
+    @Test
+    public void testNotificationServiceIsCalled() {
+        CompletionListener listener = new CompletionListener();
+        listener.setNotificationService(notificationService);
 
-    Result result = Result.SUCCESS;
-    when(run.getResult()).thenReturn(result);
+        Result result = Result.SUCCESS;
+        when(run.getResult()).thenReturn(result);
 
-    listener.onCompleted(run, null);
+        listener.onCompleted(run, null);
 
-    verify(notificationService).notify(run, result);
-  }
+        verify(notificationService).notify(run, result);
+    }
 
 }

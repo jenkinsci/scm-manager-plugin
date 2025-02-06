@@ -12,156 +12,156 @@ import java.util.Optional;
 
 public class SshConnection implements AutoCloseable {
 
-  private static final ObjectMapper mapper = new ObjectMapper();
-
-  private final Connection connection;
-  private final NamespaceAndName repository;
-
-  SshConnection(Connection connection, NamespaceAndName repository) {
-    this.connection = connection;
-    this.repository = repository;
-  }
-
-  public Connection getConnection() {
-    return connection;
-  }
-
-  public NamespaceAndName mustGetRepository() {
-    if (repository == null) {
-      throw new IllegalStateException("ssh connection is not bound to a repository");
-    }
-    return repository;
-  }
-
-  public Optional<NamespaceAndName> getRepository() {
-    return Optional.ofNullable(repository);
-  }
-
-  public void connect(SSHAuthentication authentication) {
-    try {
-      // accept any host
-      connection.connect((s, i, s1, bytes) -> true);
-      authentication.authenticate(connection);
-    } catch (IOException ex) {
-      throw new SshConnectionFailedException("ssh connection failed", ex);
-    }
-  }
-
-  public Command command(String command) {
-    return new Command(connection, command);
-  }
-
-  @Override
-  public void close() {
-    connection.close();
-  }
-
-  public static class Command {
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Connection connection;
-    private final String command;
-    private Input input;
+    private final NamespaceAndName repository;
 
-    private Command(Connection connection, String command) {
-      this.connection = connection;
-      this.command = command;
+    SshConnection(Connection connection, NamespaceAndName repository) {
+        this.connection = connection;
+        this.repository = repository;
     }
 
-    public Input withInput(Object inputObject) {
-      input = new Input(this, inputObject);
-      return input;
+    public Connection getConnection() {
+        return connection;
     }
 
-    public <T> Output<T> withOutput(Class<T> type) {
-      return new Output<>(this, type);
+    public NamespaceAndName mustGetRepository() {
+        if (repository == null) {
+            throw new IllegalStateException("ssh connection is not bound to a repository");
+        }
+        return repository;
     }
 
-    public void exec() throws IOException {
-      exec(null);
+    public Optional<NamespaceAndName> getRepository() {
+        return Optional.ofNullable(repository);
     }
 
-    private <T> T exec(Unmarshaller<T> unmarshaller) throws IOException {
-      Session session = null;
-      try {
-        session = connection.openSession();
-        session.execCommand(command);
+    public void connect(SSHAuthentication authentication) {
+        try {
+            // accept any host
+            connection.connect((s, i, s1, bytes) -> true);
+            authentication.authenticate(connection);
+        } catch (IOException ex) {
+            throw new SshConnectionFailedException("ssh connection failed", ex);
+        }
+    }
 
-        if (input != null) {
-          input.handle(session);
+    public Command command(String command) {
+        return new Command(connection, command);
+    }
+
+    @Override
+    public void close() {
+        connection.close();
+    }
+
+    public static class Command {
+
+        private final Connection connection;
+        private final String command;
+        private Input input;
+
+        private Command(Connection connection, String command) {
+            this.connection = connection;
+            this.command = command;
         }
 
-        T output = null;
-        if (unmarshaller != null) {
-          try (InputStream stdout = session.getStdout()) {
-            output = unmarshaller.unmarshal(stdout);
-          }
+        public Input withInput(Object inputObject) {
+            input = new Input(this, inputObject);
+            return input;
         }
 
-        return output;
-      } finally {
-        if (session != null) {
-          session.close();
+        public <T> Output<T> withOutput(Class<T> type) {
+            return new Output<>(this, type);
         }
 
-      }
-    }
-  }
+        public void exec() throws IOException {
+            exec(null);
+        }
 
-  public static class Input {
+        private <T> T exec(Unmarshaller<T> unmarshaller) throws IOException {
+            Session session = null;
+            try {
+                session = connection.openSession();
+                session.execCommand(command);
 
-    private final Command command;
-    private final Object object;
-    private Marshaller marshaller;
+                if (input != null) {
+                    input.handle(session);
+                }
 
+                T output = null;
+                if (unmarshaller != null) {
+                    try (InputStream stdout = session.getStdout()) {
+                        output = unmarshaller.unmarshal(stdout);
+                    }
+                }
 
-    private Input(Command command, Object object) {
-      this.command = command;
-      this.object = object;
-    }
+                return output;
+            } finally {
+                if (session != null) {
+                    session.close();
+                }
 
-    public Command json() {
-      marshaller = (out -> mapper.writeValue(out, object));
-      return command;
-    }
-
-    public Command xml() {
-      marshaller = (out -> JAXB.marshal(object, out));
-      return command;
-    }
-
-    public void handle(Session session) throws IOException {
-      try (OutputStream stdin = session.getStdin()) {
-        marshaller.marshal(stdin);
-      }
-    }
-  }
-
-  public static class Output<T> {
-
-    private final Command command;
-    private final Class<T> type;
-
-    private Output(Command command, Class<T> type) {
-      this.command = command;
-      this.type = type;
+            }
+        }
     }
 
-    public T json() throws IOException {
-      return command.exec(stdout -> mapper.readValue(stdout, type));
+    public static class Input {
+
+        private final Command command;
+        private final Object object;
+        private Marshaller marshaller;
+
+
+        private Input(Command command, Object object) {
+            this.command = command;
+            this.object = object;
+        }
+
+        public Command json() {
+            marshaller = (out -> mapper.writeValue(out, object));
+            return command;
+        }
+
+        public Command xml() {
+            marshaller = (out -> JAXB.marshal(object, out));
+            return command;
+        }
+
+        public void handle(Session session) throws IOException {
+            try (OutputStream stdin = session.getStdin()) {
+                marshaller.marshal(stdin);
+            }
+        }
     }
 
-    public T xml() throws IOException {
-      return command.exec(stdout -> JAXB.unmarshal(stdout, type));
+    public static class Output<T> {
+
+        private final Command command;
+        private final Class<T> type;
+
+        private Output(Command command, Class<T> type) {
+            this.command = command;
+            this.type = type;
+        }
+
+        public T json() throws IOException {
+            return command.exec(stdout -> mapper.readValue(stdout, type));
+        }
+
+        public T xml() throws IOException {
+            return command.exec(stdout -> JAXB.unmarshal(stdout, type));
+        }
     }
-  }
 
-  @FunctionalInterface
-  private interface Marshaller {
-    void marshal(OutputStream out) throws IOException;
-  }
+    @FunctionalInterface
+    private interface Marshaller {
+        void marshal(OutputStream out) throws IOException;
+    }
 
-  @FunctionalInterface
-  private interface Unmarshaller<T> {
-    T unmarshal(InputStream in) throws IOException;
-  }
+    @FunctionalInterface
+    private interface Unmarshaller<T> {
+        T unmarshal(InputStream in) throws IOException;
+    }
 }

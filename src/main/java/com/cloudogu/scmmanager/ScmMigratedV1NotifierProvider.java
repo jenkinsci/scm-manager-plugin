@@ -15,22 +15,22 @@ import static java.util.Optional.of;
 @Extension
 public class ScmMigratedV1NotifierProvider implements NotifierProvider {
 
-  private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/(git|hg|svn)/(.*)$");
+    private static final Pattern PATTERN = Pattern.compile("^http(?:s)?://[^/]+(/[A-Za-z0-9.\\-_]+)?/(git|hg|svn)/(.*)$");
 
-  private AuthenticationFactory authenticationFactory;
+    private AuthenticationFactory authenticationFactory;
 
-  @Inject
-  public void setAuthenticationFactory(AuthenticationFactory authenticationFactory) {
-    this.authenticationFactory = authenticationFactory;
-  }
-
-  @Override
-  public Optional<ScmMigratedV1Notifier> get(Run<?, ?> run, JobInformation information) {
-    Matcher matcher = PATTERN.matcher(information.getUrl());
-    if (matcher.matches()) {
-      return of(new ScmMigratedV1Notifier(authenticationFactory, run, information));
+    @Inject
+    public void setAuthenticationFactory(AuthenticationFactory authenticationFactory) {
+        this.authenticationFactory = authenticationFactory;
     }
 
-    return empty();
-  }
+    @Override
+    public Optional<ScmMigratedV1Notifier> get(Run<?, ?> run, JobInformation information) {
+        Matcher matcher = PATTERN.matcher(information.getUrl());
+        if (matcher.matches()) {
+            return of(new ScmMigratedV1Notifier(authenticationFactory, run, information));
+        }
+
+        return empty();
+    }
 }

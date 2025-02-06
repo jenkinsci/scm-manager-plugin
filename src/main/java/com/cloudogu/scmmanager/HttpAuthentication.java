@@ -4,6 +4,6 @@ import okhttp3.Request;
 
 public interface HttpAuthentication {
 
-  void authenticate(Request.Builder requestBuilder);
+    void authenticate(Request.Builder requestBuilder);
 
 }

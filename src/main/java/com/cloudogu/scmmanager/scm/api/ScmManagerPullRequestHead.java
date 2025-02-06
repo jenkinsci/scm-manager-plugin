@@ -7,52 +7,52 @@ import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
 
 public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeRequestSCMHead2 {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  @NonNull
-  private final String id;
-  private final ScmManagerHead target;
-  private final ScmManagerHead source;
+    @NonNull
+    private final String id;
+    private final ScmManagerHead target;
+    private final ScmManagerHead source;
 
-  public ScmManagerPullRequestHead(@NonNull CloneInformation cloneInformation, @NonNull String id, @NonNull ScmManagerHead target, ScmManagerHead source) {
-    // ?? why PullRequest/...
-    super(cloneInformation, "PR-" + id);
-    this.id = id;
-    this.target = target;
-    this.source = source;
-  }
+    public ScmManagerPullRequestHead(@NonNull CloneInformation cloneInformation, @NonNull String id, @NonNull ScmManagerHead target, ScmManagerHead source) {
+        // ?? why PullRequest/...
+        super(cloneInformation, "PR-" + id);
+        this.id = id;
+        this.target = target;
+        this.source = source;
+    }
 
-  @NonNull
-  @Override
-  public String getId() {
-    return id;
-  }
+    @NonNull
+    @Override
+    public String getId() {
+        return id;
+    }
 
-  @NonNull
-  @Override
-  public ScmManagerHead getTarget() {
-    return target;
-  }
+    @NonNull
+    @Override
+    public ScmManagerHead getTarget() {
+        return target;
+    }
 
-  public ScmManagerHead getSource() {
-    return source;
-  }
+    public ScmManagerHead getSource() {
+        return source;
+    }
 
-  @NonNull
-  @Override
-  public ChangeRequestCheckoutStrategy getCheckoutStrategy() {
-    return ChangeRequestCheckoutStrategy.MERGE;
-  }
+    @NonNull
+    @Override
+    public ChangeRequestCheckoutStrategy getCheckoutStrategy() {
+        return ChangeRequestCheckoutStrategy.MERGE;
+    }
 
-  @NonNull
-  @Override
-  public String getOriginName() {
-    return getSource().getName();
-  }
+    @NonNull
+    @Override
+    public String getOriginName() {
+        return getSource().getName();
+    }
 
-  @NonNull
-  @Override
-  public SCMHeadOrigin getOrigin() {
-    return SCMHeadOrigin.DEFAULT;
-  }
+    @NonNull
+    @Override
+    public SCMHeadOrigin getOrigin() {
+        return SCMHeadOrigin.DEFAULT;
+    }
 }

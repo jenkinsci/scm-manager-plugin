@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/api/v2/namespaces",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/vnd.scmm-namespaceCollection+json;v=2"
-      }
+    "request": {
+        "url": "/api/v2/namespaces",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/vnd.scmm-namespaceCollection+json;v=2"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "{\"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/\"}}, \"_embedded\": {\"namespaces\": [{\"namespace\": \"hitchhiker\", \"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/hitchhiker\"}, \"repositories\": {\"href\": \"/api/v2/repositories/hitchhiker\"}, \"permissions\": {\"href\": \"/api/v2/namespaces/hitchhiker/permissions\"}}}, {\"namespace\": \"guide\", \"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/guide\"}, \"repositories\": {\"href\": \"/api/v2/repositories/guide\"}, \"permissions\": {\"href\": \"/api/v2/namespaces/guide/permissions\"}}}]}}",
+        "headers": {
+            "Content-Type": "application/vnd.scmm-namespaceCollection+json;v=2"
+        }
     }
-  },
-  "response": {
-    "status": 200,
-    "body": "{\"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/\"}}, \"_embedded\": {\"namespaces\": [{\"namespace\": \"hitchhiker\", \"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/hitchhiker\"}, \"repositories\": {\"href\": \"/api/v2/repositories/hitchhiker\"}, \"permissions\": {\"href\": \"/api/v2/namespaces/hitchhiker/permissions\"}}}, {\"namespace\": \"guide\", \"_links\": {\"self\": {\"href\": \"/api/v2/namespaces/guide\"}, \"repositories\": {\"href\": \"/api/v2/repositories/guide\"}, \"permissions\": {\"href\": \"/api/v2/namespaces/guide/permissions\"}}}]}}",
-    "headers": {
-      "Content-Type": "application/vnd.scmm-namespaceCollection+json;v=2"
-    }
-  }
 }

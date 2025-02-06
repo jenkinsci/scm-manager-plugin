@@ -29,99 +29,99 @@ import static jenkins.scm.api.SCMEvent.Type.UPDATED;
 
 @Extension
 public class ScmManagerWebHook implements UnprotectedRootAction {
-  public static final String URL_NAME = "scm-manager-hook";
-  public static final String ENDPOINT = "notify";
+    public static final String URL_NAME = "scm-manager-hook";
+    public static final String ENDPOINT = "notify";
 
-  @Override
-  public String getIconFileName() {
-    return null;
-  }
-
-  @Override
-  public String getDisplayName() {
-    return null;
-  }
-
-  @Override
-  public String getUrlName() {
-    return URL_NAME;
-  }
-
-  @RequirePOST
-  public HttpResponse doNotify(StaplerRequest request) throws ServletException {
-    JSONObject form = request.getSubmittedForm();
-    if (!verifyParameters(form, "server")) {
-      return HttpResponses.errorWithoutStack(400, "requires values for 'server'");
+    @Override
+    public String getIconFileName() {
+        return null;
     }
-    if (isNavigatorEvent(form)) {
-      fireSourceEvent(form);
-    } else {
-      if (!verifyParameters(form, "namespace", "name", "type")) {
-        return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type'");
-      }
-      fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
-      fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
-      fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
-      fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
-      fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
-      fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(REMOVED, form, pullRequests));
-      fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
-      fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(UPDATED, form, pullRequests));
 
-      if (form.containsKey("createdOrModifiedBranches")) {
-        // the creation or the change of a branch can also lead to a new source for navigators
-        // when a Jenkinsfile has been added. Therefore we have to fire a source event, too
-        fireSourceEvent(form);
-      }
+    @Override
+    public String getDisplayName() {
+        return null;
     }
-    return HttpResponses.ok();
-  }
 
-  private boolean isNavigatorEvent(JSONObject form) {
-    return form.containsKey("eventTarget") && "NAVIGATOR".equals(form.getString("eventTarget"));
-  }
+    @Override
+    public String getUrlName() {
+        return URL_NAME;
+    }
 
-  private void fireSourceEvent(JSONObject form) {
-    ScmManagerSourceEvent.from(form).forEach(this::fireNow);
-  }
-
-  void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
-    if (form.containsKey(arrayName)) {
-      JSONArray array = form.optJSONArray(arrayName); // we have to use optJSONArray, because we can have null values
-      if (array != null && !array.isEmpty()) {
-        List<JSONObject> objects = new ArrayList<>();
-        for (int i = 0; i < array.size(); ++i) {
-          objects.add(array.getJSONObject(i));
+    @RequirePOST
+    public HttpResponse doNotify(StaplerRequest request) throws ServletException {
+        JSONObject form = request.getSubmittedForm();
+        if (!verifyParameters(form, "server")) {
+            return HttpResponses.errorWithoutStack(400, "requires values for 'server'");
         }
-        fireNow(eventProvider.apply(objects));
-      }
+        if (isNavigatorEvent(form)) {
+            fireSourceEvent(form);
+        } else {
+            if (!verifyParameters(form, "namespace", "name", "type")) {
+                return HttpResponses.errorWithoutStack(400, "requires values for 'namespace', 'name', 'type'");
+            }
+            fireIfPresent(form, "deletedBranches", branches -> new ScmManagerBranchEvent(REMOVED, form, branches));
+            fireIfPresent(form, "createdOrModifiedBranches", branches -> new ScmManagerBranchEvent(UPDATED, form, branches));
+            fireIfPresent(form, "deletedTags", tags -> new ScmManagerTagEvent(REMOVED, form, tags));
+            fireIfPresent(form, "createOrModifiedTags", tags -> new ScmManagerTagEvent(UPDATED, form, tags));
+            fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(REMOVED, form, pullRequests));
+            fireIfPresent(form, "deletedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(REMOVED, form, pullRequests));
+            fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerPullRequestEvent(UPDATED, form, pullRequests));
+            fireIfPresent(form, "createOrModifiedPullRequests", pullRequests -> new ScmManagerBranchEventFromPullRequest(UPDATED, form, pullRequests));
+
+            if (form.containsKey("createdOrModifiedBranches")) {
+                // the creation or the change of a branch can also lead to a new source for navigators
+                // when a Jenkinsfile has been added. Therefore we have to fire a source event, too
+                fireSourceEvent(form);
+            }
+        }
+        return HttpResponses.ok();
     }
-  }
 
-  @VisibleForTesting
-  void fireNow(ScmManagerHeadEvent event) {
-    SCMHeadEvent.fireNow(event);
-  }
-
-  @VisibleForTesting
-  void fireNow(ScmManagerSourceEvent event) {
-    SCMSourceEvent.fireNow(event);
-  }
-
-  private boolean verifyParameters(JSONObject form, String... keys) {
-    return Arrays.stream(keys).allMatch(form::containsKey);
-  }
-
-  @Extension
-  public static class CrumbExclusionImpl extends CrumbExclusion {
-    public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
-      String pathInfo = req.getPathInfo();
-      if (pathInfo != null && pathInfo.equals("/" + URL_NAME + "/" + ENDPOINT)) {
-        chain.doFilter(req, resp);
-        return true;
-      } else {
-        return false;
-      }
+    private boolean isNavigatorEvent(JSONObject form) {
+        return form.containsKey("eventTarget") && "NAVIGATOR".equals(form.getString("eventTarget"));
     }
-  }
+
+    private void fireSourceEvent(JSONObject form) {
+        ScmManagerSourceEvent.from(form).forEach(this::fireNow);
+    }
+
+    void fireIfPresent(JSONObject form, String arrayName, Function<Collection<JSONObject>, ScmManagerHeadEvent> eventProvider) {
+        if (form.containsKey(arrayName)) {
+            JSONArray array = form.optJSONArray(arrayName); // we have to use optJSONArray, because we can have null values
+            if (array != null && !array.isEmpty()) {
+                List<JSONObject> objects = new ArrayList<>();
+                for (int i = 0; i < array.size(); ++i) {
+                    objects.add(array.getJSONObject(i));
+                }
+                fireNow(eventProvider.apply(objects));
+            }
+        }
+    }
+
+    @VisibleForTesting
+    void fireNow(ScmManagerHeadEvent event) {
+        SCMHeadEvent.fireNow(event);
+    }
+
+    @VisibleForTesting
+    void fireNow(ScmManagerSourceEvent event) {
+        SCMSourceEvent.fireNow(event);
+    }
+
+    private boolean verifyParameters(JSONObject form, String... keys) {
+        return Arrays.stream(keys).allMatch(form::containsKey);
+    }
+
+    @Extension
+    public static class CrumbExclusionImpl extends CrumbExclusion {
+        public boolean process(HttpServletRequest req, HttpServletResponse resp, FilterChain chain) throws IOException, ServletException {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo != null && pathInfo.equals("/" + URL_NAME + "/" + ENDPOINT)) {
+                chain.doFilter(req, resp);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }

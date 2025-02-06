@@ -10,21 +10,21 @@ import java.util.concurrent.TimeoutException;
 
 public final class ExecutionExceptions {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ExecutionExceptions.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionExceptions.class);
 
-  private ExecutionExceptions() {
-  }
-
-  public static void log(ExecutionException e) {
-    Throwable cause = e.getCause();
-    if (cause instanceof JsonParseException || cause instanceof JsonMappingException) {
-      LOG.warn("could not parse response for request", e);
-    } else if (cause instanceof IllegalReturnStatusException) {
-      LOG.warn("got error in request: {}", e.getMessage());
-    } else if (cause instanceof TimeoutException) {
-      LOG.warn("request timed out: {}", e.getMessage());
-    } else {
-      LOG.warn("got unknown exception in request", e);
+    private ExecutionExceptions() {
     }
-  }
+
+    public static void log(ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof JsonParseException || cause instanceof JsonMappingException) {
+            LOG.warn("could not parse response for request", e);
+        } else if (cause instanceof IllegalReturnStatusException) {
+            LOG.warn("got error in request: {}", e.getMessage());
+        } else if (cause instanceof TimeoutException) {
+            LOG.warn("request timed out: {}", e.getMessage());
+        } else {
+            LOG.warn("got unknown exception in request", e);
+        }
+    }
 }

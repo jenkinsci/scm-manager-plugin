@@ -19,59 +19,59 @@ import java.util.concurrent.CompletableFuture;
 
 public class ScmManagerApiProbe extends SCMProbe {
 
-  private static final long serialVersionUID = -1L;
+    private static final long serialVersionUID = -1L;
 
-  private final transient ScmManagerApi api;
-  private final Repository repository;
-  private final SCMHead head;
+    private final transient ScmManagerApi api;
+    private final Repository repository;
+    private final SCMHead head;
 
-  private transient CompletableFuture<ScmManagerRevision> revision;
+    private transient CompletableFuture<ScmManagerRevision> revision;
 
-  private Date lastModified;
+    private Date lastModified;
 
-  public ScmManagerApiProbe(@NonNull ScmManagerApi api, @NonNull Repository repository, @NonNull SCMHead head, @CheckForNull ScmManagerRevision revision) {
-    this.api = api;
-    this.repository = repository;
-    this.head = head;
-    if (revision != null) {
-      this.revision = CompletableFuture.completedFuture(revision);
+    public ScmManagerApiProbe(@NonNull ScmManagerApi api, @NonNull Repository repository, @NonNull SCMHead head, @CheckForNull ScmManagerRevision revision) {
+        this.api = api;
+        this.repository = repository;
+        this.head = head;
+        if (revision != null) {
+            this.revision = CompletableFuture.completedFuture(revision);
+        }
     }
-  }
 
-  @VisibleForTesting
-  CompletableFuture<String> revision() {
-    if (revision == null) {
-      revision = new HeadResolver(api, repository).resolve(head);
+    @VisibleForTesting
+    CompletableFuture<String> revision() {
+        if (revision == null) {
+            revision = new HeadResolver(api, repository).resolve(head);
+        }
+        return revision.thenApply(ScmManagerRevision::getRevision);
     }
-    return revision.thenApply(ScmManagerRevision::getRevision);
-  }
 
-  @Override
-  public String name() {
-    return head.getName();
-  }
-
-  @Override
-  public long lastModified() {
-    if (lastModified != null) {
-      return lastModified.getTime();
+    @Override
+    public String name() {
+        return head.getName();
     }
-    CompletableFuture<Changeset> future = revision().thenCompose(r -> api.getChangeset(repository, r));
-    Changeset changeset = Futures.resolveUnchecked(future);
-    lastModified = changeset.getDate();
-    return lastModified.getTime();
-  }
 
-  @NonNull
-  @Override
-  public SCMProbeStat stat(@NonNull String path) throws IOException {
-    CompletableFuture<ScmManagerFile> future = revision().thenCompose(r -> api.getFileObject(repository, r, path));
-    ScmManagerFile file = Futures.resolveChecked(future);
-    return SCMProbeStat.fromType(file.getType());
-  }
+    @Override
+    public long lastModified() {
+        if (lastModified != null) {
+            return lastModified.getTime();
+        }
+        CompletableFuture<Changeset> future = revision().thenCompose(r -> api.getChangeset(repository, r));
+        Changeset changeset = Futures.resolveUnchecked(future);
+        lastModified = changeset.getDate();
+        return lastModified.getTime();
+    }
 
-  @Override
-  public void close() {
-    // we have nothing to close
-  }
+    @NonNull
+    @Override
+    public SCMProbeStat stat(@NonNull String path) throws IOException {
+        CompletableFuture<ScmManagerFile> future = revision().thenCompose(r -> api.getFileObject(repository, r, path));
+        ScmManagerFile file = Futures.resolveChecked(future);
+        return SCMProbeStat.fromType(file.getType());
+    }
+
+    @Override
+    public void close() {
+        // we have nothing to close
+    }
 }

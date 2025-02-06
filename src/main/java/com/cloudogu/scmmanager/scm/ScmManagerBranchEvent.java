@@ -11,15 +11,15 @@ import static java.util.stream.Collectors.toList;
 
 public class ScmManagerBranchEvent extends ScmManagerHeadEvent {
 
-  private Collection<String> names;
+    private Collection<String> names;
 
-  ScmManagerBranchEvent(Type type, JSONObject form, Collection<JSONObject> branches) {
-    super(type, form);
-    this.names = branches.stream().map(branch -> branch.getString("name")).collect(toList());
-  }
+    ScmManagerBranchEvent(Type type, JSONObject form, Collection<JSONObject> branches) {
+        super(type, form);
+        this.names = branches.stream().map(branch -> branch.getString("name")).collect(toList());
+    }
 
-  @Override
-  Collection<SCMHead> heads(CloneInformation cloneInformation) {
-    return names.stream().map(name -> new ScmManagerHead(cloneInformation, name)).collect(toList());
-  }
+    @Override
+    Collection<SCMHead> heads(CloneInformation cloneInformation) {
+        return names.stream().map(name -> new ScmManagerHead(cloneInformation, name)).collect(toList());
+    }
 }

@@ -9,12 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(MockitoJUnitRunner.class)
 public class ServerIdentificationTest {
 
-  @Test
-  public void shouldNotThrowNullPointerExceptionIfServerUrlIsNull() {
-    ServerIdentification serverIdentification = new ServerIdentification(null, null);
+    @Test
+    public void shouldNotThrowNullPointerExceptionIfServerUrlIsNull() {
+        ServerIdentification serverIdentification = new ServerIdentification(null, null);
 
-    boolean match = serverIdentification.matches(null);
+        boolean match = serverIdentification.matches(null);
 
-    assertThat(match).isFalse();
-  }
+        assertThat(match).isFalse();
+    }
 }

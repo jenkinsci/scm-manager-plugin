@@ -38,227 +38,227 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerWebHook_HeadEventTest {
 
-  @Mock
-  StaplerRequest request;
-  @Mock
-  StaplerResponse response;
+    @Mock
+    StaplerRequest request;
+    @Mock
+    StaplerResponse response;
 
-  JSONObject form = new JSONObject();
+    JSONObject form = new JSONObject();
 
-  @Spy
-  ScmManagerWebHook hook;
-  @Captor
-  ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
+    @Spy
+    ScmManagerWebHook hook;
+    @Captor
+    ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
 
-  @Before
-  public void prepareForm() throws ServletException {
-    form.put("namespace", "space");
-    form.put("name", "X");
-    form.put("type", "git");
-    form.put("server", "http://localhost/scm");
-    when(request.getSubmittedForm()).thenReturn(form);
-    doNothing().when(hook).fireNow(scmManagerHeadEventCaptor.capture());
-  }
+    @Before
+    public void prepareForm() throws ServletException {
+        form.put("namespace", "space");
+        form.put("name", "X");
+        form.put("type", "git");
+        form.put("server", "http://localhost/scm");
+        when(request.getSubmittedForm()).thenReturn(form);
+        doNothing().when(hook).fireNow(scmManagerHeadEventCaptor.capture());
+    }
 
-  @Test
-  public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
-    HttpResponse httpResponse = hook.doNotify(request);
+    @Test
+    public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+    }
 
-  @Test
-  public void shouldRejectRequestWithMissingNamespace() throws ServletException, IOException {
-    form.remove("namespace");
+    @Test
+    public void shouldRejectRequestWithMissingNamespace() throws ServletException, IOException {
+        form.remove("namespace");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).sendError(eq(400), anyString());
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).sendError(eq(400), anyString());
+    }
 
-  @Test
-  public void shouldRejectRequestWithMissingName() throws ServletException, IOException {
-    form.remove("name");
+    @Test
+    public void shouldRejectRequestWithMissingName() throws ServletException, IOException {
+        form.remove("name");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).sendError(eq(400), anyString());
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).sendError(eq(400), anyString());
+    }
 
-  @Test
-  public void shouldRejectRequestWithMissingType() throws ServletException, IOException {
-    form.remove("type");
+    @Test
+    public void shouldRejectRequestWithMissingType() throws ServletException, IOException {
+        form.remove("type");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).sendError(eq(400), anyString());
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).sendError(eq(400), anyString());
+    }
 
-  @Test
-  public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
-    form.remove("server");
+    @Test
+    public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
+        form.remove("server");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).sendError(eq(400), anyString());
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).sendError(eq(400), anyString());
+    }
 
-  @Test
-  public void shouldTriggerForDeletedBranches() throws ServletException, IOException {
-    JSONObject branch = new JSONObject();
-    branch.put("name", "feature");
-    form.put("deletedBranches", array(branch));
+    @Test
+    public void shouldTriggerForDeletedBranches() throws ServletException, IOException {
+        JSONObject branch = new JSONObject();
+        branch.put("name", "feature");
+        form.put("deletedBranches", array(branch));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
-      assertThat(heads).extracting("name").containsExactly("feature");
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook).fireNow(headEventThat(argument -> {
+            Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
+            assertThat(heads).hasSize(1);
+            assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
+            assertThat(heads).extracting("name").containsExactly("feature");
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerForCreatedOrModifiedBranches() throws ServletException, IOException {
-    JSONObject branch = new JSONObject();
-    branch.put("name", "develop");
-    form.put("createdOrModifiedBranches", array(branch));
+    @Test
+    public void shouldTriggerForCreatedOrModifiedBranches() throws ServletException, IOException {
+        JSONObject branch = new JSONObject();
+        branch.put("name", "develop");
+        form.put("createdOrModifiedBranches", array(branch));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
-      assertThat(heads).extracting("name").containsExactly("develop");
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook).fireNow(headEventThat(argument -> {
+            Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
+            assertThat(heads).hasSize(1);
+            assertThat(heads).first().isExactlyInstanceOf(ScmManagerHead.class);
+            assertThat(heads).extracting("name").containsExactly("develop");
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerSourceEventForCreatedOrModifiedBranches() throws ServletException, IOException {
-    JSONObject branch = new JSONObject();
-    branch.put("name", "develop");
-    form.put("createdOrModifiedBranches", array(branch));
+    @Test
+    public void shouldTriggerSourceEventForCreatedOrModifiedBranches() throws ServletException, IOException {
+        JSONObject branch = new JSONObject();
+        branch.put("name", "develop");
+        form.put("createdOrModifiedBranches", array(branch));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook, times(2)).fireNow(sourceEventThat(argument -> {
-      assertThat(argument.getPayload().isGlobal()).isFalse();
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook, times(2)).fireNow(sourceEventThat(argument -> {
+            assertThat(argument.getPayload().isGlobal()).isFalse();
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerForDeletedTags() throws ServletException, IOException {
-    JSONObject tag = new JSONObject();
-    tag.put("name", "0.0.1");
-    form.put("deletedTags", array(tag));
+    @Test
+    public void shouldTriggerForDeletedTags() throws ServletException, IOException {
+        JSONObject tag = new JSONObject();
+        tag.put("name", "0.0.1");
+        form.put("deletedTags", array(tag));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
-      assertThat(heads).extracting("name").containsExactly("0.0.1");
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook).fireNow(headEventThat(argument -> {
+            Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
+            assertThat(heads).hasSize(1);
+            assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
+            assertThat(heads).extracting("name").containsExactly("0.0.1");
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerForCreatedOrModifiedTags() throws ServletException, IOException {
-    JSONObject tag = new JSONObject();
-    tag.put("name", "1.0.0");
-    form.put("createOrModifiedTags", array(tag));
+    @Test
+    public void shouldTriggerForCreatedOrModifiedTags() throws ServletException, IOException {
+        JSONObject tag = new JSONObject();
+        tag.put("name", "1.0.0");
+        form.put("createOrModifiedTags", array(tag));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook).fireNow(headEventThat(argument -> {
-      Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
-      assertThat(heads).hasSize(1);
-      assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
-      assertThat(heads).extracting("name").containsExactly("1.0.0");
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook).fireNow(headEventThat(argument -> {
+            Collection<SCMHead> heads = argument.heads(new CloneInformation("git", ""));
+            assertThat(heads).hasSize(1);
+            assertThat(heads).first().isExactlyInstanceOf(ScmManagerTag.class);
+            assertThat(heads).extracting("name").containsExactly("1.0.0");
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerForDeletedPullRequests() throws ServletException, IOException {
-    JSONObject pullRequest = new JSONObject();
-    pullRequest.put("id", "42");
-    pullRequest.put("source", "feature");
-    pullRequest.put("target", "develop");
-    form.put("deletedPullRequests", array(pullRequest));
+    @Test
+    public void shouldTriggerForDeletedPullRequests() throws ServletException, IOException {
+        JSONObject pullRequest = new JSONObject();
+        pullRequest.put("id", "42");
+        pullRequest.put("source", "feature");
+        pullRequest.put("target", "develop");
+        form.put("deletedPullRequests", array(pullRequest));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
 
-    List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
-    assertThat(heads).hasSize(2);
+        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+        assertThat(heads).hasSize(2);
 
-    assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
-    assertThat(heads).first().extracting("id").isEqualTo("42");
-    assertThat(heads).first().extracting("source.name").isEqualTo("feature");
-    assertThat(heads).first().extracting("target.name").isEqualTo("develop");
+        assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
+        assertThat(heads).first().extracting("id").isEqualTo("42");
+        assertThat(heads).first().extracting("source.name").isEqualTo("feature");
+        assertThat(heads).first().extracting("target.name").isEqualTo("develop");
 
-    assertThat(heads).element(1).extracting("name").isEqualTo("feature");
-  }
+        assertThat(heads).element(1).extracting("name").isEqualTo("feature");
+    }
 
-  @Test
-  public void shouldTriggerForCreatedPullRequests() throws ServletException, IOException {
-    JSONObject pullRequest = new JSONObject();
-    pullRequest.put("id", "42");
-    pullRequest.put("source", "feature");
-    pullRequest.put("target", "develop");
-    form.put("createOrModifiedPullRequests", array(pullRequest));
+    @Test
+    public void shouldTriggerForCreatedPullRequests() throws ServletException, IOException {
+        JSONObject pullRequest = new JSONObject();
+        pullRequest.put("id", "42");
+        pullRequest.put("source", "feature");
+        pullRequest.put("target", "develop");
+        form.put("createOrModifiedPullRequests", array(pullRequest));
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
 
-    List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
-    assertThat(heads).hasSize(2);
+        List<SCMHead> heads = scmManagerHeadEventCaptor.getAllValues().stream().flatMap(event -> event.heads(new CloneInformation("git", "")).stream()).collect(Collectors.toList());
+        assertThat(heads).hasSize(2);
 
-    assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
-    assertThat(heads).first().extracting("id").isEqualTo("42");
-    assertThat(heads).first().extracting("source.name").isEqualTo("feature");
-    assertThat(heads).first().extracting("target.name").isEqualTo("develop");
+        assertThat(heads).first().isExactlyInstanceOf(ScmManagerPullRequestHead.class);
+        assertThat(heads).first().extracting("id").isEqualTo("42");
+        assertThat(heads).first().extracting("source.name").isEqualTo("feature");
+        assertThat(heads).first().extracting("target.name").isEqualTo("develop");
 
-    assertThat(heads).element(1).extracting("name").isEqualTo("feature");
-  }
+        assertThat(heads).element(1).extracting("name").isEqualTo("feature");
+    }
 
-  private ScmManagerHeadEvent headEventThat(ArgumentMatcher<ScmManagerHeadEvent> assertion) {
-    return argThat(assertion);
-  }
+    private ScmManagerHeadEvent headEventThat(ArgumentMatcher<ScmManagerHeadEvent> assertion) {
+        return argThat(assertion);
+    }
 
-  private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {
-    return argThat(assertion);
-  }
+    private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {
+        return argThat(assertion);
+    }
 
-  private JSONArray array(JSONObject branch) {
-    JSONArray array = new JSONArray();
-    array.add(branch);
-    return array;
-  }
+    private JSONArray array(JSONObject branch) {
+        JSONArray array = new JSONArray();
+        array.add(branch);
+        return array;
+    }
 }

@@ -1,18 +1,18 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials" xmlns:scm="/jenkins/scm/api/form">
-  <f:entry title="${%ServerUrl}" field="serverUrl">
-    <f:textbox/>
-  </f:entry>
-  <f:entry title="${%Credentials}" field="credentialsId">
-    <c:select/>
-  </f:entry>
-  <f:entry title="${%Repository}" field="repository">
-    <f:combobox/>
-  </f:entry>
-  <f:entry title="${%Include branches}" field="includes">
-    <f:textbox default="${descriptor.DEFAULT_INCLUDES}"/>
-  </f:entry>
-  <f:entry title="${%Exclude branches}" field="excludes">
-    <f:textbox default="${descriptor.DEFAULT_EXCLUDES}"/>
-  </f:entry>
+    <f:entry title="${%ServerUrl}" field="serverUrl">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%Credentials}" field="credentialsId">
+        <c:select/>
+    </f:entry>
+    <f:entry title="${%Repository}" field="repository">
+        <f:combobox/>
+    </f:entry>
+    <f:entry title="${%Include branches}" field="includes">
+        <f:textbox default="${descriptor.DEFAULT_INCLUDES}"/>
+    </f:entry>
+    <f:entry title="${%Exclude branches}" field="excludes">
+        <f:textbox default="${descriptor.DEFAULT_EXCLUDES}"/>
+    </f:entry>
 </j:jelly>

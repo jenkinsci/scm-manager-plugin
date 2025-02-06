@@ -13,29 +13,29 @@ import javax.annotation.Nonnull;
 
 public class TagDiscoveryTrait extends SCMSourceTrait {
 
-  @DataBoundConstructor
-  public TagDiscoveryTrait() {
-  }
-
-  @Override
-  protected void decorateContext(SCMSourceContext<?, ?> context) {
-    ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
-    scmContext.wantTags(true);
-  }
-
-  @Override
-  protected boolean includeCategory(@NonNull SCMHeadCategory category) {
-    return category instanceof TagSCMHeadCategory;
-  }
-
-  @Extension
-  @Discovery
-  public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
-
-    @Nonnull
-    @Override
-    public String getDisplayName() {
-      return "Tag Discovery";
+    @DataBoundConstructor
+    public TagDiscoveryTrait() {
     }
-  }
+
+    @Override
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
+        ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
+        scmContext.wantTags(true);
+    }
+
+    @Override
+    protected boolean includeCategory(@NonNull SCMHeadCategory category) {
+        return category instanceof TagSCMHeadCategory;
+    }
+
+    @Extension
+    @Discovery
+    public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "Tag Discovery";
+        }
+    }
 }

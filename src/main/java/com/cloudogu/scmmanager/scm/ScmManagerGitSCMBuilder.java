@@ -16,62 +16,62 @@ import java.util.Arrays;
 
 public class ScmManagerGitSCMBuilder extends GitSCMBuilder<ScmManagerGitSCMBuilder> {
 
-  public ScmManagerGitSCMBuilder(@NonNull LinkBuilder linkBuilder, @NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
-    super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
-    // clean up
-    withoutRefSpecs();
+    public ScmManagerGitSCMBuilder(@NonNull LinkBuilder linkBuilder, @NonNull ScmManagerHead head, SCMRevision revision, String credentialsId) {
+        super(head, revision, head.getCloneInformation().getUrl(), credentialsId);
+        // clean up
+        withoutRefSpecs();
 
-    withBrowser(new ScmManagerGitRepositoryBrowser(linkBuilder));
+        withBrowser(new ScmManagerGitRepositoryBrowser(linkBuilder));
 
-    if (head instanceof ScmManagerTag) {
-      withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
-    } else if (head instanceof ScmManagerPullRequestHead) {
-      ScmManagerPullRequestHead prHead = (ScmManagerPullRequestHead) head;
+        if (head instanceof ScmManagerTag) {
+            withRefSpec("+refs/tags/" + head.getName() + ":refs/tags/" + head.getName());
+        } else if (head instanceof ScmManagerPullRequestHead) {
+            ScmManagerPullRequestHead prHead = (ScmManagerPullRequestHead) head;
 
-      ScmManagerHead source = prHead.getSource();
-      ScmManagerHead target = prHead.getTarget();
+            ScmManagerHead source = prHead.getSource();
+            ScmManagerHead target = prHead.getTarget();
 
-      withRefSpecs(Arrays.asList(
-        "+refs/heads/" + source.getName() + ":refs/remotes/origin/" + source.getName(),
-        "+refs/heads/" + target.getName() + ":refs/remotes/origin/" + target.getName()
-      ));
+            withRefSpecs(Arrays.asList(
+                "+refs/heads/" + source.getName() + ":refs/remotes/origin/" + source.getName(),
+                "+refs/heads/" + target.getName() + ":refs/remotes/origin/" + target.getName()
+            ));
 
-      // revision is null on initial build
-      if (revision != null) {
-        ScmManagerPullRequestRevision prRevision = (ScmManagerPullRequestRevision) revision;
-        withRevision(prRevision.getSourceRevision());
-      }
-    } else {
-      withRefSpec("+refs/heads/" + head.getName() + ":refs/remotes/@{remote}/" + head.getName());
+            // revision is null on initial build
+            if (revision != null) {
+                ScmManagerPullRequestRevision prRevision = (ScmManagerPullRequestRevision) revision;
+                withRevision(prRevision.getSourceRevision());
+            }
+        } else {
+            withRefSpec("+refs/heads/" + head.getName() + ":refs/remotes/@{remote}/" + head.getName());
+        }
     }
-  }
 
-  @Override
-  public GitSCM build() {
-    SCMHead head = head();
-    if (head instanceof ScmManagerPullRequestHead) {
-      ScmManagerPullRequestHead pr = (ScmManagerPullRequestHead) head;
-      if (pr.getCheckoutStrategy() == ChangeRequestCheckoutStrategy.MERGE) {
-        configureMerge(pr);
-      } else {
+    @Override
+    public GitSCM build() {
+        SCMHead head = head();
+        if (head instanceof ScmManagerPullRequestHead) {
+            ScmManagerPullRequestHead pr = (ScmManagerPullRequestHead) head;
+            if (pr.getCheckoutStrategy() == ChangeRequestCheckoutStrategy.MERGE) {
+                configureMerge(pr);
+            } else {
+                withHead(pr.getTarget());
+            }
+        }
+
+        return super.build();
+    }
+
+    private void configureMerge(ScmManagerPullRequestHead pr) {
         withHead(pr.getTarget());
-      }
+        withExtension(new MergeWithGitSCMExtension("remotes/origin/" + pr.getSource().getName(), getBaseHash()));
     }
 
-    return super.build();
-  }
-
-  private void configureMerge(ScmManagerPullRequestHead pr) {
-    withHead(pr.getTarget());
-    withExtension(new MergeWithGitSCMExtension("remotes/origin/" + pr.getSource().getName(), getBaseHash()));
-  }
-
-  private String getBaseHash() {
-    SCMRevision revision = revision();
-    if (revision instanceof ScmManagerPullRequestRevision) {
-      SCMRevision rev = ((ScmManagerPullRequestRevision) revision).getSourceRevision();
-      return rev.toString();
+    private String getBaseHash() {
+        SCMRevision revision = revision();
+        if (revision instanceof ScmManagerPullRequestRevision) {
+            SCMRevision rev = ((ScmManagerPullRequestRevision) revision).getSourceRevision();
+            return rev.toString();
+        }
+        return null;
     }
-    return null;
-  }
 }

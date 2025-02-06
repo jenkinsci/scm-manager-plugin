@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell-with-date/tags/",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/vnd.scmm-tagCollection+json;v=2"
-      }
+    "request": {
+        "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell-with-date/tags/",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/vnd.scmm-tagCollection+json;v=2"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "{ \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/\" } }, \"_embedded\": { \"tags\": [ { \"name\": \"1.0.0\", \"date\": \"2020-06-27T09:46:38Z\", \"revision\": \"a41666c19c7c868410b80a963a50e8a2a9b0a958\", \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/1.0.0\" }, \"sources\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"changeset\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } } } ] } }",
+        "headers": {
+            "Content-Type": "application/vnd.scmm-tagCollection+json;v=2"
+        }
     }
-  },
-  "response": {
-    "status": 200,
-    "body": "{ \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/\" } }, \"_embedded\": { \"tags\": [ { \"name\": \"1.0.0\", \"date\": \"2020-06-27T09:46:38Z\", \"revision\": \"a41666c19c7c868410b80a963a50e8a2a9b0a958\", \"_links\": { \"self\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/tags/1.0.0\" }, \"sources\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958\" }, \"changeset\": { \"href\": \"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/a41666c19c7c868410b80a963a50e8a2a9b0a958\" } } } ] } }",
-    "headers": {
-      "Content-Type": "application/vnd.scmm-tagCollection+json;v=2"
-    }
-  }
 }

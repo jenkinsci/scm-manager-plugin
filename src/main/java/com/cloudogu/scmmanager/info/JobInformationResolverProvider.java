@@ -8,10 +8,10 @@ import java.util.Optional;
 
 public interface JobInformationResolverProvider extends ExtensionPoint {
 
-  Optional<JobInformationResolver> get();
+    Optional<JobInformationResolver> get();
 
-  static ExtensionList<JobInformationResolverProvider> all() {
-    return Jenkins.get().getExtensionList(JobInformationResolverProvider.class);
-  }
+    static ExtensionList<JobInformationResolverProvider> all() {
+        return Jenkins.get().getExtensionList(JobInformationResolverProvider.class);
+    }
 
 }

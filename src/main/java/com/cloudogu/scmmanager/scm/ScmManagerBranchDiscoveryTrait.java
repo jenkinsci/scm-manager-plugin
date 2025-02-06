@@ -12,29 +12,29 @@ import javax.annotation.Nonnull;
 
 public class ScmManagerBranchDiscoveryTrait extends SCMSourceTrait {
 
-  @DataBoundConstructor
-  public ScmManagerBranchDiscoveryTrait() {
-  }
-
-  @Override
-  protected void decorateContext(SCMSourceContext<?, ?> context) {
-    ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
-    scmContext.wantBranches(true);
-  }
-
-  @Override
-  protected boolean includeCategory(@NonNull SCMHeadCategory category) {
-    return category.isUncategorized();
-  }
-
-  @Extension
-  @Discovery
-  public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
-
-    @Nonnull
-    @Override
-    public String getDisplayName() {
-      return "SCM-Manager Branch Discovery";
+    @DataBoundConstructor
+    public ScmManagerBranchDiscoveryTrait() {
     }
-  }
+
+    @Override
+    protected void decorateContext(SCMSourceContext<?, ?> context) {
+        ScmManagerSourceContext scmContext = (ScmManagerSourceContext) context;
+        scmContext.wantBranches(true);
+    }
+
+    @Override
+    protected boolean includeCategory(@NonNull SCMHeadCategory category) {
+        return category.isUncategorized();
+    }
+
+    @Extension
+    @Discovery
+    public static class DescriptorImpl extends ScmManagerSourceTraitDescriptor {
+
+        @Nonnull
+        @Override
+        public String getDisplayName() {
+            return "SCM-Manager Branch Discovery";
+        }
+    }
 }

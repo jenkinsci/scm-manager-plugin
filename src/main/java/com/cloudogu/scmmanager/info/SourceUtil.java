@@ -14,49 +14,49 @@ import java.util.stream.Collectors;
 
 public final class SourceUtil {
 
-  private SourceUtil() {
-  }
-
-  static <T extends SCMSource> List<String> getSources(Run<?, ?> run, Class<T> sourceType, Function<T, String> urlExtractor) {
-    return extractSourceOwner(run)
-      .map(sourceOwner ->
-        sourceOwner
-          .getSCMSources()
-          .stream()
-          .filter(scmSource -> canExtract(scmSource, sourceType))
-          .map(scmSource -> extractAndNormalize(scmSource, sourceType, urlExtractor))
-          .collect(Collectors.toList())
-      ).orElse(Collections.emptyList());
-  }
-
-  static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
-    return extractSourceOwner(run.getParent());
-  }
-
-  private static Optional<SCMSourceOwner> extractSourceOwner(Object parent) {
-    if (parent instanceof SCMSourceOwner) {
-      return Optional.of((SCMSourceOwner) parent);
-    } else if (parent instanceof Item) {
-      return extractSourceOwner(((Item) parent).getParent());
-    } else {
-      return Optional.empty();
+    private SourceUtil() {
     }
-  }
 
-  private static boolean canExtract(SCMSource scmSource, Class<?> sourceType) {
-    return sourceType.isAssignableFrom(scmSource.getClass()) || scmSource instanceof ScmManagerSource;
-  }
-
-  private static <T> String extractAndNormalize(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
-    String url = extract(scmSource, sourceType, urlExtractor);
-    return URIs.normalize(url);
-  }
-
-  private static <T> String extract(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
-    if (scmSource instanceof ScmManagerSource) {
-      return ((ScmManagerSource) scmSource).getRemoteUrl();
-    } else {
-      return urlExtractor.apply(sourceType.cast(scmSource));
+    static <T extends SCMSource> List<String> getSources(Run<?, ?> run, Class<T> sourceType, Function<T, String> urlExtractor) {
+        return extractSourceOwner(run)
+            .map(sourceOwner ->
+                sourceOwner
+                    .getSCMSources()
+                    .stream()
+                    .filter(scmSource -> canExtract(scmSource, sourceType))
+                    .map(scmSource -> extractAndNormalize(scmSource, sourceType, urlExtractor))
+                    .collect(Collectors.toList())
+            ).orElse(Collections.emptyList());
     }
-  }
+
+    static Optional<SCMSourceOwner> extractSourceOwner(Run<?, ?> run) {
+        return extractSourceOwner(run.getParent());
+    }
+
+    private static Optional<SCMSourceOwner> extractSourceOwner(Object parent) {
+        if (parent instanceof SCMSourceOwner) {
+            return Optional.of((SCMSourceOwner) parent);
+        } else if (parent instanceof Item) {
+            return extractSourceOwner(((Item) parent).getParent());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private static boolean canExtract(SCMSource scmSource, Class<?> sourceType) {
+        return sourceType.isAssignableFrom(scmSource.getClass()) || scmSource instanceof ScmManagerSource;
+    }
+
+    private static <T> String extractAndNormalize(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
+        String url = extract(scmSource, sourceType, urlExtractor);
+        return URIs.normalize(url);
+    }
+
+    private static <T> String extract(SCMSource scmSource, Class<T> sourceType, Function<T, String> urlExtractor) {
+        if (scmSource instanceof ScmManagerSource) {
+            return ((ScmManagerSource) scmSource).getRemoteUrl();
+        } else {
+            return urlExtractor.apply(sourceType.cast(scmSource));
+        }
+    }
 }

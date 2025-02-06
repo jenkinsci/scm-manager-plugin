@@ -17,41 +17,41 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ScmV2SshNotifierProviderTest {
 
-  @InjectMocks
-  private ScmV2SshNotifierProvider provider;
+    @InjectMocks
+    private ScmV2SshNotifierProvider provider;
 
-  @Mock
-  private AuthenticationFactory authenticationFactory;
+    @Mock
+    private AuthenticationFactory authenticationFactory;
 
-  @Mock
-  private Run<?, ?> run;
+    @Mock
+    private Run<?, ?> run;
 
-  @Test
-  public void testGetWithoutMatchingNotifier() {
-    JobInformation information = createInformation("sample://one");
-    Optional<ScmV2SshNotifier> notifier = provider.get(run, information);
-    assertFalse(notifier.isPresent());
-  }
+    @Test
+    public void testGetWithoutMatchingNotifier() {
+        JobInformation information = createInformation("sample://one");
+        Optional<ScmV2SshNotifier> notifier = provider.get(run, information);
+        assertFalse(notifier.isPresent());
+    }
 
-  @Test
-  public void testCreateNotifier() {
-    applyAuthentication(new SSHAuthentication(null));
-    JobInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
-    ScmV2SshNotifier notifier = provider.get(run, information).get();
+    @Test
+    public void testCreateNotifier() {
+        applyAuthentication(new SSHAuthentication(null));
+        JobInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
+        ScmV2SshNotifier notifier = provider.get(run, information).get();
 
-    NamespaceAndName repository = notifier.getConnection().mustGetRepository();
-    assertEquals("ns", repository.getNamespace());
-    assertEquals("one", repository.getName());
-    assertEquals(notifier.getConnection().getConnection().getHostname(), "scm-manager.org");
-    assertEquals(notifier.getConnection().getConnection().getPort(), 8889);
-  }
+        NamespaceAndName repository = notifier.getConnection().mustGetRepository();
+        assertEquals("ns", repository.getNamespace());
+        assertEquals("one", repository.getName());
+        assertEquals(notifier.getConnection().getConnection().getHostname(), "scm-manager.org");
+        assertEquals(notifier.getConnection().getConnection().getPort(), 8889);
+    }
 
 
-  private JobInformation createInformation(String s) {
-    return new JobInformation("sample", s, "abc", "one", false);
-  }
+    private JobInformation createInformation(String s) {
+        return new JobInformation("sample", s, "abc", "one", false);
+    }
 
-  private void applyAuthentication(SSHAuthentication sshAuthentication) {
-    when(authenticationFactory.createSSH(run, "one")).thenReturn(sshAuthentication);
-  }
+    private void applyAuthentication(SSHAuthentication sshAuthentication) {
+        when(authenticationFactory.createSSH(run, "one")).thenReturn(sshAuthentication);
+    }
 }

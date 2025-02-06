@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/vnd.scmm-branch+json;v=2"
-      }
+    "request": {
+        "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/vnd.scmm-branch+json;v=2"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "{\"name\":\"feature/readme\",\"revision\":\"1d56c86c55170e71e16bc3bba82bb28e9328ce47\",\"defaultBranch\":false,\"_links\":{\"self\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme\"},\"history\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme/changesets/\"},\"changeset\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"},\"source\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"}}}",
+        "headers": {
+            "Content-Type": "application/vnd.scmm-branch+json;v=2"
+        }
     }
-  },
-  "response": {
-    "status": 200,
-    "body": "{\"name\":\"feature/readme\",\"revision\":\"1d56c86c55170e71e16bc3bba82bb28e9328ce47\",\"defaultBranch\":false,\"_links\":{\"self\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme\"},\"history\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/feature%2Freadme/changesets/\"},\"changeset\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/changesets/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"},\"source\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/6f6ea59a8c504f2c9f3cd93c02e289aa8b65e9c3\"}}}",
-    "headers": {
-      "Content-Type": "application/vnd.scmm-branch+json;v=2"
-    }
-  }
 }

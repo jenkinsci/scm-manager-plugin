@@ -11,16 +11,16 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class BearerHttpAuthenticationTest {
 
-  @Mock
-  private Request.Builder requestBuilder;
+    @Mock
+    private Request.Builder requestBuilder;
 
-  @Test
-  public void shouldAppendBearerHeader() {
-    BearerHttpAuthentication authentication = new BearerHttpAuthentication("abc42");
+    @Test
+    public void shouldAppendBearerHeader() {
+        BearerHttpAuthentication authentication = new BearerHttpAuthentication("abc42");
 
-    authentication.authenticate(requestBuilder);
+        authentication.authenticate(requestBuilder);
 
-    verify(requestBuilder).addHeader("Authorization", "Bearer abc42");
-  }
+        verify(requestBuilder).addHeader("Authorization", "Bearer abc42");
+    }
 
 }

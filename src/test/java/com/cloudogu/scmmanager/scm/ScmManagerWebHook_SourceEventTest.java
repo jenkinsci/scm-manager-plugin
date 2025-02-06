@@ -32,136 +32,136 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ScmManagerWebHook_SourceEventTest {
 
-  private static final String SCM_URL = "http://localhost/scm";
+    private static final String SCM_URL = "http://localhost/scm";
 
-  @Mock
-  StaplerRequest request;
-  @Mock
-  StaplerResponse response;
+    @Mock
+    StaplerRequest request;
+    @Mock
+    StaplerResponse response;
 
-  JSONObject form = new JSONObject();
+    JSONObject form = new JSONObject();
 
-  @Spy
-  ScmManagerWebHook hook;
-  @Captor
-  ArgumentCaptor<ScmManagerSourceEvent> sourceEventCaptor;
+    @Spy
+    ScmManagerWebHook hook;
+    @Captor
+    ArgumentCaptor<ScmManagerSourceEvent> sourceEventCaptor;
 
-  @Before
-  public void prepareForm() throws ServletException {
-    form.put("server", SCM_URL);
-    form.put("eventTarget", "NAVIGATOR");
-    when(request.getSubmittedForm()).thenReturn(form);
-    doNothing().when(hook).fireNow(sourceEventCaptor.capture());
-  }
+    @Before
+    public void prepareForm() throws ServletException {
+        form.put("server", SCM_URL);
+        form.put("eventTarget", "NAVIGATOR");
+        when(request.getSubmittedForm()).thenReturn(form);
+        doNothing().when(hook).fireNow(sourceEventCaptor.capture());
+    }
 
-  @Test
-  public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
-    HttpResponse httpResponse = hook.doNotify(request);
+    @Test
+    public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+    }
 
-  @Test
-  public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
-    form.remove("server");
+    @Test
+    public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
+        form.remove("server");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).sendError(eq(400), anyString());
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).sendError(eq(400), anyString());
+    }
 
-  @Test
-  public void shouldTriggerForGlobalEvent() throws ServletException, IOException {
-    HttpResponse httpResponse = hook.doNotify(request);
+    @Test
+    public void shouldTriggerForGlobalEvent() throws ServletException, IOException {
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
 
-    verify(hook).fireNow(sourceEventThat(argument -> {
-      assertThat(argument.getPayload().isGlobal()).isTrue();
-      assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
-      assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isTrue();
-      assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
-      assertThat(argument.isMatch(mockSource("http://localhost/scm", "X"))).isTrue();
-      assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isTrue();
-      assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
-      return true;
-    }));
-  }
+        verify(hook).fireNow(sourceEventThat(argument -> {
+            assertThat(argument.getPayload().isGlobal()).isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "X"))).isTrue();
+            assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isTrue();
+            assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldDetectEventWithSsh() throws ServletException, IOException {
-    JSONArray identifications = new JSONArray();
-    JSONObject identification = new JSONObject();
-    identification.put("name", "ssh");
-    identification.put("value", "hitchhiker.com:2222");
-    identifications.add(identification);
-    form.put("identifications", identifications);
+    @Test
+    public void shouldDetectEventWithSsh() throws ServletException, IOException {
+        JSONArray identifications = new JSONArray();
+        JSONObject identification = new JSONObject();
+        identification.put("name", "ssh");
+        identification.put("value", "hitchhiker.com:2222");
+        identifications.add(identification);
+        form.put("identifications", identifications);
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
-    verify(hook).fireNow(sourceEventThat(argument -> {
-      assertThat(argument.getPayload().isGlobal()).isTrue();
-      assertThat(argument.isMatch(mockNavigator("ssh://hitchhiker.com:2222/", "hog"))).isTrue();
-      assertThat(argument.isMatch(mockNavigator("http://hitchhiker.com/scm", "hog"))).isFalse();
-      return true;
-    }));
-  }
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
+        verify(hook).fireNow(sourceEventThat(argument -> {
+            assertThat(argument.getPayload().isGlobal()).isTrue();
+            assertThat(argument.isMatch(mockNavigator("ssh://hitchhiker.com:2222/", "hog"))).isTrue();
+            assertThat(argument.isMatch(mockNavigator("http://hitchhiker.com/scm", "hog"))).isFalse();
+            return true;
+        }));
+    }
 
-  @Test
-  public void shouldTriggerForRepositorySpecificEvent() throws ServletException, IOException {
-    form.put("namespace", "hog");
-    form.put("name", "drive");
+    @Test
+    public void shouldTriggerForRepositorySpecificEvent() throws ServletException, IOException {
+        form.put("namespace", "hog");
+        form.put("name", "drive");
 
-    HttpResponse httpResponse = hook.doNotify(request);
+        HttpResponse httpResponse = hook.doNotify(request);
 
-    httpResponse.generateResponse(request, response, null);
-    verify(response).setStatus(200);
+        httpResponse.generateResponse(request, response, null);
+        verify(response).setStatus(200);
 
-    assertThat(sourceEventCaptor.getAllValues()).hasSize(2);
-    assertThat(sourceEventCaptor.getAllValues().get(0)).matches(
-      argument -> {
-        assertThat(argument.getPayload().isGlobal()).isFalse();
-        assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
-        assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isFalse();
-        assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
-        assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
-        assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
-        assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
-        return true;
-      }
-    );
-    assertThat(sourceEventCaptor.getAllValues().get(1)).matches(
-      argument -> {
-        assertThat(argument.getPayload().isGlobal()).isFalse();
-        assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "--all--"))).isTrue();
-        assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
-        assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
-        assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
-        return true;
-      }
-    );
-  }
+        assertThat(sourceEventCaptor.getAllValues()).hasSize(2);
+        assertThat(sourceEventCaptor.getAllValues().get(0)).matches(
+            argument -> {
+                assertThat(argument.getPayload().isGlobal()).isFalse();
+                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "hog"))).isTrue();
+                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "guide"))).isFalse();
+                assertThat(argument.isMatch(mockNavigator("http://vogon/scm", "space"))).isFalse();
+                assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
+                assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
+                assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+                return true;
+            }
+        );
+        assertThat(sourceEventCaptor.getAllValues().get(1)).matches(
+            argument -> {
+                assertThat(argument.getPayload().isGlobal()).isFalse();
+                assertThat(argument.isMatch(mockNavigator("http://localhost/scm", "--all--"))).isTrue();
+                assertThat(argument.isMatch(mockSource("http://localhost/scm", "drive"))).isTrue();
+                assertThat(argument.isMatch(mockSource("http://localhost/scm", "earth"))).isFalse();
+                assertThat(argument.isMatch(mockSource("http://vogon/scm", "X"))).isFalse();
+                return true;
+            }
+        );
+    }
 
-  private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {
-    return argThat(assertion);
-  }
+    private ScmManagerSourceEvent sourceEventThat(ArgumentMatcher<ScmManagerSourceEvent> assertion) {
+        return argThat(assertion);
+    }
 
-  private SCMNavigator mockNavigator(String serverUrl, String namespace) {
-    ScmManagerNavigator mock = mock(ScmManagerNavigator.class);
-    when(mock.getServerUrl()).thenReturn(serverUrl);
-    when(mock.isForNamespace(namespace)).thenReturn(true);
-    return mock;
-  }
+    private SCMNavigator mockNavigator(String serverUrl, String namespace) {
+        ScmManagerNavigator mock = mock(ScmManagerNavigator.class);
+        when(mock.getServerUrl()).thenReturn(serverUrl);
+        when(mock.isForNamespace(namespace)).thenReturn(true);
+        return mock;
+    }
 
-  private SCMSource mockSource(String serverUrl, String name) {
-    ScmManagerSource mock = mock(ScmManagerSource.class);
-    when(mock.getServerUrl()).thenReturn(serverUrl);
-    when(mock.getName()).thenReturn(name);
-    return mock;
-  }
+    private SCMSource mockSource(String serverUrl, String name) {
+        ScmManagerSource mock = mock(ScmManagerSource.class);
+        when(mock.getServerUrl()).thenReturn(serverUrl);
+        when(mock.getName()).thenReturn(name);
+        return mock;
+    }
 }

@@ -17,37 +17,37 @@ import java.util.stream.Collectors;
 @Extension(optional = true)
 public class MercurialSCMBuilderProvider extends SCMBuilderProvider {
 
-  private static final String TYPE = "hg";
-  private static final String DISPLAY_NAME = "Mercurial";
+    private static final String TYPE = "hg";
+    private static final String DISPLAY_NAME = "Mercurial";
 
-  public MercurialSCMBuilderProvider() {
-    super(TYPE, DISPLAY_NAME);
-  }
+    public MercurialSCMBuilderProvider() {
+        super(TYPE, DISPLAY_NAME);
+    }
 
-  @Override
-  public Class<? extends SCM> getScmClass() {
-    return MercurialSCM.class;
-  }
+    @Override
+    public Class<? extends SCM> getScmClass() {
+        return MercurialSCM.class;
+    }
 
-  @Override
-  public boolean isSupported(@NonNull SCMHeadCategory category) {
-    return category.isUncategorized();
-  }
+    @Override
+    public boolean isSupported(@NonNull SCMHeadCategory category) {
+        return category.isUncategorized();
+    }
 
-  @Override
-  public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
-    return SCMSourceTrait._for(null, null, ScmManagerHgSCMBuilder.class)
-      .stream()
-      .filter(desc -> !(desc instanceof MercurialBrowserSCMSourceTrait.DescriptorImpl))
-      .collect(Collectors.toList());
-  }
+    @Override
+    public Collection<SCMSourceTraitDescriptor> getTraitDescriptors(SCMSourceDescriptor sourceDescriptor) {
+        return SCMSourceTrait._for(null, null, ScmManagerHgSCMBuilder.class)
+            .stream()
+            .filter(desc -> !(desc instanceof MercurialBrowserSCMSourceTrait.DescriptorImpl))
+            .collect(Collectors.toList());
+    }
 
-  @Override
-  protected SCMBuilder<?, ?> create(Context context) {
-    return new ScmManagerHgSCMBuilder(
-      context.getHead(),
-      context.getRevision(),
-      context.getCredentialsId()
-    );
-  }
+    @Override
+    protected SCMBuilder<?, ?> create(Context context) {
+        return new ScmManagerHgSCMBuilder(
+            context.getHead(),
+            context.getRevision(),
+            context.getCredentialsId()
+        );
+    }
 }

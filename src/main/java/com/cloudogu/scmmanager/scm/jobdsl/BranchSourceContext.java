@@ -5,29 +5,29 @@ import javaposse.jobdsl.dsl.Preconditions;
 
 public class BranchSourceContext extends ScmManagerContext {
 
-  private String id;
-  private String repository;
+    private String id;
+    private String repository;
 
-  public String getId() {
-    return id;
-  }
+    public String getId() {
+        return id;
+    }
 
-  public void id(String id) {
-    this.id = id;
-  }
+    public void id(String id) {
+        this.id = id;
+    }
 
-  public String getRepository() {
-    return repository;
-  }
+    public String getRepository() {
+        return repository;
+    }
 
-  public void repository(String repository) {
-    this.repository = repository;
-  }
+    public void repository(String repository) {
+        this.repository = repository;
+    }
 
-  public void validate() {
-    super.validate();
-    Preconditions.checkNotNullOrEmpty(id, "id is required");
-    Preconditions.checkNotNullOrEmpty(repository, "repository is required");
-  }
+    public void validate() {
+        super.validate();
+        Preconditions.checkNotNullOrEmpty(id, "id is required");
+        Preconditions.checkNotNullOrEmpty(repository, "repository is required");
+    }
 
 }

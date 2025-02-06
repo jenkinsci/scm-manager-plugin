@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/notFound/api/v2",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/json"
-      }
+    "request": {
+        "url": "/notFound/api/v2",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/json"
+            }
+        }
+    },
+    "response": {
+        "status": 404,
+        "body": "<html><body></body></html>",
+        "headers": {
+            "Content-Type": "application/json"
+        }
     }
-  },
-  "response": {
-    "status": 404,
-    "body": "<html><body></body></html>",
-    "headers": {
-      "Content-Type": "application/json"
-    }
-  }
 }

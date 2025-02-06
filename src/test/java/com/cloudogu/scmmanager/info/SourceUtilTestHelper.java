@@ -12,23 +12,23 @@ import static org.mockito.Mockito.mock;
 
 final class SourceUtilTestHelper {
 
-  private SourceUtilTestHelper() {
-  }
+    private SourceUtilTestHelper() {
+    }
 
-  static void mockSource(Run<TestJob, TestRun> run, String... urls) {
-    TestJob job = mock(TestJob.class);
-    TestSCMSourceOwner sourceOwner = mock(TestSCMSourceOwner.class);
+    static void mockSource(Run<TestJob, TestRun> run, String... urls) {
+        TestJob job = mock(TestJob.class);
+        TestSCMSourceOwner sourceOwner = mock(TestSCMSourceOwner.class);
 
-    doReturn(job).when(run).getParent();
-    doReturn(sourceOwner).when(job).getParent();
+        doReturn(job).when(run).getParent();
+        doReturn(sourceOwner).when(job).getParent();
 
-    List<ScmManagerSource> sources = Arrays.stream(urls).map(SourceUtilTestHelper::createSource).collect(Collectors.toList());
-    doReturn(sources).when(sourceOwner).getSCMSources();
-  }
+        List<ScmManagerSource> sources = Arrays.stream(urls).map(SourceUtilTestHelper::createSource).collect(Collectors.toList());
+        doReturn(sources).when(sourceOwner).getSCMSources();
+    }
 
-  private static ScmManagerSource createSource(String url) {
-    ScmManagerSource scmSource = mock(ScmManagerSource.class);
-    doReturn(url).when(scmSource).getRemoteUrl();
-    return scmSource;
-  }
+    private static ScmManagerSource createSource(String url) {
+        ScmManagerSource scmSource = mock(ScmManagerSource.class);
+        doReturn(url).when(scmSource).getRemoteUrl();
+        return scmSource;
+    }
 }

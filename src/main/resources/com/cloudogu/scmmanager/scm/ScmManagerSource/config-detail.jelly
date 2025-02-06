@@ -1,15 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials" xmlns:scm="/jenkins/scm/api/form">
-  <f:entry title="${%ServerUrl}" field="serverUrl">
-    <f:textbox/>
-  </f:entry>
-  <f:entry title="${%Credentials}" field="credentialsId">
-    <c:select/>
-  </f:entry>
-  <f:entry title="${%Repository}" field="repository">
-    <f:combobox/>
-  </f:entry>
-  <f:entry title="${%Behaviours}">
-    <scm:traits field="traits"/>
-  </f:entry>
+    <f:entry title="${%ServerUrl}" field="serverUrl">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%Credentials}" field="credentialsId">
+        <c:select/>
+    </f:entry>
+    <f:entry title="${%Repository}" field="repository">
+        <f:combobox/>
+    </f:entry>
+    <f:entry title="${%Behaviours}">
+        <scm:traits field="traits"/>
+    </f:entry>
 </j:jelly>

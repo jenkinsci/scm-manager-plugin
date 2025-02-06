@@ -19,87 +19,87 @@ import java.util.Objects;
 
 abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.TriggerPayload> {
 
-  private final String namespace;
-  private final String name;
-  private final String type;
-  private final ServerIdentification identification;
-
-  ScmManagerHeadEvent(Type changeType, JSONObject form) {
-    this(changeType, form.getString("namespace"),
-      form.getString("name"),
-      form.getString("type"),
-      new ServerIdentification(form));
-  }
-
-  ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, ServerIdentification identification) {
-    super(changeType, new TriggerPayload(namespace, name), SCMEvent.originOf(Stapler.getCurrentRequest()));
-    this.namespace = namespace;
-    this.name = name;
-    this.type = type;
-    this.identification = identification;
-  }
-
-  @Override
-  public boolean isMatch(@NonNull SCMNavigator navigator) {
-    return false;
-  }
-
-  @NonNull
-  @Override
-  public String getSourceName() {
-    return "dummy";
-  }
-
-  @NonNull
-  @Override
-  public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
-    ScmManagerSource scmManagerSource = (ScmManagerSource) source;
-    CloneInformation cloneInformation = new CloneInformation(scmManagerSource.getType(), scmManagerSource.getServerUrl());
-    Collection<SCMHead> heads = heads(cloneInformation);
-    HashMap<SCMHead, SCMRevision> map = new HashMap<>();
-    heads.forEach(head -> map.put(head, null));
-    return map;
-  }
-
-  abstract Collection<SCMHead> heads(CloneInformation cloneInformation);
-
-  @Override
-  public boolean isMatch(@NonNull SCMSource source) {
-    // TODO SVN?
-    return source instanceof ScmManagerSource && isMatch((ScmManagerSource) source);
-  }
-
-  private boolean isMatch(@NonNull ScmManagerSource source) {
-    return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
-      && identification.matches(source.getServerUrl());
-  }
-
-  @Override
-  public boolean isMatch(@NonNull SCM scm) {
-    return false;
-  }
-
-  public static class TriggerPayload {
     private final String namespace;
     private final String name;
+    private final String type;
+    private final ServerIdentification identification;
 
-    public TriggerPayload(String namespace, String name) {
-      this.namespace = namespace;
-      this.name = name;
+    ScmManagerHeadEvent(Type changeType, JSONObject form) {
+        this(changeType, form.getString("namespace"),
+            form.getString("name"),
+            form.getString("type"),
+            new ServerIdentification(form));
+    }
+
+    ScmManagerHeadEvent(Type changeType, String namespace, String name, String type, ServerIdentification identification) {
+        super(changeType, new TriggerPayload(namespace, name), SCMEvent.originOf(Stapler.getCurrentRequest()));
+        this.namespace = namespace;
+        this.name = name;
+        this.type = type;
+        this.identification = identification;
     }
 
     @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      TriggerPayload that = (TriggerPayload) o;
-      return Objects.equals(namespace, that.namespace) &&
-        Objects.equals(name, that.name);
+    public boolean isMatch(@NonNull SCMNavigator navigator) {
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public String getSourceName() {
+        return "dummy";
+    }
+
+    @NonNull
+    @Override
+    public Map<SCMHead, SCMRevision> heads(@NonNull SCMSource source) {
+        ScmManagerSource scmManagerSource = (ScmManagerSource) source;
+        CloneInformation cloneInformation = new CloneInformation(scmManagerSource.getType(), scmManagerSource.getServerUrl());
+        Collection<SCMHead> heads = heads(cloneInformation);
+        HashMap<SCMHead, SCMRevision> map = new HashMap<>();
+        heads.forEach(head -> map.put(head, null));
+        return map;
+    }
+
+    abstract Collection<SCMHead> heads(CloneInformation cloneInformation);
+
+    @Override
+    public boolean isMatch(@NonNull SCMSource source) {
+        // TODO SVN?
+        return source instanceof ScmManagerSource && isMatch((ScmManagerSource) source);
+    }
+
+    private boolean isMatch(@NonNull ScmManagerSource source) {
+        return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
+            && identification.matches(source.getServerUrl());
     }
 
     @Override
-    public int hashCode() {
-      return Objects.hash(namespace, name);
+    public boolean isMatch(@NonNull SCM scm) {
+        return false;
     }
-  }
+
+    public static class TriggerPayload {
+        private final String namespace;
+        private final String name;
+
+        public TriggerPayload(String namespace, String name) {
+            this.namespace = namespace;
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TriggerPayload that = (TriggerPayload) o;
+            return Objects.equals(namespace, that.namespace) &&
+                Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(namespace, name);
+        }
+    }
 }

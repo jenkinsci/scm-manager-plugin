@@ -11,15 +11,15 @@ import javax.inject.Inject;
 @Extension
 public class CompletionListener extends RunListener<Run<?, ?>> {
 
-  private NotificationService notificationService;
+    private NotificationService notificationService;
 
-  @Inject
-  public void setNotificationService(NotificationService notificationService) {
-    this.notificationService = notificationService;
-  }
+    @Inject
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
-  @Override
-  public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
-    notificationService.notify(run, run.getResult());
-  }
+    @Override
+    public void onCompleted(Run<?, ?> run, @Nonnull TaskListener listener) {
+        notificationService.notify(run, run.getResult());
+    }
 }

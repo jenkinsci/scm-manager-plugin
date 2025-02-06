@@ -11,10 +11,11 @@ import java.util.Optional;
 
 public interface NotifierProvider extends ExtensionPoint {
 
-  @SuppressWarnings("squid:S1452") // we implement this with a concrete Notifier type to simplify unit tests (no casting)
-  Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) throws IOException;
+    @SuppressWarnings("squid:S1452")
+        // we implement this with a concrete Notifier type to simplify unit tests (no casting)
+    Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) throws IOException;
 
-  static ExtensionList<NotifierProvider> all() {
-    return Jenkins.get().getExtensionList(NotifierProvider.class);
-  }
+    static ExtensionList<NotifierProvider> all() {
+        return Jenkins.get().getExtensionList(NotifierProvider.class);
+    }
 }
