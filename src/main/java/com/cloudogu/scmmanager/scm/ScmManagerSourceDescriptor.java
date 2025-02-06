@@ -46,18 +46,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return validateCredentialsId(context, serverUrl, value);
     }
 
-    //  @SuppressWarnings("unused") // used By stapler
-    //  public FormValidation doCheckRepository(@QueryParameter String value) throws InterruptedException,
-    // ExecutionException {
-    //    if (fillRepositoryItemsResult == null) {
-    //      LOG.debug("No repository result to check");
-    //      return FormValidation.ok();
-    //    } else if (!Objects.equals(value, "") && !fillRepositoryItemsResult.model.contains(value)) {
-    //      return FormValidation.error("This repository does not exist.");
-    //    }
-    //    return FormValidation.ok();
-    //  }
-
     @VisibleForTesting
     FormValidation validateCredentialsId(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
@@ -71,7 +59,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @QueryParameter String credentialsId,
             @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-        System.out.println("doCheckRepository: " + value);
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
             return FormValidation.ok();
         }
