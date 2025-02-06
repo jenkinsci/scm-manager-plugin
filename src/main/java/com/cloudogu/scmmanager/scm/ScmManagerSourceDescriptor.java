@@ -63,7 +63,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             return FormValidation.ok();
         }
         String[] namespaceNameParts = value.split("/");
-        if (namespaceNameParts.length != 2) {
+        if (namespaceNameParts.length < 2 || namespaceNameParts.length > 3) {
             return FormValidation.error(
                     "Please enter a valid repository in the form namespace/name or select one from the dropdown.");
         }
