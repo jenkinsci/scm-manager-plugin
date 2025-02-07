@@ -3,6 +3,8 @@ package com.cloudogu.scmmanager.scm.jobdsl;
 import static com.cloudogu.scmmanager.scm.jobdsl.JobDSL.createApi;
 import static com.cloudogu.scmmanager.scm.jobdsl.JobDSL.resolve;
 
+import com.cloudogu.scmmanager.scm.RepositoryRepresentationUtil;
+import com.cloudogu.scmmanager.scm.RepositoryRepresentationUtil.RepositoryRepresentation;
 import com.cloudogu.scmmanager.scm.ScmManagerSource;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnSource;
 import com.cloudogu.scmmanager.scm.api.Repository;
@@ -78,6 +80,6 @@ public class BranchSourcesExtension extends ContextExtensionPoint {
         ScmManagerApi api = createApi(apiFactory, context);
         CompletableFuture<Repository> future = api.getRepository(namespace, name);
         String type = future.get().getType();
-        return String.format("%s/%s/%s", namespace, name, type);
+        return RepositoryRepresentationUtil.format(new RepositoryRepresentation(namespace, name, type));
     }
 }

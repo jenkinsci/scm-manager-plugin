@@ -1,5 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.cloudogu.scmmanager.scm.RepositoryRepresentationUtil.RepositoryRepresentation;
 import com.cloudogu.scmmanager.scm.api.CloneInformation;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.scm.SCM;
@@ -73,7 +74,7 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
     }
 
     private boolean isMatch(@NonNull ScmManagerSource source) {
-        return source.getRepository().equals(String.format("%s/%s/%s", namespace, name, type))
+        return RepositoryRepresentationUtil.parse(source.getRepository()).equals(new RepositoryRepresentation(namespace, name, type))
                 && identification.matches(source.getServerUrl());
     }
 
