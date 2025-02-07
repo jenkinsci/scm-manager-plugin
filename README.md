@@ -54,8 +54,8 @@ source" dropdown in the section "Branch Sources".
 
 ![How to select a multibranch pipeline source](docs/assets/config-multibranch-pipeline-source.png)
 
-In the new configuration, enter the base URL of your SCM-Manager instance and select according credentials. Depending on
-the version of the SCM-Manager instance, this plugin will then load a list of all available repositories you can select from.
+In the new configuration, enter the base URL of your SCM-Manager instance and select according credentials. 
+This plugin will then load a list of all available repositories you can select from.
 You may also copy and paste a repository into the field.
 
 ![Example of a config for a multibranch pipeline](docs/assets/config-multibranch-pipeline.png)
@@ -198,7 +198,7 @@ plugin. Take following steps into account:
 * On mvnrepository - io.jenkins.tools.bom, pick the LTS version you want to update this plugin to.
 You can see all available LTS BOMs in [this list on mvnrepository.com](https://mvnrepository.com/artifact/io.jenkins.tools.bom).
   * Enter the values into the io.jenkins.tools.bom:bom-{version} dependency.
-* Manually update the versions listed in the temporary section. You can pick the version numbers from the respective artifact list of
+* Manually update the versions listed in the properties section. You can pick the version numbers from the respective artifact list of
 the BOM version on mvnrepository.com.
 * Also consider to update the version of org.jenkins-ci.plugins:plugin (the parent).
 Check out the latest version [here](https://mvnrepository.com/artifact/org.jenkins-ci.plugins/plugin).

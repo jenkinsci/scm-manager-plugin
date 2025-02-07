@@ -25,6 +25,17 @@ import org.acegisecurity.Authentication;
 
 class ConnectionConfiguration {
 
+    static final String SERVER_URL_IS_REQUIRED = "Server URL is required.";
+    static final String CREDENTIALS_ARE_REQUIRED = "Credentials are required.";
+    static final String CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE = "The credentials are not valid for this connection type.";
+    static final String LOGIN_FAILED = "Login has failed.";
+    static final String ILLEGAL_URL_FORMAT = "Illegal URL format.";
+    static final String ONLY_HTTPS_OR_SSH_URLS_ACCEPTED = "Only HTTP, HTTPS or SSH URLs are accepted.";
+    static final String API_HAS_NO_LOGIN_LINK = "The API of this URL has no login link.";
+    static final String MESSAGE = "This does not seem to be a valid SCM-Manager URL, or this is not the root URL of SCM-Manager. "
+        + "Maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.";
+    static final String CREDENTIALS_NEEDED = "Credentials needed.";
+
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
         if (context == null || !context.hasPermission(Item.CONFIGURE)) {
             return new StandardUsernameListBoxModel().includeCurrentValue(value);
@@ -56,23 +67,23 @@ class ConnectionConfiguration {
             ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value)
             throws InterruptedException, ExecutionException {
         if (checkServerUrl(apiFactory, serverUrl).kind != FormValidation.Kind.OK) {
-            return FormValidation.error("server url is required");
+            return FormValidation.error(SERVER_URL_IS_REQUIRED);
         }
         if (Strings.isNullOrEmpty(value)) {
-            return FormValidation.error("credentials are required");
+            return FormValidation.error(CREDENTIALS_ARE_REQUIRED);
         }
         ScmManagerApi client;
         try {
             client = apiFactory.create(context, serverUrl, value);
         } catch (CredentialsUnavailableException e) {
-            return FormValidation.error("credentials not valid for connection type");
+            return FormValidation.error(CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE);
         }
         CompletableFuture<HalRepresentation> future = client.index();
         return future.thenApply(index -> {
                     if (index.getLinks().getLinkBy("me").isPresent()) {
                         return FormValidation.ok();
                     }
-                    return FormValidation.error("login failed");
+                    return FormValidation.error(LOGIN_FAILED);
                 })
                 .exceptionally(e -> FormValidation.error(e.getMessage()))
                 .get();
@@ -82,19 +93,19 @@ class ConnectionConfiguration {
             throws InterruptedException, ExecutionException {
         String trimmedValue = value == null ? null : value.trim();
         if (Strings.isNullOrEmpty(trimmedValue)) {
-            return FormValidation.error("server url is required");
+            return FormValidation.error(SERVER_URL_IS_REQUIRED);
         }
         try {
             URI uri = new URI(value);
             if (!uri.isAbsolute()) {
-                return FormValidation.error("illegal URL format");
+                return FormValidation.error(ILLEGAL_URL_FORMAT);
             }
             String scheme = uri.getScheme();
             if (!scheme.startsWith("http") && !scheme.startsWith("ssh")) {
-                return FormValidation.error("Only http, https or ssh urls accepted");
+                return FormValidation.error(ONLY_HTTPS_OR_SSH_URLS_ACCEPTED);
             }
         } catch (URISyntaxException e) {
-            return FormValidation.error("illegal URL format");
+            return FormValidation.error(ILLEGAL_URL_FORMAT);
         }
 
         // only http allows anonymous check, so we skip the check for all other supported schemes
@@ -108,16 +119,15 @@ class ConnectionConfiguration {
                     if (index.getLinks().getLinkBy("login").isPresent()) {
                         return FormValidation.ok();
                     }
-                    return FormValidation.error("api has no login link");
+                    return FormValidation.error(API_HAS_NO_LOGIN_LINK);
                 })
                 .exceptionally(e -> {
                     if (e.getCause() instanceof IllegalReturnStatusException
                             && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
-                        return FormValidation.ok("Credentials needed");
+                        return FormValidation.ok(CREDENTIALS_NEEDED);
                     } else if (e.getCause() instanceof JsonParseException) {
                         return FormValidation.error(
-                                "This does not seem to be a valid SCM-Manager url, or this is not the root URL of SCM-Manager "
-                                        + "(maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.");
+                                MESSAGE);
                     }
                     return FormValidation.error(e.getMessage());
                 })
