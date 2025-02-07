@@ -13,7 +13,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.verb.POST;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -52,7 +52,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
-    @POST
+    @RequirePOST
+    @SuppressWarnings("lgtm[jenkins/no-permission-check]")
     public FormValidation doCheckRepository(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
@@ -84,8 +85,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
 
-    @POST
-    @SuppressWarnings("unused") // used By stapler
+    @RequirePOST
+    @SuppressWarnings({"unused", "lgtm[jenkins/no-permission-check]", "lgtm[jenkins/credentials-fill-without-permission-check]"}) // used By stapler
     public ComboBoxModel doFillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
