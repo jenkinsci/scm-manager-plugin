@@ -27,13 +27,15 @@ class ConnectionConfiguration {
 
     static final String SERVER_URL_IS_REQUIRED = "Server URL is required.";
     static final String CREDENTIALS_ARE_REQUIRED = "Credentials are required.";
-    static final String CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE = "The credentials are not valid for this connection type.";
+    static final String CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE =
+            "The credentials are not valid for this connection type.";
     static final String LOGIN_FAILED = "Login has failed.";
     static final String ILLEGAL_URL_FORMAT = "Illegal URL format.";
     static final String ONLY_HTTPS_OR_SSH_URLS_ACCEPTED = "Only HTTP, HTTPS or SSH URLs are accepted.";
     static final String API_HAS_NO_LOGIN_LINK = "The API of this URL has no login link.";
-    static final String MESSAGE = "This does not seem to be a valid SCM-Manager URL, or this is not the root URL of SCM-Manager. "
-        + "Maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.";
+    static final String MESSAGE =
+            "This does not seem to be a valid SCM-Manager URL, or this is not the root URL of SCM-Manager. "
+                    + "Maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.";
     static final String CREDENTIALS_NEEDED = "Credentials needed.";
 
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
@@ -126,8 +128,7 @@ class ConnectionConfiguration {
                             && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 302) {
                         return FormValidation.ok(CREDENTIALS_NEEDED);
                     } else if (e.getCause() instanceof JsonParseException) {
-                        return FormValidation.error(
-                                MESSAGE);
+                        return FormValidation.error(MESSAGE);
                     }
                     return FormValidation.error(e.getMessage());
                 })

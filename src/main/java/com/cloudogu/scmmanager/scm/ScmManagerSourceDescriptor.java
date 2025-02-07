@@ -1,5 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
+import static java.util.Collections.emptyList;
+
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -9,17 +11,14 @@ import com.google.common.base.Strings;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
-
-import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
@@ -88,7 +87,11 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     }
 
     @RequirePOST
-    @SuppressWarnings({"unused", "lgtm[jenkins/no-permission-check]", "lgtm[jenkins/credentials-fill-without-permission-check]"}) // used By stapler
+    @SuppressWarnings({
+        "unused",
+        "lgtm[jenkins/no-permission-check]",
+        "lgtm[jenkins/credentials-fill-without-permission-check]"
+    }) // used By stapler
     public ComboBoxModel doFillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
