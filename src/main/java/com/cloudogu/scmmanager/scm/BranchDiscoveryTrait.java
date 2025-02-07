@@ -10,11 +10,10 @@ import jenkins.scm.impl.trait.Discovery;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
+ * @see ScmManagerBranchDiscoveryTrait
  * @deprecated This class has been replaced with the {@link ScmManagerBranchDiscoveryTrait}. The
  * name of this class has not been unique and this led to issues in the automated generation of
  * build jobs.
- *
- * @see ScmManagerBranchDiscoveryTrait
  */
 @Deprecated
 public class BranchDiscoveryTrait extends SCMSourceTrait {

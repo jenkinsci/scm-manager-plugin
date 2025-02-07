@@ -2,11 +2,13 @@ package com.cloudogu.scmmanager.scm;
 
 import static java.util.Collections.emptyList;
 
+import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.util.List;
@@ -16,11 +18,14 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     protected final ScmManagerApiFactory apiFactory;
     private final Predicate<Repository> repositoryPredicate;
+    private final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
 
     @VisibleForTesting
     ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
@@ -48,6 +53,31 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
+    public FormValidation doCheckRepository(
+            @AncestorInPath SCMSourceOwner context,
+            @QueryParameter String serverUrl,
+            @QueryParameter String credentialsId,
+            @QueryParameter String value)
+            throws InterruptedException {
+        if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
+            return FormValidation.ok();
+        }
+        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
+                RepositoryRepresentationUtil.parse(value);
+        try {
+            ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
+            api.getRepository(repositoryRepresentation.namespace(), repositoryRepresentation.name())
+                    .get();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IllegalReturnStatusException
+                    && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 404) {
+                return FormValidation.error("This repository does not exist.");
+            }
+            return FormValidation.error("Error checking repository: " + e.getMessage());
+        }
+        return FormValidation.ok();
+    }
+
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillCredentialsIdItems(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
@@ -55,7 +85,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     }
 
     @SuppressWarnings("unused") // used By stapler
-    public ListBoxModel doFillRepositoryItems(
+    public ComboBoxModel doFillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
@@ -64,13 +94,13 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return fillRepositoryItems(context, serverUrl, credentialsId, value);
     }
 
-    public ListBoxModel fillRepositoryItems(
+    public ComboBoxModel fillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
             @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-        ListBoxModel model = new ListBoxModel();
+        ComboBoxModel model = new ComboBoxModel();
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
             if (!Strings.isNullOrEmpty(value)) {
                 model.add(value);
@@ -87,7 +117,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
                 api.getRepositories().exceptionally(e -> emptyList()).get();
         for (Repository repository : repositories) {
             if (predicate.test(repository)) {
-                ListBoxModel.Option option = createRepositoryOption(repository);
+                String option = createRepositoryOption(repository);
                 if (option != null) {
                     model.add(option);
                 }
@@ -96,11 +126,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return model;
     }
 
-    protected ListBoxModel.Option createRepositoryOption(Repository repository) {
-        String displayName =
-                String.format("%s/%s (%s)", repository.getNamespace(), repository.getName(), repository.getType());
-        String v = String.format("%s/%s/%s", repository.getNamespace(), repository.getName(), repository.getType());
-        return new ListBoxModel.Option(displayName, v);
+    protected String createRepositoryOption(Repository repository) {
+        return RepositoryRepresentationUtil.format(repository);
     }
 
     static {

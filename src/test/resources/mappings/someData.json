@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/some/thing",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/json"
-      }
+    "request": {
+        "url": "/some/thing",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/json"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "{ \"someString\": \"stringValue\", \"someNumber\": 42 }",
+        "headers": {
+            "Content-Type": "application/json"
+        }
     }
-  },
-  "response": {
-    "status": 200,
-    "body": "{ \"someString\": \"stringValue\", \"someNumber\": 42 }",
-    "headers": {
-      "Content-Type": "application/json"
-    }
-  }
 }

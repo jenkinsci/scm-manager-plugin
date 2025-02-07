@@ -18,7 +18,6 @@ public class ScmInformationService {
      *
      * @param run the build job
      * @return list of resolved job information
-     *
      * @deprecated use {@link #resolve(Run, SCM)} instead.
      */
     @Deprecated

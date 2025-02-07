@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <!-- The plugin version includes several dependencies, especially the version
-     ~ of the hpi plugin. -->
+       ~ of the hpi plugin. -->
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
@@ -57,17 +57,11 @@
   <properties>
     <java.level>17</java.level>
 
+    <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run.
+           ~ IMPORTANT: Keep in mind to update the BOM dependency below accordingly. -->
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.2</jenkins.version>
-
-    <!-- Other version properties required for this plugin -->
-    <edison.version>2.1.1</edison.version>
-    <edison-joda.version>2.10.2</edison-joda.version>
-    <lombok.version>1.18.36</lombok.version>
-    <mercurial.version>1260.vdfb_723cdcc81</mercurial.version>
-    <jackson.version>2.17.0</jackson.version>
-    <slf4j.version>2.0.16</slf4j.version>
 
     <!-- Testing scope -->
     <assertj.version>3.27.3</assertj.version>
@@ -75,27 +69,26 @@
     <mockwebserver.version>4.12.0</mockwebserver.version>
 
     <!-- Jenkins Pipeline scope -->
-    <jacoco.version>0.8.10</jacoco.version>
-    <versions-plugin.version>2.7</versions-plugin.version>
+    <versions-plugin.version>2.18.0</versions-plugin.version>
 
-    <!-- TODO During a next update, please check whether the BOM
-          provides versions for these values and then remove the manual version tag.
-          This is supposed to be a temporary solution, but keep it if it isn't provided yet.
-          Or take the versions manually from the http://mvnrepository.com BOM artifact list
-          (the version number of the dependency BOM below) and replace them below.
-    -->
+    <!-- Other version properties required for this plugin -->
     <cloudbees-folder.version>6.975.v4161e479479f</cloudbees-folder.version>
+    <edison.version>2.1.1</edison.version>
+    <edison-joda.version>2.10.2</edison-joda.version>
+    <jackson.version>2.17.0</jackson.version>
+    <lombok.version>1.18.36</lombok.version>
     <matrix.version>840.v812f627cb_578</matrix.version>
+    <mercurial.version>1260.vdfb_723cdcc81</mercurial.version>
     <plugin-util.version>5.1.0</plugin-util.version>
     <scm-api.version>698.v8e3b_c788f0a_6</scm-api.version>
-    <script-security.version>1369.v9b_98a_4e95b_2d</script-security.version>
+    <slf4j.version>2.0.16</slf4j.version>
     <workflow-api.version>1336.vee415d95c521</workflow-api.version>
     <workflow-support.version>936.v9fa_77211ca_e1</workflow-support.version>
 
     <!-- Other properties you may want to use:
-      ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
-      ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin.
- -->
+          ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
+          ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin.
+     -->
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
@@ -103,9 +96,9 @@
     <dependencies>
 
       <!-- This artifact includes all suitable versions of the dependencies without explicit version.
-           Upon updating Jenkins, pick a suitable version from maven central:
-           Example: https://mvnrepository.com/artifact/io.jenkins.tools.bom/bom-2.479.x (for 2.479; adapt accordingly)
-           See also: https://github.com/jenkinsci/bom#usage  -->
+                 Upon updating Jenkins, pick a suitable version from maven central:
+                 Example: https://mvnrepository.com/artifact/io.jenkins.tools.bom/bom-2.479.x (for 2.479; adapt accordingly)
+                 See also: https://github.com/jenkinsci/bom#usage  -->
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
@@ -125,6 +118,8 @@
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+
+      <!-- BOM-versioned dependencies -->
 
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -147,13 +142,13 @@
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.18</version>
+        <!-- version provided by BOM -->
       </dependency>
 
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>cloudbees-folder</artifactId>
-        <!-- version provided by BOM -->
+        <version>${cloudbees-folder.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.jenkins.plugins</groupId>
@@ -180,8 +175,6 @@
         <version>${matrix.version}</version>
       </dependency>
 
-      <!-- BOM-versioned dependencies -->
-
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plain-credentials</artifactId>
@@ -189,21 +182,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>scm-api</artifactId>
-        <version>${scm-api.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>script-security</artifactId>
-        <version>${script-security.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <!-- version provided by BOM -->
+        <version>${workflow-api.version}</version>
       </dependency>
 
       <dependency>
@@ -230,11 +211,15 @@
 
   <dependencies>
 
+    <!-- non-Jenkins BOM dependencies; these need an own version -->
+    <!-- Needed for edison -->
     <dependency>
       <groupId>de.otto.edison</groupId>
       <artifactId>edison-hal</artifactId>
       <version>${edison.version}</version>
     </dependency>
+
+    <!-- BOM-versioned dependencies -->
 
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
@@ -257,11 +242,17 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>pipeline-groovy-lib</artifactId>
-      <!-- version provided by BOM -->
       <optional>true</optional>
+      <!-- version provided by BOM -->
+      <exclusions>
+        <!-- Check dependency analysis whether conflict still applies -->
+        <exclusion>
+          <groupId>org.jenkins-ci.plugins</groupId>
+          <artifactId>cloudbees-folder</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
-    <!-- Needed for edison -->
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
@@ -273,18 +264,6 @@
       <artifactId>branch-api</artifactId>
       <!-- version provided by BOM -->
       <optional>true</optional>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.plugins</groupId>
-          <artifactId>cloudbees-folder</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>${cloudbees-folder.version}</version>
     </dependency>
 
     <dependency>
@@ -308,20 +287,17 @@
       <!-- version provided by BOM -->
     </dependency>
 
+    <!-- TODO improve jobdsl syntax -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>job-dsl</artifactId>
       <!-- version provided by BOM -->
-      <!-- TODO improve jobdsl syntax -->
       <optional>true</optional>
     </dependency>
-
-    <!-- scm plugins should be optional -->
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mercurial</artifactId>
-      <!-- version not provided by BOM but kept here for consistency -->
       <version>${mercurial.version}</version>
       <optional>true</optional>
       <exclusions>
@@ -334,7 +310,16 @@
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>scm-api</artifactId>
+      <version>${scm-api.version}</version>
+    </dependency>
+
+    <!-- scm plugins should be optional -->
+
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>script-security</artifactId>
+      <!-- version provided by BOM -->
     </dependency>
 
     <dependency>
@@ -342,8 +327,6 @@
       <artifactId>ssh-credentials</artifactId>
       <!-- version provided by BOM -->
     </dependency>
-
-    <!-- BOM-versioned dependencies -->
 
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -373,7 +356,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-api</artifactId>
-      <version>${workflow-api.version}</version>
+      <!-- version provided by BOM -->
     </dependency>
 
     <dependency>
@@ -386,7 +369,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-support</artifactId>
-      <version>${workflow-support.version}</version>
+      <!-- version provided by BOM -->
       <optional>true</optional>
     </dependency>
 
@@ -408,8 +391,6 @@
       <version>${slf4j.version}</version>
     </dependency>
 
-    <!-- non-Jenkins BOM dependencies; these need an own version -->
-
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -421,6 +402,8 @@
       <artifactId>slf4j-jdk14</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
+
+    <!-- Test scope -->
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
@@ -442,7 +425,6 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <repositories>
@@ -477,7 +459,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco.version}</version>
+            <version>${jacoco-maven-plugin.version}</version>
             <executions>
               <execution>
                 <goals>

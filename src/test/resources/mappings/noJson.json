@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/no/json",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/json"
-      }
+    "request": {
+        "url": "/no/json",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/json"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "This is no json",
+        "headers": {
+            "Content-Type": "application/json"
+        }
     }
-  },
-  "response": {
-    "status": 200,
-    "body": "This is no json",
-    "headers": {
-      "Content-Type": "application/json"
-    }
-  }
 }

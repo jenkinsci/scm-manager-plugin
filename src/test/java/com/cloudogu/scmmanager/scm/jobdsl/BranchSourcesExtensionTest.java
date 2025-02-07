@@ -48,7 +48,7 @@ public class BranchSourcesExtensionTest {
         BranchSource branchSource = extension.scmManager(null);
         ScmManagerSource source = (ScmManagerSource) branchSource.getSource();
 
-        assertThat(source.getRepository()).isEqualTo("hitchhiker/hog/git");
+        assertThat(source.getRepository()).isEqualTo("hitchhiker/hog (git)");
         assertThat(source.getId()).isEqualTo("42");
         assertContainsOnlyInstancesOf(
                 source.getTraits(),
@@ -106,7 +106,7 @@ public class BranchSourcesExtensionTest {
         BranchSource branchSource = extension.scmManager(null);
         ScmManagerSource source = (ScmManagerSource) branchSource.getSource();
 
-        assertThat(source.getRepository()).isEqualTo("hitchhiker/hog/git");
+        assertThat(source.getRepository()).isEqualTo("hitchhiker/hog (git)");
     }
 
     @Test
