@@ -85,11 +85,7 @@ public class ScmManagerSource extends SCMSource {
         this.name = parts[1];
         this.apiFactory = apiFactory;
 
-        if (parts.length > 2) {
-            throw new IllegalArgumentException("Repositories must not contain a slash!");
-        }
-
-        LOG.debug("Created ScmManagerSource {}/{}", this.namespace, this.name);
+        LOG.debug("Created ScmManagerSource {}/{} ({})", this.namespace, this.name, this.type);
     }
 
     @NonNull
