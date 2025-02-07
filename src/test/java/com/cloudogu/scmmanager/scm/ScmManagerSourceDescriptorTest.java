@@ -212,7 +212,8 @@ public class ScmManagerSourceDescriptorTest {
 
     @Test
     public void shouldValidateRepositoryOkWithoutAnyPrecedingResult() throws InterruptedException, ExecutionException {
-        FormValidation formValidation = descriptor.doCheckRepository(null);
+        FormValidation formValidation =
+                descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
@@ -226,7 +227,8 @@ public class ScmManagerSourceDescriptorTest {
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
         descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "");
-        FormValidation formValidation = descriptor.doCheckRepository("");
+        FormValidation formValidation =
+                descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
@@ -239,19 +241,15 @@ public class ScmManagerSourceDescriptorTest {
         Repository hog = createHoG();
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
+        ScmManagerApiTestMocks.mockError(
+                new ExecutionException(new IllegalReturnStatusException(404)),
+                when(api.getRepository("no_such", "repo")));
 
-        descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guidde");
-        FormValidation formValidation = descriptor.doCheckRepository("hitchhiker/guidde");
+        descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "other/repo");
+        FormValidation formValidation =
+                descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "no_such/repo");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-    }
-
-    @Test
-    public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
-        ComboBoxModel model =
-                descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guide");
-
-        assertThat(model.stream()).containsExactly("hitchhiker/guide");
     }
 
     @Test
