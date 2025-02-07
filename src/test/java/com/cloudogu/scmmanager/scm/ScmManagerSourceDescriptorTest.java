@@ -210,44 +210,46 @@ public class ScmManagerSourceDescriptorTest {
         assertThat(model.stream()).isEmpty();
     }
 
-  @Test
-  public void shouldValidateRepositoryOkWithoutAnyPrecedingResult() throws InterruptedException, ExecutionException {
-    FormValidation formValidation = descriptor.doCheckRepository(null);
+    @Test
+    public void shouldValidateRepositoryOkWithoutAnyPrecedingResult() throws InterruptedException, ExecutionException {
+        FormValidation formValidation = descriptor.doCheckRepository(null);
 
-    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
-  }
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
 
-  @Test
-  public void shouldValidateRepositoryOkWithEmptyString() throws InterruptedException, ExecutionException {
-    Repository spaceX = createSpaceX();
-    Repository dragon = createDragon();
-    Repository hog = createHoG();
+    @Test
+    public void shouldValidateRepositoryOkWithEmptyString() throws InterruptedException, ExecutionException {
+        Repository spaceX = createSpaceX();
+        Repository dragon = createDragon();
+        Repository hog = createHoG();
 
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
+        ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-    descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "");
-    FormValidation formValidation = descriptor.doCheckRepository("");
+        descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "");
+        FormValidation formValidation = descriptor.doCheckRepository("");
 
-    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
-  }
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
 
-  @Test
-  public void shouldValidateRepositoryErrorWhenRepositoryDoesntExist() throws InterruptedException, ExecutionException {
-    Repository spaceX = createSpaceX();
-    Repository dragon = createDragon();
-    Repository hog = createHoG();
+    @Test
+    public void shouldValidateRepositoryErrorWhenRepositoryDoesntExist()
+            throws InterruptedException, ExecutionException {
+        Repository spaceX = createSpaceX();
+        Repository dragon = createDragon();
+        Repository hog = createHoG();
 
-    ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
+        ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-    descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guidde");
-    FormValidation formValidation = descriptor.doCheckRepository("hitchhiker/guidde");
+        descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guidde");
+        FormValidation formValidation = descriptor.doCheckRepository("hitchhiker/guidde");
 
-    assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-  }
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+    }
 
-  @Test
-  public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
-    ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guide");
+    @Test
+    public void shouldKeepSelectedRepositoryWhenAlreadySelected() throws InterruptedException, ExecutionException {
+        ComboBoxModel model =
+                descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "hitchhiker/guide");
 
         assertThat(model.stream()).containsExactly("hitchhiker/guide");
     }

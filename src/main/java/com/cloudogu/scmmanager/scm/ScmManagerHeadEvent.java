@@ -74,7 +74,8 @@ abstract class ScmManagerHeadEvent extends SCMHeadEvent<ScmManagerHeadEvent.Trig
     }
 
     private boolean isMatch(@NonNull ScmManagerSource source) {
-        return RepositoryRepresentationUtil.parse(source.getRepository()).equals(new RepositoryRepresentation(namespace, name, type))
+        return RepositoryRepresentationUtil.parse(source.getRepository())
+                        .equals(new RepositoryRepresentation(namespace, name, type))
                 && identification.matches(source.getServerUrl());
     }
 

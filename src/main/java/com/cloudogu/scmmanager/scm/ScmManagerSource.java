@@ -80,7 +80,8 @@ public class ScmManagerSource extends SCMSource {
         this.serverUrl = serverUrl;
         this.credentialsId = credentialsId;
 
-        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation = RepositoryRepresentationUtil.parse(repository);
+        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
+                RepositoryRepresentationUtil.parse(repository);
         this.namespace = repositoryRepresentation.namespace();
         this.name = repositoryRepresentation.name();
         this.apiFactory = apiFactory;
@@ -199,7 +200,8 @@ public class ScmManagerSource extends SCMSource {
     }
 
     public String getRepository() {
-        return RepositoryRepresentationUtil.format(new RepositoryRepresentationUtil.RepositoryRepresentation(namespace, name, type));
+        return RepositoryRepresentationUtil.format(
+                new RepositoryRepresentationUtil.RepositoryRepresentation(namespace, name, type));
     }
 
     public String getCredentialsId() {
