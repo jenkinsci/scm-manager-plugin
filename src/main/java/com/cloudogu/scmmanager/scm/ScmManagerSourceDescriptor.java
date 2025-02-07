@@ -23,6 +23,7 @@ import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
+    static final String THIS_REPOSITORY_DOES_NOT_EXIST = "This repository does not exist.";
     protected final ScmManagerApiFactory apiFactory;
     private final Predicate<Repository> repositoryPredicate;
 
@@ -72,13 +73,14 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IllegalReturnStatusException
                     && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 404) {
-                return FormValidation.error("This repository does not exist.");
+                return FormValidation.error(THIS_REPOSITORY_DOES_NOT_EXIST);
             }
             return FormValidation.error("Error checking repository: " + e.getMessage());
         }
         return FormValidation.ok();
     }
 
+    @RequirePOST
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillCredentialsIdItems(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
