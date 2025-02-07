@@ -10,8 +10,8 @@ import jenkins.model.Jenkins;
 
 public interface NotifierProvider extends ExtensionPoint {
 
-    @SuppressWarnings("squid:S1452")
-    // we implement this with a concrete Notifier type to simplify unit tests (no casting)
+    @SuppressWarnings(
+            "squid:S1452") // we implement this with a concrete Notifier type to simplify unit tests (no casting)
     Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) throws IOException;
 
     static ExtensionList<NotifierProvider> all() {

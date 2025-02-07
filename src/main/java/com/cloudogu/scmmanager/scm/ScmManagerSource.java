@@ -55,7 +55,7 @@ public class ScmManagerSource extends SCMSource {
     private final String serverUrl;
     private final String namespace;
     private final String name;
-    private String type;
+    private final String type;
     private final String credentialsId;
 
     private LinkBuilder linkBuilder;
@@ -80,12 +80,19 @@ public class ScmManagerSource extends SCMSource {
         this.serverUrl = serverUrl;
         this.credentialsId = credentialsId;
 
-        String[] parts = repository.split("/");
-        this.namespace = parts[0];
-        this.name = parts[1];
+        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
+                RepositoryRepresentationUtil.parse(repository);
+        this.namespace = repositoryRepresentation.namespace();
+        this.name = repositoryRepresentation.name();
         this.apiFactory = apiFactory;
 
-        LOG.debug("Created ScmManagerSource {}/{} ({})", this.namespace, this.name, this.type);
+        if (repositoryRepresentation.type() != null) {
+            type = repositoryRepresentation.type();
+        } else {
+            type = determineType();
+        }
+
+        LOG.debug("Created ScmManagerSource {}/{}", this.namespace, this.name);
     }
 
     @NonNull
@@ -109,15 +116,16 @@ public class ScmManagerSource extends SCMSource {
     }
 
     String getType() {
-        if (this.type == null) {
-            try {
-                this.type = createApi().getRepository(namespace, name).get().getType();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(
-                        String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
-            }
-        }
         return this.type;
+    }
+
+    private String determineType() {
+        try {
+            return createApi().getRepository(namespace, name).get().getType();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(
+                    String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
+        }
     }
 
     @Override
@@ -192,7 +200,8 @@ public class ScmManagerSource extends SCMSource {
     }
 
     public String getRepository() {
-        return String.format("%s/%s (%s)", namespace, name, getType());
+        return RepositoryRepresentationUtil.format(
+                new RepositoryRepresentationUtil.RepositoryRepresentation(namespace, name, type));
     }
 
     public String getCredentialsId() {
@@ -228,7 +237,7 @@ public class ScmManagerSource extends SCMSource {
     @Override
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
         return isCategoryTraitEnabled(category)
-                && SCMBuilderProvider.byType(getType()).isSupported(category);
+                && SCMBuilderProvider.byType(type).isSupported(category);
     }
 
     @VisibleForTesting
