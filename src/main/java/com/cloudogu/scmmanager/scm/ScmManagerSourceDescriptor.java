@@ -13,6 +13,7 @@ import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -51,6 +52,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
+    @POST
     public FormValidation doCheckRepository(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
@@ -82,17 +84,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
 
+    @POST
     @SuppressWarnings("unused") // used By stapler
     public ComboBoxModel doFillRepositoryItems(
-            @AncestorInPath SCMSourceOwner context,
-            @QueryParameter String serverUrl,
-            @QueryParameter String credentialsId,
-            @QueryParameter String value)
-            throws InterruptedException, ExecutionException {
-        return fillRepositoryItems(context, serverUrl, credentialsId, value);
-    }
-
-    public ComboBoxModel fillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,

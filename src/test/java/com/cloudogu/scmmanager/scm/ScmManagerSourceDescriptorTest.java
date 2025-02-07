@@ -256,7 +256,7 @@ public class ScmManagerSourceDescriptorTest {
     public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
     }
@@ -266,7 +266,7 @@ public class ScmManagerSourceDescriptorTest {
         when(repositoryPredicate.test(any())).thenReturn(true);
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).containsExactly("space/X (git)", "blue/dragon (hg)");
     }
@@ -284,7 +284,7 @@ public class ScmManagerSourceDescriptorTest {
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).containsExactly("space/X (git)");
     }
