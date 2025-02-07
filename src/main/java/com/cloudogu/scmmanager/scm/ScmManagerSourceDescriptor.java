@@ -1,7 +1,5 @@
 package com.cloudogu.scmmanager.scm;
 
-import static java.util.Collections.emptyList;
-
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -11,21 +9,21 @@ import com.google.common.base.Strings;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
+
+import static java.util.Collections.emptyList;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     protected final ScmManagerApiFactory apiFactory;
     private final Predicate<Repository> repositoryPredicate;
-    private final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
 
     @VisibleForTesting
     ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
