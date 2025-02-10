@@ -12,7 +12,6 @@ public interface JobInformationResolver {
      *
      * @param run the build
      * @param job the job which is currently build
-     *
      * @return collection of job information
      * @deprecated use {@link #resolve(Run, SCM)} instead.
      */

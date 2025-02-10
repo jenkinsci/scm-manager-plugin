@@ -1,18 +1,18 @@
 {
-  "request": {
-    "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958/FileDeJenkins",
-    "method": "GET",
-    "headers": {
-      "Accept": {
-        "equalTo": "application/vnd.scmm-source+json;v=2"
-      }
+    "request": {
+        "url": "/scm/api/v2/repositories/jenkins-plugin/hello-shell/sources/a41666c19c7c868410b80a963a50e8a2a9b0a958/FileDeJenkins",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/vnd.scmm-source+json;v=2"
+            }
+        }
+    },
+    "response": {
+        "status": 404,
+        "body": "{\"transactionId\":\"35S7zZfe135h\",\"errorCode\":\"AGR7UzkhA1\",\"context\":[{\"type\":\"File\",\"id\":\"Jenkinsfile.du\"},{\"type\":\"Revision\",\"id\":\"a41666c19c7c868410b80a963a50e8a2a9b0a958\"},{\"type\":\"Repository\",\"id\":\"jenkins-plugin/hello-shell\"}],\"message\":\"could not find file with id Jenkinsfile.du in revision with id a41666c19c7c868410b80a963a50e8a2a9b0a958 in repository with id jenkins-plugin/hello-shell\"}",
+        "headers": {
+            "Content-Type": "application/vnd.scmm-error+json;v=2"
+        }
     }
-  },
-  "response": {
-    "status": 404,
-    "body": "{\"transactionId\":\"35S7zZfe135h\",\"errorCode\":\"AGR7UzkhA1\",\"context\":[{\"type\":\"File\",\"id\":\"Jenkinsfile.du\"},{\"type\":\"Revision\",\"id\":\"a41666c19c7c868410b80a963a50e8a2a9b0a958\"},{\"type\":\"Repository\",\"id\":\"jenkins-plugin/hello-shell\"}],\"message\":\"could not find file with id Jenkinsfile.du in revision with id a41666c19c7c868410b80a963a50e8a2a9b0a958 in repository with id jenkins-plugin/hello-shell\"}",
-    "headers": {
-      "Content-Type": "application/vnd.scmm-error+json;v=2"
-    }
-  }
 }
