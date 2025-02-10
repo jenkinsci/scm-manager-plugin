@@ -59,6 +59,7 @@
 
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run.
            ~ IMPORTANT: Keep in mind to update the BOM dependency below accordingly. -->
+    <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.2</jenkins.version>
 
@@ -287,6 +288,7 @@
     </dependency>
 
     <!-- TODO improve jobdsl syntax -->
+
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>job-dsl</artifactId>
