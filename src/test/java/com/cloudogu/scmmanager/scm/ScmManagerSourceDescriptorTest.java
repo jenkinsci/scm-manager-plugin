@@ -79,7 +79,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("server url is required");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.SERVER_URL_IS_REQUIRED);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("server url is required");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.SERVER_URL_IS_REQUIRED);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("illegal URL format");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.ILLEGAL_URL_FORMAT);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("Only http, https or ssh urls accepted");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.ONLY_HTTPS_OR_SSH_URLS_ACCEPTED);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ScmManagerSourceDescriptorTest {
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("api has no login link");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.API_HAS_NO_LOGIN_LINK);
     }
 
     @Test
@@ -132,7 +132,7 @@ public class ScmManagerSourceDescriptorTest {
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
-        assertThat(formValidation.getMessage()).isEqualTo("Credentials needed");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.CREDENTIALS_NEEDED);
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("credentials are required");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.CREDENTIALS_ARE_REQUIRED);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class ScmManagerSourceDescriptorTest {
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
-        assertThat(formValidation.getMessage()).isEqualTo("login failed");
+        assertThat(formValidation.getMessage()).isEqualTo(ConnectionConfiguration.LOGIN_FAILED);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class ScmManagerSourceDescriptorTest {
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
         ScmManagerApiTestMocks.mockError(
-                new ExecutionException(new IllegalReturnStatusException(404)),
+                new IllegalArgumentException("Invalid repository representation: no_such/repo"),
                 when(api.getRepository("no_such", "repo")));
 
         descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "other/repo");
@@ -250,13 +250,14 @@ public class ScmManagerSourceDescriptorTest {
                 descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "no_such/repo");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+        assertThat(formValidation.getMessage()).isEqualTo("Invalid repository representation: no_such/repo");
     }
 
     @Test
     public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
     }
@@ -266,7 +267,7 @@ public class ScmManagerSourceDescriptorTest {
         when(repositoryPredicate.test(any())).thenReturn(true);
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).containsExactly("space/X (git)", "blue/dragon (hg)");
     }
@@ -284,7 +285,7 @@ public class ScmManagerSourceDescriptorTest {
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
 
-        ComboBoxModel model = descriptor.fillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
+        ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
 
         assertThat(model.stream()).containsExactly("space/X (git)");
     }

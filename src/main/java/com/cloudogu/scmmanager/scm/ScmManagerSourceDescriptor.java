@@ -2,7 +2,6 @@ package com.cloudogu.scmmanager.scm;
 
 import static java.util.Collections.emptyList;
 
-import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -16,16 +15,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
+import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
+@Slf4j
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     protected final ScmManagerApiFactory apiFactory;
     private final Predicate<Repository> repositoryPredicate;
-    private final Logger LOG = LoggerFactory.getLogger(ScmManagerSourceDescriptor.class);
 
     @VisibleForTesting
     ScmManagerSourceDescriptor(ScmManagerApiFactory apiFactory, Predicate<Repository> repositoryPredicate) {
@@ -53,48 +52,43 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
+    @RequirePOST
+    @SuppressWarnings("lgtm[jenkins/no-permission-check]")
     public FormValidation doCheckRepository(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
-            @QueryParameter String value)
-            throws InterruptedException {
+            @QueryParameter String value) {
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
             return FormValidation.ok();
         }
-        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
-                RepositoryRepresentationUtil.parse(value);
         try {
+            RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
+                    RepositoryRepresentationUtil.parse(value);
             ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
             api.getRepository(repositoryRepresentation.namespace(), repositoryRepresentation.name())
                     .get();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof IllegalReturnStatusException
-                    && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 404) {
-                return FormValidation.error("This repository does not exist.");
-            }
-            return FormValidation.error("Error checking repository: " + e.getMessage());
+        } catch (Exception e) {
+            log.debug(e.getMessage(), e);
+            return FormValidation.error(e.getMessage());
         }
         return FormValidation.ok();
     }
 
+    @RequirePOST
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillCredentialsIdItems(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
         return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
 
-    @SuppressWarnings("unused") // used By stapler
+    @RequirePOST
+    @SuppressWarnings({
+        "unused",
+        "lgtm[jenkins/no-permission-check]",
+        "lgtm[jenkins/credentials-fill-without-permission-check]"
+    }) // used By stapler
     public ComboBoxModel doFillRepositoryItems(
-            @AncestorInPath SCMSourceOwner context,
-            @QueryParameter String serverUrl,
-            @QueryParameter String credentialsId,
-            @QueryParameter String value)
-            throws InterruptedException, ExecutionException {
-        return fillRepositoryItems(context, serverUrl, credentialsId, value);
-    }
-
-    public ComboBoxModel fillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
