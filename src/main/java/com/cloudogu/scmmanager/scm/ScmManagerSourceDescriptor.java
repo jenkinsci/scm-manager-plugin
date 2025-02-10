@@ -2,7 +2,6 @@ package com.cloudogu.scmmanager.scm;
 
 import static java.util.Collections.emptyList;
 
-import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
@@ -65,7 +64,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         }
         try {
             RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
-                RepositoryRepresentationUtil.parse(value);
+                    RepositoryRepresentationUtil.parse(value);
             ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
             api.getRepository(repositoryRepresentation.namespace(), repositoryRepresentation.name())
                     .get();
