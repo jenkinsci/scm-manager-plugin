@@ -17,7 +17,7 @@
     <a href="https://www.scm-manager.org/download/"><strong>Download/Install latest SCM-Manager version »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/jenkinsci/scm-manager-plugin/docs/de/index.md">Documentation in German</a>
+    <a href="https://github.com/jenkinsci/scm-manager-plugin/blob/master/docs/de/index.md">Documentation in German</a>
 </div>
 
 ## Requirements
