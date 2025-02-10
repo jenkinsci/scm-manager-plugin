@@ -21,8 +21,10 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import jenkins.scm.api.SCMSourceOwner;
+import lombok.extern.slf4j.Slf4j;
 import org.acegisecurity.Authentication;
 
+@Slf4j
 class ConnectionConfiguration {
 
     static final String SERVER_URL_IS_REQUIRED = "Server URL is required.";
@@ -79,6 +81,7 @@ class ConnectionConfiguration {
         try {
             client = apiFactory.create(context, serverUrl, value);
         } catch (CredentialsUnavailableException e) {
+            log.debug(CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE, e);
             return FormValidation.error(CREDENTIALS_NOT_VALID_FOR_CONNECTION_TYPE);
         }
         CompletableFuture<HalRepresentation> future = client.index();
@@ -86,6 +89,7 @@ class ConnectionConfiguration {
                     if (index.getLinks().getLinkBy("me").isPresent()) {
                         return FormValidation.ok();
                     }
+                    log.error(LOGIN_FAILED);
                     return FormValidation.error(LOGIN_FAILED);
                 })
                 .exceptionally(e -> FormValidation.error(e.getMessage()))

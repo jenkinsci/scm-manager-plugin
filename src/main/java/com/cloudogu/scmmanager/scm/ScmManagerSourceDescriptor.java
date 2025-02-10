@@ -16,10 +16,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSourceDescriptor;
 import jenkins.scm.api.SCMSourceOwner;
+import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+@Slf4j
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
     protected final ScmManagerApiFactory apiFactory;
@@ -57,18 +59,18 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
-            @QueryParameter String value)
-            throws InterruptedException {
+            @QueryParameter String value) {
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
             return FormValidation.ok();
         }
-        RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
-                RepositoryRepresentationUtil.parse(value);
         try {
+            RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
+                RepositoryRepresentationUtil.parse(value);
             ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
             api.getRepository(repositoryRepresentation.namespace(), repositoryRepresentation.name())
                     .get();
         } catch (Exception e) {
+            log.debug(e.getMessage(), e);
             return FormValidation.error(e.getMessage());
         }
         return FormValidation.ok();
