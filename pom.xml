@@ -13,7 +13,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>scm-manager</artifactId>
-  <version>1.9.5-SNAPSHOT</version>
+  <version>1.10.0</version>
   <packaging>hpi</packaging>
 
   <name>SCM-Manager Plugin</name>
@@ -50,7 +50,7 @@
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>1.10.0</tag>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   </scm>
 
