@@ -21,19 +21,19 @@ Jenkins erstellt werden, die selbständig Branches, Tags und Pull-Requests in Re
 verwaltet werden. Im Zusammenspiel mit dem [Jenkins-Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) im SCM-Manager erhält Jenkins sog. *Hooks*
 bei jeder relevanten Änderungen und stößt neue Builds an.
 
-Um eine solche Pipeline zu erstellen, muss zunächst *New Item* auf der Startseite von Jenkins gewählt werden. Danach
-muss ein Name eingetragen und der Typ *Multibranch Pipeline* gewählt werden.
+Um eine solche Pipeline zu erstellen, muss zunächst **New Item** auf der Startseite von Jenkins gewählt werden. Danach
+muss ein Name eingetragen und der Typ **Multibranch Pipeline** gewählt werden.
 
 ![Wie man eine Multibranch-Pipeline auswählt](../assets/select-multibranch-pipeline.png)
 
-In der darauffolgenden Konfiguration muss im Abschnitt *Branch Sources* über das Dropdown *Add source* der zu dem
-Typen des Repositorys passende "SCM-Manager"-Eintrag gewählt werden.
+In der darauffolgenden Konfiguration muss im Abschnitt **Branch Sources** über das Dropdown **Add source** der zu dem Typen des Repositorys passende "SCM-Manager"-Eintrag gewählt werden.
 
 ![Wie man eine Multibranch-Pipelinequelle auswählt](../assets/config-multibranch-pipeline-source.png)
 
-In dem neuen Abschnitt kann nun die Base-URL der SCM-Manager-Instanz eingetragen sowie die passende Authentifizierung
-gewählt werden. Anschließend wird eine Liste aller zur Verfügung stehenden Repositorys geladen, von denen eines gewählt
-werden muss. Alternativ kann eine schon vorhandene *Namespace/Repository*-Namenskombination in das Feld frei eingefügt werden.
+In dem neuen Abschnitt kann nun die Base-URL der SCM-Manager-Instanz eingetragen sowie die passende Authentifizierung gewählt werden. 
+Anschließend wird eine Liste aller zur Verfügung stehenden Repositorys geladen, von denen eines gewählt
+werden muss. 
+Alternativ kann eine schon vorhandene **Namespace/Repository**-Namenskombination in das Feld frei eingefügt werden.
 
 ![Beispiel einer Konfiguration für eine Multibranch-Pipeline](../assets/config-multibranch-pipeline.png)
 
@@ -86,18 +86,17 @@ welche Ordner des Repositorys gebaut werden.
 Das Beispiel zeigt die Standardwerte.
 
 ### Organization&nbsp;Folders &ndash; Namespaces
-Sollen für alle Repositorys eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein *Organization 
-Folder*-Job mit einem SCM-Manager-Namespace als Quelle genutzt werden. Dieser prüft alle Repositorys in einem gegebenen Namespace 
-und erzeugt entsprechende Multibranch-Pipelines, wenn im Wurzelverzeichnis des Repositorys eine `Jenkinsfile` gefunden wurde. 
+Sollen für alle Repositorys eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein **Organization Folder**-Job mit einem SCM-Manager-Namespace als Quelle genutzt werden. 
+Dieser prüft alle Repositorys in einem gegebenen Namespace und erzeugt entsprechende Multibranch-Pipelines, wenn im Wurzelverzeichnis des Repositorys eine `Jenkinsfile` gefunden wurde. 
 Wird in dem Namespace ein passendes neues Repository erzeugt, wird automatisch der dazugehörige Build-Job im Jenkins erstellt.
-Um nicht mehr vorhandene Build-Jobs zu entfernen, kann manuell *Scan Namespace Now* gestartet werden.
+Um nicht mehr vorhandene Build-Jobs zu entfernen, kann manuell **Scan Namespace Now** gestartet werden.
 
-Um einen solchen Ordner für einen kompletten Namespace zu erstellen, muss zunächst *New Item* auf der Startseite
-von Jenkins gewählt werden. Danach kann ein Name eingetragen und der Punkt *Organization Folder* gewählt werden.
+Um einen solchen Ordner für einen kompletten Namespace zu erstellen, muss zunächst **New Item** auf der Startseitevon Jenkins gewählt werden. 
+Danach kann ein Name eingetragen und der Punkt **Organization Folder** gewählt werden.
 
 ![Wie ein Organization Folder ausgewählt wird](../assets/select-namespace-organization-folder.png)
 
-Im Einstellungsformular für das Item muss der Knopf *Repository&nbsp;Sources > Add* mit der Option *SCM-Manager Namespace*
+Im Einstellungsformular für das Item muss der Knopf **Repository&nbsp;Sources > Add** mit der Option **SCM-Manager Namespace**
 ausgewählt werden.
 
 ![Wie ein SCM-Manager-Namespace im Organization Folder ausgewählt wird](../assets/config-namespace-select.png)
@@ -144,7 +143,7 @@ Um alle Namespaces zu bauen, kann der Pseudo-Namespace `--all--` verwendet werde
 ### Navigation
 Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seiten im SCM-Manager:
 
-- In *Multibranch Pipelines* befindet sich in der linken Hauptnavigation der Link "SCM-Manager". Dieser führt direkt
+- In **Multibranch Pipelines** befindet sich in der linken Hauptnavigation der Link "SCM-Manager". Dieser führt direkt
   auf die Hauptseite des Repositorys im SCM-Manager.
 - In einem Job für einen konkreten Branch oder einen Tag führt der Link "SCM-Manager" in der linken Hauptnavigation
   zu der Anzeige der Quellen im SCM-Manager für diesen Branch bzw. Tag.

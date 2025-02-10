@@ -33,15 +33,14 @@ This plugin gives various ways to connect your SCM-Manager with Jenkins, like se
 pipelines, folders for complete namespaces, and navigation items.
 
 ### Build Status
-Once the plugin is installed, it will automatically detect whether any jobs have configured an scm pointing to an instance
-of an SCM-Manager. If such a build job starts, the plugin will send the `PENDING` state for the checkout revision to
-SCM-Manager. After the build is complete, the plugin will send the resulting state to SCM-Manager (`SUCCESS`, `UNSTABLE`
-or `FAILURE`).
+Once the plugin is installed, it will automatically detect whether any jobs have configured an scm pointing to an instance of an SCM-Manager. 
+If such a build job starts, the plugin will send the `PENDING` state for the checkout revision to SCM-Manager. 
+After the build is complete, the plugin will send the resulting state to SCM-Manager (`SUCCESS`, `UNSTABLE` or `FAILURE`).
 
 ### Multibranch Pipelines
-For multibranch pipelines, there is a new branch source named "SCM-Manager". You can create pipelines in Jenkins that
-can find branches, tags, and pull requests in SCM-Manager hosted repositories on their own. In cooperation with the
-[Jenkins plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) in SCM-Manager, the Jenkins CI server will receive hooks on every change and trigger new builds.
+For multibranch pipelines, there is a new branch source named "SCM-Manager". 
+You can create pipelines in Jenkins that can find branches, tags, and pull requests in SCM-Manager hosted repositories on their own. 
+In cooperation with the [Jenkins plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) in SCM-Manager, the Jenkins CI server will receive hooks on every change and trigger new builds.
 To remove stale jobs like for no longer available repositories, you can manually execute "Scan Namespace Now".
 
 To create such a pipeline, select "New Item" on the Jenkins top level page, then enter a name and select "Multibranch
@@ -60,8 +59,7 @@ You may also copy and paste a repository into the field.
 
 ![Example of a config for a multibranch pipeline](docs/assets/config-multibranch-pipeline.png)
 
-Finally, you can select behaviours where you can choose whether branches, tags or pull requests shall be
-built (among others).
+Finally, you can select behaviours where you can choose whether branches, tags or pull requests shall be built (among others).
 
 #### JobDSL
 
