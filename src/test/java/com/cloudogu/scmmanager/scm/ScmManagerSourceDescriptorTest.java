@@ -242,7 +242,7 @@ public class ScmManagerSourceDescriptorTest {
 
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(spaceX, dragon, hog));
         ScmManagerApiTestMocks.mockError(
-                new ExecutionException(new IllegalReturnStatusException(404)),
+                new IllegalArgumentException("Invalid repository representation: no_such/repo"),
                 when(api.getRepository("no_such", "repo")));
 
         descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "other/repo");
@@ -250,6 +250,7 @@ public class ScmManagerSourceDescriptorTest {
                 descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "no_such/repo");
 
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
+        assertThat(formValidation.getMessage()).isEqualTo("Invalid repository representation: no_such/repo");
     }
 
     @Test

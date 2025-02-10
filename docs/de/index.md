@@ -85,7 +85,7 @@ Die Parameter für `includes` und `excludes` sind ebenfalls optional und mit ihn
 welche Ordner des Repositorys gebaut werden.
 Das Beispiel zeigt die Standardwerte.
 
-### Organization&nbsp;Folders &ndash; Namespaces
+### Organization Folders &ndash; Namespaces
 Sollen für alle Repositorys eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein **Organization Folder**-Job mit einem SCM-Manager-Namespace als Quelle genutzt werden. 
 Dieser prüft alle Repositorys in einem gegebenen Namespace und erzeugt entsprechende Multibranch-Pipelines, wenn im Wurzelverzeichnis des Repositorys eine `Jenkinsfile` gefunden wurde. 
 Wird in dem Namespace ein passendes neues Repository erzeugt, wird automatisch der dazugehörige Build-Job im Jenkins erstellt.

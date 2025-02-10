@@ -33,9 +33,10 @@ class ConnectionConfiguration {
     static final String ILLEGAL_URL_FORMAT = "Illegal URL format.";
     static final String ONLY_HTTPS_OR_SSH_URLS_ACCEPTED = "Only HTTP, HTTPS or SSH URLs are accepted.";
     static final String API_HAS_NO_LOGIN_LINK = "The API of this URL has no login link.";
-    static final String MESSAGE =
-            "This does not seem to be a valid SCM-Manager URL, or this is not the root URL of SCM-Manager. "
-                    + "Maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.";
+    static final String MESSAGE = """
+        This does not seem to be a valid SCM-Manager URL, or this is not the root URL of SCM-Manager.
+        Maybe you have specified 'http://my-scm-server.org/scm/repos' instead of 'http://my-scm-server.org/scm/'.
+        """;
     static final String CREDENTIALS_NEEDED = "Credentials needed.";
 
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {

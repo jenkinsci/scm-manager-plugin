@@ -14,7 +14,7 @@
     Integrate your repositories from different SCM with this plugin!
   </p>
     <p><b>Note:</b> This plugin requires SCM-Manager in order to be useful. Feel free to check it out in case you haven't been used to it yet.</p>
-    <a href="https://www.scm-manager.org/"><strong>Download/Install SCM-Manager v3 »</strong></a>
+    <a href="https://www.scm-manager.org/download/"><strong>Download/Install latest SCM-Manager version »</strong></a>
     <br />
     <br />
     <a href="https://github.com/jenkinsci/scm-manager-plugin/docs/de/index.md">Documentation in German</a>

@@ -22,7 +22,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
 
-    static final String THIS_REPOSITORY_DOES_NOT_EXIST = "This repository does not exist.";
     protected final ScmManagerApiFactory apiFactory;
     private final Predicate<Repository> repositoryPredicate;
 
@@ -69,12 +68,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             ScmManagerApi api = apiFactory.create(context, serverUrl, credentialsId);
             api.getRepository(repositoryRepresentation.namespace(), repositoryRepresentation.name())
                     .get();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof IllegalReturnStatusException
-                    && ((IllegalReturnStatusException) e.getCause()).getStatusCode() == 404) {
-                return FormValidation.error(THIS_REPOSITORY_DOES_NOT_EXIST);
-            }
-            return FormValidation.error("Error checking repository: " + e.getMessage());
+        } catch (Exception e) {
+            return FormValidation.error(e.getMessage());
         }
         return FormValidation.ok();
     }
