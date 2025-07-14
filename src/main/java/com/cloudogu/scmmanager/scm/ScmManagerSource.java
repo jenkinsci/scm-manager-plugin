@@ -13,17 +13,6 @@ import hudson.Util;
 import hudson.model.Action;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadCategory;
@@ -50,22 +39,35 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 public class ScmManagerSource extends SCMSource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
+    private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
+
+    static {
+        Icons.register("icon-scm-manager-link");
+    }
 
     private final String serverUrl;
     private final String namespace;
     private final String name;
     private final String type;
     private final String credentialsId;
-
     private LinkBuilder linkBuilder;
-
-    private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
-    private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
-
     @NonNull
     private List<SCMSourceTrait> traits = new ArrayList<>();
-
     // older versions do not have an api factory, if they are unmarshalled from disk
     // in order to support older versions we have to create the factory on demand
     @CheckForNull
@@ -81,7 +83,7 @@ public class ScmManagerSource extends SCMSource {
         this.credentialsId = credentialsId;
 
         RepositoryRepresentationUtil.RepositoryRepresentation repositoryRepresentation =
-                RepositoryRepresentationUtil.parse(repository);
+            RepositoryRepresentationUtil.parse(repository);
         this.namespace = repositoryRepresentation.namespace();
         this.name = repositoryRepresentation.name();
         this.apiFactory = apiFactory;
@@ -124,27 +126,27 @@ public class ScmManagerSource extends SCMSource {
             return createApi().getRepository(namespace, name).get().getType();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(
-                    String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
+                String.format("Type of repository %s/%s could not be loaded.", this.namespace, this.name), e);
         }
     }
 
     @Override
     protected void retrieve(
-            SCMSourceCriteria criteria,
-            @NonNull SCMHeadObserver observer,
-            SCMHeadEvent<?> event,
-            @NonNull TaskListener listener)
-            throws IOException, InterruptedException {
+        SCMSourceCriteria criteria,
+        @NonNull SCMHeadObserver observer,
+        SCMHeadEvent<?> event,
+        @NonNull TaskListener listener)
+        throws IOException, InterruptedException {
         try (ScmManagerSourceRequest request = new ScmManagerSourceContext(criteria, observer)
-                .withTraits(traits)
-                .newRequest(this, listener)) {
+            .withTraits(traits)
+            .newRequest(this, listener)) {
             handleRequest(observer, event, request);
         }
     }
 
     @VisibleForTesting
     void handleRequest(@NonNull SCMHeadObserver observer, SCMHeadEvent<?> event, ScmManagerSourceRequest request)
-            throws InterruptedException, IOException {
+        throws InterruptedException, IOException {
         Iterable<ScmManagerObservable> candidates = null;
 
         ScmManagerSourceRetriever handler = ScmManagerSourceRetriever.create(createApi(), namespace, name, traits);
@@ -155,7 +157,7 @@ public class ScmManagerSource extends SCMSource {
             Set<SCMHead> includes = observer.getIncludes();
             if (includes != null && includes.size() == 1) {
                 candidates = handler.getSpecificCandidatesFromSourceControl(
-                        request, includes.iterator().next());
+                    request, includes.iterator().next());
             }
         }
 
@@ -189,7 +191,7 @@ public class ScmManagerSource extends SCMSource {
     public SCM build(@NonNull SCMHead head, SCMRevision revision) {
         if (head instanceof ScmManagerHead scmManagerHead) {
             SCMBuilderProvider.Context ctx =
-                    new SCMBuilderProvider.Context(getLinkBuilder(), scmManagerHead, revision, credentialsId);
+                new SCMBuilderProvider.Context(getLinkBuilder(), scmManagerHead, revision, credentialsId);
             return SCMBuilderProvider.from(ctx).withTraits(traits).build();
         }
         throw new IllegalArgumentException("Could not handle unknown SCMHead: " + head);
@@ -201,43 +203,45 @@ public class ScmManagerSource extends SCMSource {
 
     public String getRepository() {
         return RepositoryRepresentationUtil.format(
-                new RepositoryRepresentationUtil.RepositoryRepresentation(namespace, name, type));
+            new RepositoryRepresentationUtil.RepositoryRepresentation(namespace, name, type));
     }
 
     public String getCredentialsId() {
         return credentialsId;
     }
 
-    static {
-        Icons.register("icon-scm-manager-link");
-    }
-
     @NonNull
     @Override
     protected List<Action> retrieveActions(
-            @NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision)));
+        @NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
+        return List.of(
+            new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision)),
+            new ScmManagerApiData(serverUrl, credentialsId, namespace, name)
+        );
     }
 
     @NonNull
     @Override
     protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)));
+        return List.of(
+            new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)),
+            new ScmManagerApiData(serverUrl, credentialsId, namespace, name)
+        );
     }
 
     @NonNull
     @Override
     protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo()));
+        return List.of(
+            new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo()),
+            new ScmManagerApiData(serverUrl, credentialsId, namespace, name)
+        );
     }
 
     @Override
     protected boolean isCategoryEnabled(@NonNull SCMHeadCategory category) {
         return isCategoryTraitEnabled(category)
-                && SCMBuilderProvider.byType(type).isSupported(category);
+            && SCMBuilderProvider.byType(type).isSupported(category);
     }
 
     @VisibleForTesting
@@ -282,8 +286,8 @@ public class ScmManagerSource extends SCMSource {
         @Override
         public String getDisplayName() {
             List<String> typeList = SCMBuilderProvider.all().stream()
-                    .map(SCMBuilderProvider::getType)
-                    .collect(Collectors.toList());
+                .map(SCMBuilderProvider::getType)
+                .collect(Collectors.toList());
             String types = Joiner.on(", ").join(typeList);
             return String.format("SCM-Manager (%s)", types);
         }
@@ -294,21 +298,21 @@ public class ScmManagerSource extends SCMSource {
             List<SCMSourceTraitDescriptor> all = findAllAvailableTraits();
             List<NamedArrayList<? extends SCMSourceTraitDescriptor>> result = new ArrayList<>();
             NamedArrayList.select(
-                    all,
-                    "Within repository",
-                    NamedArrayList.anyOf(
-                            NamedArrayList.withAnnotation(Discovery.class),
-                            NamedArrayList.withAnnotation(Selection.class)),
-                    true,
-                    result);
+                all,
+                "Within repository",
+                NamedArrayList.anyOf(
+                    NamedArrayList.withAnnotation(Discovery.class),
+                    NamedArrayList.withAnnotation(Selection.class)),
+                true,
+                result);
             int insertionPoint = result.size();
             for (SCMBuilderProvider provider : SCMBuilderProvider.all()) {
                 NamedArrayList.select(
-                        all,
-                        provider.getDisplayName(),
-                        it -> provider.getScmClass().isAssignableFrom(it.getScmClass()),
-                        true,
-                        result);
+                    all,
+                    provider.getDisplayName(),
+                    it -> provider.getScmClass().isAssignableFrom(it.getScmClass()),
+                    true,
+                    result);
             }
             NamedArrayList.select(all, "General", null, true, result, insertionPoint);
             return result;
@@ -333,7 +337,7 @@ public class ScmManagerSource extends SCMSource {
         @NonNull
         @Override
         protected SCMHeadCategory[] createCategories() {
-            return new SCMHeadCategory[] {
+            return new SCMHeadCategory[]{
                 UncategorizedSCMHeadCategory.DEFAULT,
                 // TODO do we have to localize it
                 new ChangeRequestSCMHeadCategory(new NonLocalizable("Pull Requests")),
