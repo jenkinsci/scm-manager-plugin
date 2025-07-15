@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
@@ -27,6 +28,14 @@ public class Repository extends HalRepresentation implements Serializable {
     @VisibleForTesting
     public Repository(String namespace, String name, String type, Links links) {
         super(links);
+        this.namespace = namespace;
+        this.name = name;
+        this.type = type;
+    }
+
+    @VisibleForTesting
+    public Repository(String namespace, String name, String type, Embedded embedded) {
+        super(null, embedded);
         this.namespace = namespace;
         this.name = name;
         this.type = type;

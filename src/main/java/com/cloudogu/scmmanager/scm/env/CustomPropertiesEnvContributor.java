@@ -27,7 +27,14 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
 
     private static final String ENV_PREFIX = "SCM_CUSTOM_PROP_";
 
+    private final ScmManagerApiFactory apiFactory;
+
     public CustomPropertiesEnvContributor() {
+        this(new ScmManagerApiFactory());
+    }
+
+    public CustomPropertiesEnvContributor(ScmManagerApiFactory apiFactory) {
+        this.apiFactory = apiFactory;
     }
 
     @Override
@@ -54,8 +61,7 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
             return Collections.emptyMap();
         }
 
-        ScmManagerApi client = new ScmManagerApiFactory()
-            .create(owner, apiData.getServerUrl(), apiData.getCredentialsId());
+        ScmManagerApi client = apiFactory.create(owner, apiData.getServerUrl(), apiData.getCredentialsId());
 
         try {
             Repository repository = client.getRepository(apiData.getNamespace(), apiData.getName()).get();
