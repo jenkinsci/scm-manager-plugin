@@ -1,7 +1,10 @@
 package com.cloudogu.scmmanager.scm;
 
+import com.google.common.base.MoreObjects;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.InvisibleAction;
+
+import java.util.Objects;
 
 public class ScmManagerApiData extends InvisibleAction {
 
@@ -42,5 +45,31 @@ public class ScmManagerApiData extends InvisibleAction {
     @NonNull
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ScmManagerApiData that = (ScmManagerApiData) o;
+        return serverUrl.equals(that.serverUrl) &&
+               credentialsId.equals(that.credentialsId) &&
+               namespace.equals(that.namespace) &&
+               name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serverUrl, credentialsId, namespace, name);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("serverUrl", serverUrl)
+            .add("credentialsId", credentialsId)
+            .add("namespace", namespace)
+            .add("name", name)
+            .toString();
     }
 }
