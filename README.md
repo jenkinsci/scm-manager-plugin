@@ -27,6 +27,8 @@ For full functionality, this plugin requires SCM-Manager v3 (see above) with an 
 [CI plugin](https://www.scm-manager.org/plugins/scm-ci-plugin/) to show the build results inside SCM-Manager. To create
 SSH connection between Jenkins and SCM-Manager, you can use the
 [SSH plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/).
+Additionally, if you want to enrich the environment variables of a build with the custom properties of SCM-Manager Repository, 
+you are also required to install the [Custom Properties plugin](https://scm-manager.org/plugins/scm-custom-properties-plugin/)
 
 ## Description
 This plugin gives various ways to connect your SCM-Manager with Jenkins, like sending build status, multibranch
@@ -101,6 +103,15 @@ multibranchPipelineJob('heart-of-gold') {
   }
 }
 ```
+
+#### Custom Properties
+
+The SCM-Manager Plugin custom properties allows users to define additional properties for each repository, with a key-value structure.
+Those properties will be injected as an environment variable into each multi brach pipeline build, if it uses the SCM-Manager as its source.
+The environment variables will always be named with the same scheme. 
+It starts with the prefix `SCM_CUSTOM_PROP_` and will end with the key of the custom property.
+For example the custom property with the key `lang`, will be injected as the environment variable `SCM_CUSTOM_PROP_lang`.
+The value of the environment variable, will be the value of the custom property.
 
 ### Organization Folders &ndash; Namespaces
 If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager Namespace" jobs. These
