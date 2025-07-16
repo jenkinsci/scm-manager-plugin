@@ -298,9 +298,9 @@ public class ScmManagerSourceTest {
     }
 
     private void assertScmManagerApiData(List<Action> actions) {
-        assertThat(actions).contains(
-            new ScmManagerApiData(source.getServerUrl(), source.getCredentialsId(), source.getNamespace(), source.getName())
-        );
+        assertThat(actions)
+                .contains(new ScmManagerApiData(
+                        source.getServerUrl(), source.getCredentialsId(), source.getNamespace(), source.getName()));
     }
 
     @NonNull

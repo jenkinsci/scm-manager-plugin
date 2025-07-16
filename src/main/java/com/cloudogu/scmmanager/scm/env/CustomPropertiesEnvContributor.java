@@ -13,16 +13,15 @@ import hudson.model.InvisibleAction;
 import hudson.model.ItemGroup;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.Nonnull;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Extension
 @Slf4j
@@ -41,9 +40,7 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
     }
 
     @Override
-    public void buildEnvironmentFor(@Nonnull Run run,
-                                    @Nonnull EnvVars envs,
-                                    @Nonnull TaskListener listener) {
+    public void buildEnvironmentFor(@Nonnull Run run, @Nonnull EnvVars envs, @Nonnull TaskListener listener) {
         PrintStream logger = listener.getLogger();
 
         CustomPropertiesAction customProperties = run.getAction(CustomPropertiesAction.class);
@@ -51,8 +48,8 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
         if (customProperties == null) {
             logger.println("[SCM-Manager Custom Properties] Fetch properties");
             customProperties = new CustomPropertiesAction(fetchProperties(
-                run.getParent().getAction(ScmManagerApiData.class), run.getParent().getParent()
-            ));
+                    run.getParent().getAction(ScmManagerApiData.class),
+                    run.getParent().getParent()));
             run.addAction(customProperties);
         }
 
@@ -67,13 +64,15 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
         ScmManagerApi client = apiFactory.create(owner, apiData.getServerUrl(), apiData.getCredentialsId());
 
         try {
-            Repository repository = client.getRepository(apiData.getNamespace(), apiData.getName()).get();
+            Repository repository = client.getRepository(apiData.getNamespace(), apiData.getName())
+                    .get();
             return parseProperties(repository);
         } catch (InterruptedException | ExecutionException e) {
             log.error(
-              "could not fetch custom properties for repository {}/{}. Error: {}",
-              apiData.getNamespace(), apiData.getName(), e.getMessage()
-            );
+                    "could not fetch custom properties for repository {}/{}. Error: {}",
+                    apiData.getNamespace(),
+                    apiData.getName(),
+                    e.getMessage());
         }
 
         return Collections.emptyMap();
@@ -86,15 +85,16 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
             return properties;
         }
 
-        List<HalRepresentation> customPropertiesRelation = repository.getEmbedded().getItemsBy("customProperties");
+        List<HalRepresentation> customPropertiesRelation =
+                repository.getEmbedded().getItemsBy("customProperties");
         if (customPropertiesRelation.isEmpty()) {
             return properties;
         }
 
         JsonNode props = customPropertiesRelation.get(0).getAttribute("properties");
-        props.elements().forEachRemaining(
-            prop -> properties.put(prop.get("key").asText(), prop.get("value").asText())
-        );
+        props.elements()
+                .forEachRemaining(prop -> properties.put(
+                        prop.get("key").asText(), prop.get("value").asText()));
 
         return properties;
     }

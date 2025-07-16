@@ -1,5 +1,11 @@
 package com.cloudogu.scmmanager.scm.env;
 
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.cloudogu.scmmanager.scm.ScmManagerApiData;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
@@ -10,6 +16,9 @@ import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import hudson.EnvVars;
 import hudson.model.TaskListener;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -18,16 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CustomPropertiesEnvContributorTest {
@@ -70,22 +69,17 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     private void setupApiCall(CompletableFuture<Repository> result) {
-        when(job.getAction(ScmManagerApiData.class)).thenReturn(
-            new ScmManagerApiData(
-                SERVER_URL, CREDENTIALS_ID, NAMESPACE, NAME
-            )
-        );
+        when(job.getAction(ScmManagerApiData.class))
+                .thenReturn(new ScmManagerApiData(SERVER_URL, CREDENTIALS_ID, NAMESPACE, NAME));
         when(apiFactory.create(owner, SERVER_URL, CREDENTIALS_ID)).thenReturn(api);
         when(api.getRepository(NAMESPACE, NAME)).thenReturn(result);
     }
 
     @Test
     public void shouldInjectCustomPropertiesFromCachedAction() {
-        when(run.getAction(CustomPropertiesEnvContributor.CustomPropertiesAction.class)).thenReturn(
-            new CustomPropertiesEnvContributor.CustomPropertiesAction(
-                Map.of("lang", "java", "version", "17")
-            )
-        );
+        when(run.getAction(CustomPropertiesEnvContributor.CustomPropertiesAction.class))
+                .thenReturn(new CustomPropertiesEnvContributor.CustomPropertiesAction(
+                        Map.of("lang", "java", "version", "17")));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
@@ -123,9 +117,7 @@ public class CustomPropertiesEnvContributorTest {
 
     @Test
     public void shouldNotInjectBecauseCustomPropertiesAreEmpty() {
-        Repository repo = new Repository(
-            NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of())
-        );
+        Repository repo = new Repository(NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of()));
         setupApiCall(CompletableFuture.completedFuture(repo));
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
@@ -136,8 +128,7 @@ public class CustomPropertiesEnvContributorTest {
     @Test
     public void shouldNotInjectBecauseNoPropertiesAddedToRepository() {
         Repository repo = new Repository(
-            NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of(new Wrapper(List.of())))
-        );
+                NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of(new Wrapper(List.of()))));
         setupApiCall(CompletableFuture.completedFuture(repo));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
@@ -149,14 +140,13 @@ public class CustomPropertiesEnvContributorTest {
     @Test
     public void shouldInjectFromFetchedRepository() {
         Repository repo = new Repository(
-            NAMESPACE,
-            NAME,
-            "git",
-            Embedded.embedded("customProperties", List.of(new Wrapper(List.of(
-                Map.of("key", "lang", "value", "java"),
-                Map.of("key", "version", "value", "17")
-            ))))
-        );
+                NAMESPACE,
+                NAME,
+                "git",
+                Embedded.embedded(
+                        "customProperties",
+                        List.of(new Wrapper(List.of(
+                                Map.of("key", "lang", "value", "java"), Map.of("key", "version", "value", "17"))))));
         setupApiCall(CompletableFuture.completedFuture(repo));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
@@ -170,7 +160,7 @@ public class CustomPropertiesEnvContributorTest {
         private final List<Map<String, String>> properties;
 
         public Wrapper(List<Map<String, String>> properties) {
-           this.properties = properties;
+            this.properties = properties;
         }
 
         @Override
