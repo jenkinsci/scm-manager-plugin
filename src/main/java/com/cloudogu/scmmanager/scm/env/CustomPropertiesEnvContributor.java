@@ -14,6 +14,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
 import java.io.PrintStream;
@@ -21,8 +22,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Extension
+@Slf4j
 public class CustomPropertiesEnvContributor extends EnvironmentContributor {
 
     private static final String ENV_PREFIX = "SCM_CUSTOM_PROP_";
@@ -66,8 +69,11 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
         try {
             Repository repository = client.getRepository(apiData.getNamespace(), apiData.getName()).get();
             return parseProperties(repository);
-        } catch (Exception e) {
-            //TODO Add proper catch and error handling
+        } catch (InterruptedException | ExecutionException e) {
+            log.error(
+              "could not fetch custom properties for repository {}/{}. Error: {}",
+              apiData.getNamespace(), apiData.getName(), e.getMessage()
+            );
         }
 
         return Collections.emptyMap();
