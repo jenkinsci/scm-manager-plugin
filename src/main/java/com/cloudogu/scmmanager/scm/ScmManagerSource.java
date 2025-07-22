@@ -52,20 +52,22 @@ import org.slf4j.LoggerFactory;
 
 public class ScmManagerSource extends SCMSource {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
+    private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
+
+    static {
+        Icons.register("icon-scm-manager-link");
+    }
+
     private final String serverUrl;
     private final String namespace;
     private final String name;
     private final String type;
     private final String credentialsId;
-
     private LinkBuilder linkBuilder;
-
-    private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
-    private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
 
     @NonNull
     private List<SCMSourceTrait> traits = new ArrayList<>();
-
     // older versions do not have an api factory, if they are unmarshalled from disk
     // in order to support older versions we have to create the factory on demand
     @CheckForNull
@@ -208,30 +210,29 @@ public class ScmManagerSource extends SCMSource {
         return credentialsId;
     }
 
-    static {
-        Icons.register("icon-scm-manager-link");
-    }
-
     @NonNull
     @Override
     protected List<Action> retrieveActions(
             @NonNull SCMRevision revision, SCMHeadEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision)));
+        return List.of(
+                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(revision)),
+                new ScmManagerApiData(serverUrl, credentialsId, namespace, name));
     }
 
     @NonNull
     @Override
     protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)));
+        return List.of(
+                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)),
+                new ScmManagerApiData(serverUrl, credentialsId, namespace, name));
     }
 
     @NonNull
     @Override
     protected List<Action> retrieveActions(@CheckForNull SCMSourceEvent event, @NonNull TaskListener listener) {
-        return Collections.singletonList(
-                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo()));
+        return List.of(
+                new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().repo()),
+                new ScmManagerApiData(serverUrl, credentialsId, namespace, name));
     }
 
     @Override

@@ -275,25 +275,32 @@ public class ScmManagerSourceTest {
     @Test
     public void shouldRetrieveScmManagerRepoLink() {
         List<Action> actions = source.retrieveActions(null, listener());
-        assertScmManagerLink(actions);
+        assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X");
+        assertScmManagerApiData(actions);
     }
 
     @Test
     public void shouldRetrieveScmManagerHeadLink() {
         List<Action> actions = source.retrieveActions(branch("develop"), null, listener());
-        assertScmManagerLink(actions);
+        assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X/code/sources/develop");
+        assertScmManagerApiData(actions);
     }
 
     @Test
     public void shouldRetrieveScmManagerRevisionLink() {
         List<Action> actions = source.retrieveActions(revision(branch("develop"), "abc42"), null, listener());
-        assertScmManagerLink(actions);
+        assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X/code/sources/abc42");
+        assertScmManagerApiData(actions);
     }
 
-    private void assertScmManagerLink(List<Action> actions) {
-        assertThat(actions).hasSize(1);
-        Action action = actions.get(0);
-        assertThat(action).isInstanceOf(ScmManagerLink.class);
+    private void assertScmManagerLink(List<Action> actions, String expectedUrl) {
+        assertThat(actions).contains(new ScmManagerLink("icon-scm-manager-link", expectedUrl));
+    }
+
+    private void assertScmManagerApiData(List<Action> actions) {
+        assertThat(actions)
+                .contains(new ScmManagerApiData(
+                        source.getServerUrl(), source.getCredentialsId(), source.getNamespace(), source.getName()));
     }
 
     @NonNull

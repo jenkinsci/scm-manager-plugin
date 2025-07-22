@@ -85,6 +85,17 @@ Die Parameter für `includes` und `excludes` sind ebenfalls optional und mit ihn
 welche Ordner des Repositorys gebaut werden.
 Das Beispiel zeigt die Standardwerte.
 
+#### Benutzerdefinierte Eigenschaften
+
+Das SCM-Manager Plugin "Custom Properties" ermöglicht es Benutzern zusätzliche Eigenschaften für ein Repository zu definieren,
+welche Schlüssel-Wert-Paare angelegt werden.
+Diese Eigenschaften werden als Umgebungsvariablen bei jedem Build einer Multibranch-Pipeline hinzugefügt, 
+falls dieser den SCM-Manager als Quelle verwendet.
+Die Benamung der Umgebungsvariablen folgt dabei dem selben Schema.
+Jeder Name beginnt mit dem selben Prefix `SCM_CUSTOM_PROP_` und endet mit dem Schlüssel der jeweiligen Eigenschaft.
+So wird eine Eigenschaft mit dem Schlüssel `lang`, als Umgebungsvariable mit dem Namen `SCM_CUSTOM_PROP_lang` hinzugefügt.
+Der Wert der Umgebungsvariable entspricht dem Wert der Eigenschaft.
+
 ### Organization Folders &ndash; Namespaces
 Sollen für alle Repositorys eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein **Organization Folder**-Job mit einem SCM-Manager-Namespace als Quelle genutzt werden. 
 Dieser prüft alle Repositorys in einem gegebenen Namespace und erzeugt entsprechende Multibranch-Pipelines, wenn im Wurzelverzeichnis des Repositorys eine `Jenkinsfile` gefunden wurde. 
@@ -159,5 +170,7 @@ Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seite
 Für die volle Funktionalität wird ein SCM-Manager mit installiertem
 [Jenkins-Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) für das automatische Starten der Builds sowie
 dem [CI-Plugin](https://www.scm-manager.org/plugins/scm-ci-plugin/) zur Anzeige der Build-Status im SCM-Manager
-benötigt. Zudem können mit dem [SSH-Plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/) Verbindungen zwischen
+benötigt. 
+Für benutzerdefinierte Eigenschaften wird im SCM-Manager das [Custom Properties Plugin](https://www.scm-manager.org/plugins/scm-custom-properties-plugin/) und im Jenkins das [Pipeline: Basic Steps Plugin](https://plugins.jenkins.io/workflow-basic-steps/) benötigt. 
+Zudem können mit dem [SSH-Plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/) Verbindungen zwischen
 Jenkins und SCM-Manager per SSH erzeugt werden.
