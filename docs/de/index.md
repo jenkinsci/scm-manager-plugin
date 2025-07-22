@@ -170,6 +170,7 @@ Auf verschiedenen Seiten von Jenkins befinden sich Links zu entsprechenden Seite
 Für die volle Funktionalität wird ein SCM-Manager mit installiertem
 [Jenkins-Plugin](https://www.scm-manager.org/plugins/scm-jenkins-plugin/) für das automatische Starten der Builds sowie
 dem [CI-Plugin](https://www.scm-manager.org/plugins/scm-ci-plugin/) zur Anzeige der Build-Status im SCM-Manager
-benötigt. Für benutzerdefinierte Eigenschaften wird das [Pipeline:Basic Steps](https://plugins.jenkins.io/workflow-basic-steps/) benötigt. 
+benötigt. 
+Für benutzerdefinierte Eigenschaften wird im SCM-Manager das [Custom Properties Plugin](https://www.scm-manager.org/plugins/scm-custom-properties-plugin/) und im Jenkins das [Pipeline: Basic Steps Plugin](https://plugins.jenkins.io/workflow-basic-steps/) benötigt. 
 Zudem können mit dem [SSH-Plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/) Verbindungen zwischen
 Jenkins und SCM-Manager per SSH erzeugt werden.

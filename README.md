@@ -28,7 +28,7 @@ For full functionality, this plugin requires SCM-Manager v3 (see above) with an 
 SSH connection between Jenkins and SCM-Manager, you can use the
 [SSH plugin](https://www.scm-manager.org/plugins/scm-ssh-plugin/).
 Additionally, if you want to enrich the environment variables of a build with the custom properties of SCM-Manager Repository, 
-you are also required to install the [Custom Properties plugin](https://scm-manager.org/plugins/scm-custom-properties-plugin/)
+you are also required to install the [Custom Properties plugin](https://scm-manager.org/plugins/scm-custom-properties-plugin/) and the [Pipeline: Basic Steps Plugin](https://plugins.jenkins.io/workflow-basic-steps/).
 
 ## Description
 This plugin gives various ways to connect your SCM-Manager with Jenkins, like sending build status, multibranch
