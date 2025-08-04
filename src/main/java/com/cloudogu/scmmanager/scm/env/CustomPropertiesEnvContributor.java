@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CustomPropertiesEnvContributor extends EnvironmentContributor {
 
-    private static final String ENV_PREFIX = "SCM_CUSTOM_PROP_";
+    private static final String ENV_PREFIX = "SCMM_CUSTOM_PROP_";
 
     private final ScmManagerApiFactory apiFactory;
 

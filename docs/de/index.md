@@ -92,8 +92,8 @@ welche Schlüssel-Wert-Paare angelegt werden.
 Diese Eigenschaften werden als Umgebungsvariablen bei jedem Build einer Multibranch-Pipeline hinzugefügt, 
 falls dieser den SCM-Manager als Quelle verwendet.
 Die Benamung der Umgebungsvariablen folgt dabei dem selben Schema.
-Jeder Name beginnt mit dem selben Prefix `SCM_CUSTOM_PROP_` und endet mit dem Schlüssel der jeweiligen Eigenschaft.
-So wird eine Eigenschaft mit dem Schlüssel `lang`, als Umgebungsvariable mit dem Namen `SCM_CUSTOM_PROP_lang` hinzugefügt.
+Jeder Name beginnt mit dem selben Prefix `SCMM_CUSTOM_PROP_` und endet mit dem Schlüssel der jeweiligen Eigenschaft.
+So wird eine Eigenschaft mit dem Schlüssel `lang`, als Umgebungsvariable mit dem Namen `SCMM_CUSTOM_PROP_lang` hinzugefügt.
 Der Wert der Umgebungsvariable entspricht dem Wert der Eigenschaft.
 
 ### Organization Folders &ndash; Namespaces
