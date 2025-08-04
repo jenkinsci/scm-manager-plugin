@@ -109,8 +109,8 @@ multibranchPipelineJob('heart-of-gold') {
 The SCM-Manager Plugin custom properties allows users to define additional properties for each repository, with a key-value structure.
 Those properties will be injected as an environment variable into each multi brach pipeline build, if it uses the SCM-Manager as its source.
 The environment variables will always be named with the same scheme. 
-It starts with the prefix `SCM_CUSTOM_PROP_` and will end with the key of the custom property.
-For example the custom property with the key `lang`, will be injected as the environment variable `SCM_CUSTOM_PROP_lang`.
+It starts with the prefix `SCMM_CUSTOM_PROP_` and will end with the key of the custom property.
+For example the custom property with the key `lang`, will be injected as the environment variable `SCMM_CUSTOM_PROP_lang`.
 The value of the environment variable, will be the value of the custom property.
 
 ### Organization Folders &ndash; Namespaces

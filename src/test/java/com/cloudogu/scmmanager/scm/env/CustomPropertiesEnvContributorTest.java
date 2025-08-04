@@ -83,8 +83,8 @@ public class CustomPropertiesEnvContributorTest {
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
-        verify(envVars).put("SCM_CUSTOM_PROP_lang", "java");
-        verify(envVars).put("SCM_CUSTOM_PROP_version", "17");
+        verify(envVars).put("SCMM_CUSTOM_PROP_lang", "java");
+        verify(envVars).put("SCMM_CUSTOM_PROP_version", "17");
         verifyNoMoreInteractions(envVars);
     }
 
@@ -151,8 +151,8 @@ public class CustomPropertiesEnvContributorTest {
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
-        verify(envVars).put("SCM_CUSTOM_PROP_lang", "java");
-        verify(envVars).put("SCM_CUSTOM_PROP_version", "17");
+        verify(envVars).put("SCMM_CUSTOM_PROP_lang", "java");
+        verify(envVars).put("SCMM_CUSTOM_PROP_version", "17");
         verifyNoMoreInteractions(envVars);
     }
 
