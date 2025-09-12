@@ -29,7 +29,7 @@ public class ScmManagerSourceRetrieverTest {
     private ScmManagerSourceRetriever handler;
 
     @BeforeEach
-    void setUp() {
+    void beforeEach() {
         when(api.getRepository(NAMESPACE, NAME))
                 .thenReturn(CompletableFuture.completedFuture(new Repository(NAMESPACE, NAME, "git")));
 

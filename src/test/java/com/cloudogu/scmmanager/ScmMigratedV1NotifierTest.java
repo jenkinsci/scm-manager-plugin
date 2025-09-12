@@ -42,10 +42,7 @@ class ScmMigratedV1NotifierTest {
         Dispatcher mDispatcher = new RecordedRequestDispatcher();
         server.setDispatcher(mDispatcher);
         server.start();
-    }
 
-    @BeforeEach
-    void prepareAuthentication() {
         when(authenticationFactory.createHttp(run, "one")).thenReturn(response -> response.header("Auth", "Awesome"));
     }
 

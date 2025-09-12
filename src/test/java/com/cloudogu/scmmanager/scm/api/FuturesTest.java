@@ -97,12 +97,12 @@ public class FuturesTest {
     private AssertionError assertionError;
 
     @BeforeEach
-    void setUpExecutor() {
+    void beforeEach() {
         executor = Executors.newSingleThreadExecutor();
     }
 
     @AfterEach
-    void tearDownExecutor() {
+    void afterEach() {
         executor.shutdown();
     }
 
