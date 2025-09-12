@@ -13,15 +13,15 @@ import java.util.stream.Collectors;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerSourceRequestTest {
+@ExtendWith(MockitoExtension.class)
+class ScmManagerSourceRequestTest {
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private ScmManagerSource source;
@@ -33,8 +33,8 @@ public class ScmManagerSourceRequestTest {
     private ScmManagerPullRequestHead pr42;
     private ScmManagerPullRequestHead pr21;
 
-    @Before
-    public void prepareHeads() {
+    @BeforeEach
+    void beforeEach() {
         heads = new HashSet<>();
 
         ScmManagerHead develop = ScmTestData.branch("develop");
@@ -49,7 +49,7 @@ public class ScmManagerSourceRequestTest {
     }
 
     @Test
-    public void shouldCollectPullRequests() {
+    void shouldCollectPullRequests() {
         SCMHeadObserver observer = mock(SCMHeadObserver.class);
         when(observer.getIncludes()).thenReturn(heads);
         when(context.observer()).thenReturn(observer);
@@ -59,7 +59,7 @@ public class ScmManagerSourceRequestTest {
     }
 
     @Test
-    public void shouldCollectPullRequestWhenPreparingForFullScan() {
+    void shouldCollectPullRequestWhenPreparingForFullScan() {
         Set<ScmManagerObservable> observables =
                 heads.stream().map(TestingObservable::new).collect(Collectors.toSet());
 
@@ -68,18 +68,7 @@ public class ScmManagerSourceRequestTest {
         assertThat(request.getPullRequests()).containsOnly(pr42, pr21);
     }
 
-    public static class TestingObservable implements ScmManagerObservable {
-
-        private final SCMHead head;
-
-        public TestingObservable(SCMHead head) {
-            this.head = head;
-        }
-
-        @Override
-        public SCMHead head() {
-            return head;
-        }
+    public record TestingObservable(SCMHead head) implements ScmManagerObservable {
 
         @Override
         public SCMRevision revision() {

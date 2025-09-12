@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager.info;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -16,33 +16,39 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import jenkins.triggers.SCMTriggerItem;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @SuppressWarnings("unchecked")
-@RunWith(MockitoJUnitRunner.class)
-public class ScmInformationServiceTest {
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class ScmInformationServiceTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private final ScmInformationService informationService = new ScmInformationService();
 
     @Mock
     private Run run;
 
-    private ScmInformationService informationService = new ScmInformationService();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testResolveWithoutScmResolver() {
+    void testResolveWithoutScmResolver() {
         List<JobInformation> informationList = informationService.resolve(run);
         assertTrue(informationList.isEmpty());
     }
 
     @Test
-    public void testResolveWithUnknownSCM() {
+    void testResolveWithUnknownSCM() {
         applySCM(new UnknownSCM());
 
         List<JobInformation> informationList = informationService.resolve(run);
@@ -50,7 +56,7 @@ public class ScmInformationServiceTest {
     }
 
     @Test
-    public void testResolve() {
+    void testResolve() {
         applySCM(new SampleSCM());
 
         List<JobInformation> informationList = informationService.resolve(run);

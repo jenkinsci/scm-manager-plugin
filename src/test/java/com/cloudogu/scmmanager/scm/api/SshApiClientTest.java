@@ -12,16 +12,17 @@ import de.otto.edison.hal.Links;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import lombok.Getter;
+import lombok.Setter;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SshApiClientTest extends ApiClientTestBase {
+@ExtendWith(MockitoExtension.class)
+class SshApiClientTest extends ApiClientTestBase {
 
     @Mock
     private SshConnectionFactory connectionFactory;
@@ -33,7 +34,7 @@ public class SshApiClientTest extends ApiClientTestBase {
     private SSHAuthentication authentication;
 
     @Test
-    public void shouldExecute() throws IOException, ExecutionException, InterruptedException {
+    void shouldExecute() throws Exception {
         when(connectionFactory.create("ssh://scm.hitchhiker.com")).thenReturn(Optional.of(connection));
 
         mockTokenResponse("ac-42");
@@ -43,14 +44,14 @@ public class SshApiClientTest extends ApiClientTestBase {
         assertPong(apiClient);
     }
 
-    private void assertPong(SshApiClient apiClient) throws InterruptedException, ExecutionException {
+    private void assertPong(SshApiClient apiClient) throws Exception {
         CompletableFuture<Ping> future = apiClient.get("/api/v2/ping", "application/json", Ping.class);
         Ping ping = future.get();
         assertThat(ping.getResponse()).isEqualTo("pong");
     }
 
     @Test
-    public void shouldCacheToken() throws IOException, ExecutionException, InterruptedException {
+    void shouldCacheToken() throws Exception {
         when(connectionFactory.create("ssh://scm.hitchhiker.com")).thenReturn(Optional.of(connection));
 
         mockTokenResponse("ac-42", "ac-21");
@@ -63,7 +64,7 @@ public class SshApiClientTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldReturnExceptionally() throws ExecutionException, InterruptedException {
+    void shouldReturnExceptionally() throws Exception {
         when(connectionFactory.create("ssh://scm.hitchhiker.com"))
                 .thenThrow(new SshConnectionFailedException("no conn"));
         SshApiClient apiClient =
@@ -91,34 +92,28 @@ public class SshApiClientTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldCompleteReturnApiUrl() {
+    void shouldCompleteReturnApiUrl() {
         String apiUrl = SshApiClient.createApiUrl("https://hitchhiker.com/scm/api/v2", "/api/v2/repositories");
         assertThat(apiUrl).isEqualTo("https://hitchhiker.com/scm/api/v2/repositories");
     }
 
     @Test
-    public void shouldRemoveEndingSlashFromApiUrl() {
+    void shouldRemoveEndingSlashFromApiUrl() {
         String apiUrl = SshApiClient.createApiUrl("https://hitchhiker.com/scm/api/v2/", "/api/v2/repositories");
         assertThat(apiUrl).isEqualTo("https://hitchhiker.com/scm/api/v2/repositories");
     }
 
     @Test
-    public void shouldNotModifyCompleteUrls() {
+    void shouldNotModifyCompleteUrls() {
         String apiUrl = SshApiClient.createApiUrl(
                 "https://hitchhiker.com/scm/api/v2/", "https://scm.hitchhiker.com/scm/api/v2/repositories");
         assertThat(apiUrl).isEqualTo("https://scm.hitchhiker.com/scm/api/v2/repositories");
     }
 
+    @Setter
+    @Getter
     public static class Ping {
 
         private String response;
-
-        public String getResponse() {
-            return response;
-        }
-
-        public void setResponse(String response) {
-            this.response = response;
-        }
     }
 }

@@ -15,9 +15,9 @@ import jenkins.scm.api.SCMNavigator;
 import jenkins.scm.api.SCMSource;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -26,29 +26,32 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerWebHook_SourceEventTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ScmManagerWebHook_SourceEventTest {
 
     private static final String SCM_URL = "http://localhost/scm";
 
     @Mock
-    StaplerRequest request;
+    private StaplerRequest request;
 
     @Mock
-    StaplerResponse response;
+    private StaplerResponse response;
 
-    JSONObject form = new JSONObject();
+    private final JSONObject form = new JSONObject();
 
     @Spy
-    ScmManagerWebHook hook;
+    private ScmManagerWebHook hook;
 
     @Captor
-    ArgumentCaptor<ScmManagerSourceEvent> sourceEventCaptor;
+    private ArgumentCaptor<ScmManagerSourceEvent> sourceEventCaptor;
 
-    @Before
-    public void prepareForm() throws ServletException {
+    @BeforeEach
+    void beforeEach() throws ServletException {
         form.put("server", SCM_URL);
         form.put("eventTarget", "NAVIGATOR");
         when(request.getSubmittedForm()).thenReturn(form);
@@ -56,7 +59,7 @@ public class ScmManagerWebHook_SourceEventTest {
     }
 
     @Test
-    public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
+    void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
         HttpResponse httpResponse = hook.doNotify(request);
 
         httpResponse.generateResponse(request, response, null);
@@ -64,7 +67,7 @@ public class ScmManagerWebHook_SourceEventTest {
     }
 
     @Test
-    public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
+    void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
         form.remove("server");
 
         HttpResponse httpResponse = hook.doNotify(request);
@@ -74,7 +77,7 @@ public class ScmManagerWebHook_SourceEventTest {
     }
 
     @Test
-    public void shouldTriggerForGlobalEvent() throws ServletException, IOException {
+    void shouldTriggerForGlobalEvent() throws ServletException, IOException {
         HttpResponse httpResponse = hook.doNotify(request);
 
         httpResponse.generateResponse(request, response, null);
@@ -98,7 +101,7 @@ public class ScmManagerWebHook_SourceEventTest {
     }
 
     @Test
-    public void shouldDetectEventWithSsh() throws ServletException, IOException {
+    void shouldDetectEventWithSsh() throws ServletException, IOException {
         JSONArray identifications = new JSONArray();
         JSONObject identification = new JSONObject();
         identification.put("name", "ssh");
@@ -121,7 +124,7 @@ public class ScmManagerWebHook_SourceEventTest {
     }
 
     @Test
-    public void shouldTriggerForRepositorySpecificEvent() throws ServletException, IOException {
+    void shouldTriggerForRepositorySpecificEvent() throws ServletException, IOException {
         form.put("namespace", "hog");
         form.put("name", "drive");
 

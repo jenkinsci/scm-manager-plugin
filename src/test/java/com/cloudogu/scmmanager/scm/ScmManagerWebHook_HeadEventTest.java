@@ -21,9 +21,9 @@ import javax.servlet.ServletException;
 import jenkins.scm.api.SCMHead;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -32,27 +32,30 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerWebHook_HeadEventTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ScmManagerWebHook_HeadEventTest {
 
     @Mock
-    StaplerRequest request;
+    private StaplerRequest request;
 
     @Mock
-    StaplerResponse response;
+    private StaplerResponse response;
 
-    JSONObject form = new JSONObject();
+    private final JSONObject form = new JSONObject();
 
     @Spy
-    ScmManagerWebHook hook;
+    private ScmManagerWebHook hook;
 
     @Captor
-    ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
+    private ArgumentCaptor<ScmManagerHeadEvent> scmManagerHeadEventCaptor;
 
-    @Before
-    public void prepareForm() throws ServletException {
+    @BeforeEach
+    void beforeEach() throws ServletException {
         form.put("namespace", "space");
         form.put("name", "X");
         form.put("type", "git");
@@ -62,7 +65,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
+    void shouldAcceptRequestWithMinimalValues() throws ServletException, IOException {
         HttpResponse httpResponse = hook.doNotify(request);
 
         httpResponse.generateResponse(request, response, null);
@@ -70,7 +73,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldRejectRequestWithMissingNamespace() throws ServletException, IOException {
+    void shouldRejectRequestWithMissingNamespace() throws ServletException, IOException {
         form.remove("namespace");
 
         HttpResponse httpResponse = hook.doNotify(request);
@@ -80,7 +83,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldRejectRequestWithMissingName() throws ServletException, IOException {
+    void shouldRejectRequestWithMissingName() throws ServletException, IOException {
         form.remove("name");
 
         HttpResponse httpResponse = hook.doNotify(request);
@@ -90,7 +93,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldRejectRequestWithMissingType() throws ServletException, IOException {
+    void shouldRejectRequestWithMissingType() throws ServletException, IOException {
         form.remove("type");
 
         HttpResponse httpResponse = hook.doNotify(request);
@@ -100,7 +103,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
+    void shouldRejectRequestWithMissingServer() throws ServletException, IOException {
         form.remove("server");
 
         HttpResponse httpResponse = hook.doNotify(request);
@@ -110,7 +113,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForDeletedBranches() throws ServletException, IOException {
+    void shouldTriggerForDeletedBranches() throws ServletException, IOException {
         JSONObject branch = new JSONObject();
         branch.put("name", "feature");
         form.put("deletedBranches", array(branch));
@@ -129,7 +132,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForCreatedOrModifiedBranches() throws ServletException, IOException {
+    void shouldTriggerForCreatedOrModifiedBranches() throws ServletException, IOException {
         JSONObject branch = new JSONObject();
         branch.put("name", "develop");
         form.put("createdOrModifiedBranches", array(branch));
@@ -148,7 +151,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerSourceEventForCreatedOrModifiedBranches() throws ServletException, IOException {
+    void shouldTriggerSourceEventForCreatedOrModifiedBranches() throws ServletException, IOException {
         JSONObject branch = new JSONObject();
         branch.put("name", "develop");
         form.put("createdOrModifiedBranches", array(branch));
@@ -164,7 +167,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForDeletedTags() throws ServletException, IOException {
+    void shouldTriggerForDeletedTags() throws ServletException, IOException {
         JSONObject tag = new JSONObject();
         tag.put("name", "0.0.1");
         form.put("deletedTags", array(tag));
@@ -183,7 +186,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForCreatedOrModifiedTags() throws ServletException, IOException {
+    void shouldTriggerForCreatedOrModifiedTags() throws ServletException, IOException {
         JSONObject tag = new JSONObject();
         tag.put("name", "1.0.0");
         form.put("createOrModifiedTags", array(tag));
@@ -202,7 +205,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForDeletedPullRequests() throws ServletException, IOException {
+    void shouldTriggerForDeletedPullRequests() throws ServletException, IOException {
         JSONObject pullRequest = new JSONObject();
         pullRequest.put("id", "42");
         pullRequest.put("source", "feature");
@@ -228,7 +231,7 @@ public class ScmManagerWebHook_HeadEventTest {
     }
 
     @Test
-    public void shouldTriggerForCreatedPullRequests() throws ServletException, IOException {
+    void shouldTriggerForCreatedPullRequests() throws ServletException, IOException {
         JSONObject pullRequest = new JSONObject();
         pullRequest.put("id", "42");
         pullRequest.put("source", "feature");

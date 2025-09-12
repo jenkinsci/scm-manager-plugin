@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm;
 
 import static com.cloudogu.scmmanager.scm.ScmTestData.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.cloudogu.scmmanager.scm.api.Repository;
@@ -12,15 +13,14 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestRevision;
 import com.cloudogu.scmmanager.scm.api.ScmManagerRevision;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import jenkins.scm.api.SCMRevision;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ScmManagerSourceRetrieverTest {
 
     @Mock
@@ -28,8 +28,8 @@ public class ScmManagerSourceRetrieverTest {
 
     private ScmManagerSourceRetriever handler;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         when(api.getRepository(NAMESPACE, NAME))
                 .thenReturn(CompletableFuture.completedFuture(new Repository(NAMESPACE, NAME, "git")));
 
@@ -37,7 +37,7 @@ public class ScmManagerSourceRetrieverTest {
     }
 
     @Test
-    public void shouldCreateProbeForBranch() throws ExecutionException, InterruptedException {
+    void shouldCreateProbeForBranch() throws Exception {
         ScmManagerHead head = branch("main");
         ScmManagerRevision revision = revision(head, "abc42");
         ScmManagerApiProbe probe = handler.probe(head, revision);
@@ -45,27 +45,30 @@ public class ScmManagerSourceRetrieverTest {
     }
 
     @Test
-    public void shouldCreateProbeForPullRequest() throws ExecutionException, InterruptedException {
+    void shouldCreateProbeForPullRequest() throws Exception {
         ScmManagerPullRequestHead head = pullRequest("PR-42", branch("main"), branch("develop"));
         ScmManagerPullRequestRevision revision = pullRequestRevision(head, "abc21", "cde42");
         ScmManagerApiProbe probe = handler.probe(head, revision);
         assertThat(probe.revision().get()).isEqualTo("cde42");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowExceptionForUnknownRevision() {
+    @Test
+    void shouldThrowExceptionForUnknownRevision() {
         ScmManagerHead head = branch("main");
-        handler.probe(head, new SCMRevision(head) {
 
-            @Override
-            public boolean equals(Object obj) {
-                return false;
-            }
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> handler.probe(head, new SCMRevision(head) {
 
-            @Override
-            public int hashCode() {
-                return 0;
-            }
-        });
+                    @Override
+                    public boolean equals(Object obj) {
+                        return false;
+                    }
+
+                    @Override
+                    public int hashCode() {
+                        return 0;
+                    }
+                }));
     }
 }

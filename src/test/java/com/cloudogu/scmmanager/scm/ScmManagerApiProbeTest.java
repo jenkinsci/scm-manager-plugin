@@ -16,35 +16,34 @@ import com.cloudogu.scmmanager.scm.api.Tag;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import jenkins.scm.api.SCMFile;
 import jenkins.scm.api.SCMHead;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerApiProbeTest {
+@ExtendWith(MockitoExtension.class)
+class ScmManagerApiProbeTest {
 
     @Mock
     private ScmManagerApi api;
 
     @Test
-    public void shouldUseNameFromHead() {
+    void shouldUseNameFromHead() {
         ScmManagerApiProbe probe = probe();
         assertThat(probe.name()).isEqualTo("main");
     }
 
     @Test
-    public void shouldFetchChangeset() {
+    void shouldFetchChangeset() {
         Date date = new Date();
         mockApiChangeset("abc42", date);
         assertThat(probe().lastModified()).isEqualTo(date.getTime());
     }
 
     @Test
-    public void shouldFetchChangesetOnlyOnce() {
+    void shouldFetchChangesetOnlyOnce() {
         Date date = new Date();
         mockApiChangeset("cde21", date);
 
@@ -57,14 +56,14 @@ public class ScmManagerApiProbeTest {
     }
 
     @Test
-    public void shouldFetchFile() throws IOException {
+    void shouldFetchFile() throws IOException {
         mockApiFileStat("cde21", "Jenkinsfile", SCMFile.Type.REGULAR_FILE);
         ScmManagerApiProbe probe = probe("develop", "cde21");
         assertThat(probe.stat("Jenkinsfile").exists()).isTrue();
     }
 
     @Test
-    public void shouldResolveRevisionFromTag() throws ExecutionException, InterruptedException {
+    void shouldResolveRevisionFromTag() throws Exception {
         String tag = "42.0";
         String revision = "cde42";
         when(api.getTag(REPOSITORY, tag)).thenReturn(futureTag(tag, revision));
@@ -81,7 +80,7 @@ public class ScmManagerApiProbeTest {
     }
 
     @Test
-    public void shouldResolveRevisionFromBranch() throws ExecutionException, InterruptedException {
+    void shouldResolveRevisionFromBranch() throws Exception {
         String branch = "spaceships";
         String revision = "abc42";
         when(api.getBranch(REPOSITORY, branch)).thenReturn(futureBranch(branch, revision));
@@ -94,7 +93,7 @@ public class ScmManagerApiProbeTest {
     }
 
     @Test
-    public void shouldResolveRevisionFromPullRequest() throws ExecutionException, InterruptedException {
+    void shouldResolveRevisionFromPullRequest() throws Exception {
         String source = "source";
         String target = "target";
         String revision = "cde21";

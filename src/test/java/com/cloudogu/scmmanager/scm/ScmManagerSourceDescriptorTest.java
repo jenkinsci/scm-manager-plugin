@@ -21,7 +21,6 @@ import hudson.scm.SCM;
 import hudson.util.ComboBoxModel;
 import hudson.util.FormValidation;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
@@ -30,18 +29,21 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerSourceDescriptorTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class ScmManagerSourceDescriptorTest {
 
     @Mock
     private SCMSourceOwner scmSourceOwner;
@@ -64,8 +66,8 @@ public class ScmManagerSourceDescriptorTest {
     @InjectMocks
     private TestingScmManagerSource.DescriptorImpl descriptor;
 
-    @Before
-    public void mockApiClient() {
+    @BeforeEach
+    void beforeEach() {
         when(apiFactory.create(any(Item.class), requestedUrl.capture(), requestedCredentials.capture()))
                 .thenReturn(api);
         when(apiFactory.anonymous(requestedUrl.capture())).thenReturn(api);
@@ -74,7 +76,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectEmptyServerUrl() throws InterruptedException, ExecutionException {
+    void shouldRejectEmptyServerUrl() throws Exception {
         FormValidation formValidation = descriptor.doCheckServerUrl("");
 
         assertThat(formValidation).isNotNull();
@@ -83,7 +85,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectBlankServerUrl() throws InterruptedException, ExecutionException {
+    void shouldRejectBlankServerUrl() throws Exception {
         FormValidation formValidation = descriptor.doCheckServerUrl("  \t");
 
         assertThat(formValidation).isNotNull();
@@ -92,7 +94,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectNotWellFormedServerUrl() throws InterruptedException, ExecutionException {
+    void shouldRejectNotWellFormedServerUrl() throws Exception {
         FormValidation formValidation = descriptor.doCheckServerUrl("http://");
 
         assertThat(formValidation).isNotNull();
@@ -101,7 +103,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectServerUrlWithoutHttp() throws InterruptedException, ExecutionException {
+    void shouldRejectServerUrlWithoutHttp() throws Exception {
         FormValidation formValidation = descriptor.doCheckServerUrl("file://some/where");
 
         assertThat(formValidation).isNotNull();
@@ -110,7 +112,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectServerUrlWithoutLoginLink() throws InterruptedException, ExecutionException {
+    void shouldRejectServerUrlWithoutLoginLink() throws Exception {
         HalRepresentation index = new HalRepresentation(
                 linkingTo().single(link("any", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index);
@@ -123,7 +125,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldHandleRedirectResponseForIndexRequest() throws InterruptedException, ExecutionException {
+    void shouldHandleRedirectResponseForIndexRequest() throws Exception {
         ScmManagerApiTestMocks.mockError(
                 new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
 
@@ -136,7 +138,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectServerUrlThatCouldNotBeFound() throws InterruptedException, ExecutionException {
+    void shouldRejectServerUrlThatCouldNotBeFound() throws Exception {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.index()));
 
         FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
@@ -148,7 +150,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldAcceptServerUrl() throws InterruptedException, ExecutionException {
+    void shouldAcceptServerUrl() throws Exception {
         mockCorrectIndex();
         FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
 
@@ -158,7 +160,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectEmptyCredentials() throws InterruptedException, ExecutionException {
+    void shouldRejectEmptyCredentials() throws Exception {
         mockCorrectIndex();
         FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "");
 
@@ -168,7 +170,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldAcceptWorkingCredentials() throws InterruptedException, ExecutionException {
+    void shouldAcceptWorkingCredentials() throws Exception {
         HalRepresentation index = new HalRepresentation(
                 linkingTo().single(link("login", "http://example.com/")).build());
         HalRepresentation indexWithLogIn = new HalRepresentation(
@@ -185,7 +187,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldRejectWrongCredentials() throws InterruptedException, ExecutionException {
+    void shouldRejectWrongCredentials() throws Exception {
         mockCorrectIndex();
 
         FormValidation formValidation =
@@ -197,21 +199,21 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws InterruptedException, ExecutionException {
+    void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws Exception {
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
     }
 
     @Test
-    public void shouldNotLoadRepositoriesWhenCredentialsAreEmpty() throws InterruptedException, ExecutionException {
+    void shouldNotLoadRepositoriesWhenCredentialsAreEmpty() throws Exception {
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", null);
 
         assertThat(model.stream()).isEmpty();
     }
 
     @Test
-    public void shouldValidateRepositoryOkWithoutAnyPrecedingResult() throws InterruptedException, ExecutionException {
+    void shouldValidateRepositoryOkWithoutAnyPrecedingResult() {
         FormValidation formValidation =
                 descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
@@ -219,7 +221,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldValidateRepositoryOkWithEmptyString() throws InterruptedException, ExecutionException {
+    void shouldValidateRepositoryOkWithEmptyString() throws Exception {
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();
@@ -234,8 +236,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldValidateRepositoryErrorWhenRepositoryDoesntExist()
-            throws InterruptedException, ExecutionException {
+    void shouldValidateRepositoryErrorWhenRepositoryDoesntExist() throws Exception {
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();
@@ -254,7 +255,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldReturnEmptyListOnError() throws InterruptedException, ExecutionException {
+    void shouldReturnEmptyListOnError() throws Exception {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
@@ -263,7 +264,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldReturnRepositories() throws InterruptedException, ExecutionException {
+    void shouldReturnRepositories() throws Exception {
         when(repositoryPredicate.test(any())).thenReturn(true);
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
@@ -273,7 +274,7 @@ public class ScmManagerSourceDescriptorTest {
     }
 
     @Test
-    public void shouldReturnFilteredRepositories() throws InterruptedException, ExecutionException {
+    void shouldReturnFilteredRepositories() throws Exception {
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();

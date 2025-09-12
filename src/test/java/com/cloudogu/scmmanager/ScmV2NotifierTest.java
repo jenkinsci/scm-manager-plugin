@@ -13,14 +13,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ScmV2NotifierTest {
+class ScmV2NotifierTest {
 
     private final MockWebServer server = new MockWebServer();
 
     @Test
-    public void testNotifyForChangesets() throws IOException, InterruptedException {
+    void testNotifyForChangesets() throws IOException, InterruptedException {
         testNotify(
                 "/scm/api/v2/ci/ns/one/changesets/abc/jenkins/hitchhiker%2Fheart-of-gold",
                 "hitchhiker/heart-of-gold", null);
@@ -39,7 +39,7 @@ public class ScmV2NotifierTest {
     }
 
     @Test
-    public void testNotifyForPullRequests() throws IOException, InterruptedException {
+    void testNotifyForPullRequests() throws IOException, InterruptedException {
         testNotify(
                 "/scm/api/v2/ci/ns/one/pullrequest/abc/jenkins/hitchhiker%2Fpr-1",
                 "hitchhiker/heart-of-gold", "hitchhiker/pr-1");

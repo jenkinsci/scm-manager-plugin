@@ -10,21 +10,21 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FuturesTest {
 
     @Mock
     private CompletableFuture<String> future;
 
     @Test
-    public void shouldThrowIOException() throws ExecutionException, InterruptedException {
+    void shouldThrowIOException() throws Exception {
         when(future.get()).thenThrow(new SimpleExecutionException("failed"));
         try {
             Futures.resolveChecked(future);
@@ -34,7 +34,7 @@ public class FuturesTest {
     }
 
     @Test
-    public void shouldThrowIOExceptionAndInterruptCurrentThread() throws ExecutionException, InterruptedException {
+    void shouldThrowIOExceptionAndInterruptCurrentThread() throws Exception {
         when(future.get()).thenThrow(new InterruptedException("failed"));
         runInThread(() -> {
             try {
@@ -48,13 +48,13 @@ public class FuturesTest {
     }
 
     @Test
-    public void shouldPassWithoutCheckedException() throws IOException {
+    void shouldPassWithoutCheckedException() throws IOException {
         String value = Futures.resolveChecked(CompletableFuture.completedFuture("test"));
         assertThat(value).isEqualTo("test");
     }
 
     @Test
-    public void shouldThrowUncheckedIOException() throws ExecutionException, InterruptedException {
+    void shouldThrowUncheckedIOException() throws Exception {
         when(future.get()).thenThrow(new SimpleExecutionException("failed"));
         try {
             Futures.resolveUnchecked(future);
@@ -65,8 +65,7 @@ public class FuturesTest {
     }
 
     @Test
-    public void shouldThrowUncheckedIOExceptionAndInterruptCurrentThread()
-            throws ExecutionException, InterruptedException {
+    void shouldThrowUncheckedIOExceptionAndInterruptCurrentThread() throws Exception {
         when(future.get()).thenThrow(new InterruptedException("failed"));
         runInThread(() -> {
             try {
@@ -80,7 +79,7 @@ public class FuturesTest {
     }
 
     @Test
-    public void shouldPassWithoutUncheckedException() {
+    void shouldPassWithoutUncheckedException() {
         String value = Futures.resolveUnchecked(CompletableFuture.completedFuture("test"));
         assertThat(value).isEqualTo("test");
     }
@@ -97,13 +96,13 @@ public class FuturesTest {
     private ExecutorService executor;
     private AssertionError assertionError;
 
-    @Before
-    public void setUpExecutor() {
+    @BeforeEach
+    void setUpExecutor() {
         executor = Executors.newSingleThreadExecutor();
     }
 
-    @After
-    public void tearDownExecutor() {
+    @AfterEach
+    void tearDownExecutor() {
         executor.shutdown();
     }
 

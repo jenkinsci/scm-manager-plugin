@@ -10,15 +10,15 @@ import hudson.model.Run;
 import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CheckoutListenerTest {
+@ExtendWith(MockitoExtension.class)
+class CheckoutListenerTest {
 
     @Mock
     private NotificationService notificationService;
@@ -34,21 +34,21 @@ public class CheckoutListenerTest {
 
     private CheckoutListener checkoutListener;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void beforeEach() {
         checkoutListener = new CheckoutListener();
         checkoutListener.setNotificationService(notificationService);
         checkoutListener.setInformationService(informationService);
     }
 
     @Test
-    public void testNotificationServiceIsCalled() {
+    void testNotificationServiceIsCalled() {
         checkoutListener.onCheckout(run, scm, null, null, null, null);
         verify(notificationService).notify(run, null);
     }
 
     @Test
-    public void shouldAddNotificationAction() {
+    void shouldAddNotificationAction() {
         List<JobInformation> information = new ArrayList<>();
         when(informationService.resolve(run, scm)).thenReturn(information);
 

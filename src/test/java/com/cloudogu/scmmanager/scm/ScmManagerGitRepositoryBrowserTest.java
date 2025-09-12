@@ -7,50 +7,50 @@ import static org.mockito.Mockito.when;
 import hudson.plugins.git.GitChangeSet;
 import hudson.scm.EditType;
 import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class ScmManagerGitRepositoryBrowserTest {
+class ScmManagerGitRepositoryBrowserTest {
 
     private static final String REPO = "https://scm.hitchhiker.com";
 
     private ScmManagerGitRepositoryBrowser browser;
 
-    @Before
-    public void setUpBrowser() {
+    @BeforeEach
+    void beforeEach() {
         browser = new ScmManagerGitRepositoryBrowser(REPO);
     }
 
     @Test
-    public void shouldReturnChangesetURL() throws IOException {
+    void shouldReturnChangesetURL() throws IOException {
         GitChangeSet changeSet = mockChangeSet("cde42");
 
         assertThat(browser.getChangeSetLink(changeSet)).hasPath("/code/changeset/cde42");
     }
 
     @Test
-    public void shouldReturnFileURL() throws IOException {
+    void shouldReturnFileURL() throws IOException {
         GitChangeSet.Path path = mockPath("abc21", "Jenkinsfile", EditType.EDIT);
 
         assertThat(browser.getFileLink(path)).hasPath("/code/sources/abc21/Jenkinsfile");
     }
 
     @Test
-    public void shouldReturnDequotedFileURL() throws IOException {
+    void shouldReturnDequotedFileURL() throws IOException {
         GitChangeSet.Path path = mockPath("sw42", "\"people/Padm\\303\\251 Amidala.json\"", EditType.EDIT);
 
         assertThat(browser.getFileLink(path)).hasPath("/code/sources/sw42/people/Padmé Amidala.json");
     }
 
     @Test
-    public void shouldReturnDiffLinkForDeletedFiles() throws IOException {
+    void shouldReturnDiffLinkForDeletedFiles() throws IOException {
         GitChangeSet.Path path = mockPath("cde42", "README.md", EditType.DELETE);
 
         assertThat(browser.getFileLink(path)).hasPath("/code/changeset/cde42").hasAnchor("diff-README.md");
     }
 
     @Test
-    public void shouldReturnDiffLink() throws IOException {
+    void shouldReturnDiffLink() throws IOException {
         String pathName = "README.md";
         GitChangeSet.Path path = mockPath("abc21", pathName, EditType.EDIT);
         when(path.getSrc()).thenReturn(pathName);
@@ -61,7 +61,7 @@ public class ScmManagerGitRepositoryBrowserTest {
     }
 
     @Test
-    public void shouldReturnDequotedDiffLink() throws IOException {
+    void shouldReturnDequotedDiffLink() throws IOException {
         String pathName = "\"people/Padm\\303\\251 Amidala.json\"";
         GitChangeSet.Path path = mockPath("sw21", pathName, EditType.EDIT);
         when(path.getSrc()).thenReturn(pathName);
@@ -74,7 +74,7 @@ public class ScmManagerGitRepositoryBrowserTest {
     }
 
     @Test
-    public void shouldReturnNullForNonEdits() throws IOException {
+    void shouldReturnNullForNonEdits() throws IOException {
         String pathName = "README.md";
         GitChangeSet.Path path = mockPath("abc21", pathName, EditType.DELETE);
         when(path.getSrc()).thenReturn(pathName);
@@ -85,7 +85,7 @@ public class ScmManagerGitRepositoryBrowserTest {
     }
 
     @Test
-    public void shouldReturnNullWithoutSrc() throws IOException {
+    void shouldReturnNullWithoutSrc() throws IOException {
         String pathName = "README.md";
         GitChangeSet.Path path = mockPath("abc21", pathName, EditType.EDIT);
         when(path.getDst()).thenReturn(pathName);
@@ -95,7 +95,7 @@ public class ScmManagerGitRepositoryBrowserTest {
     }
 
     @Test
-    public void shouldReturnNullWithoutDst() throws IOException {
+    void shouldReturnNullWithoutDst() throws IOException {
         String pathName = "README.md";
         GitChangeSet.Path path = mockPath("abc21", pathName, EditType.EDIT);
         when(path.getSrc()).thenReturn(pathName);
@@ -105,7 +105,7 @@ public class ScmManagerGitRepositoryBrowserTest {
     }
 
     @Test
-    public void shouldReturnNullWithoutParentCommit() throws IOException {
+    void shouldReturnNullWithoutParentCommit() throws IOException {
         String pathName = "README.md";
         GitChangeSet.Path path = mockPath("abc21", pathName, EditType.EDIT);
         when(path.getSrc()).thenReturn(pathName);

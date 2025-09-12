@@ -2,23 +2,22 @@ package com.cloudogu.scmmanager.scm.api;
 
 import com.cloudogu.scmmanager.HttpAuthentication;
 import com.cloudogu.scmmanager.RecordedRequestDispatcher;
-import java.io.IOException;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
-public class ApiClientTestBase {
+class ApiClientTestBase {
 
     private final MockWebServer server = new MockWebServer();
 
     private OkHttpClient client;
 
-    private String[] pathInjection = {};
+    private final String[] pathInjection = {};
     private int pathInjectionIndex = 0;
 
-    @Before
-    public void setUpServerAndClient() throws IOException {
+    @BeforeEach
+    void beforeEach() throws Exception {
         client = new OkHttpClient();
 
         Dispatcher mDispatcher = new RecordedRequestDispatcher();
@@ -26,7 +25,7 @@ public class ApiClientTestBase {
         server.start();
     }
 
-    public OkHttpClient getClient() {
+    protected OkHttpClient getClient() {
         return client;
     }
 

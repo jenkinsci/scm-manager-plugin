@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,15 +16,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import okhttp3.OkHttpClient;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmMigratedV1NotifierTest {
+@ExtendWith(MockitoExtension.class)
+class ScmMigratedV1NotifierTest {
 
     private final MockWebServer server = new MockWebServer();
 
@@ -37,20 +37,20 @@ public class ScmMigratedV1NotifierTest {
     @Mock
     private ScmV2NotifierProvider v2NotifierProvider;
 
-    @Before
-    public void setUpServerAndClient() throws IOException {
+    @BeforeEach
+    void beforeEach() throws IOException {
         Dispatcher mDispatcher = new RecordedRequestDispatcher();
         server.setDispatcher(mDispatcher);
         server.start();
     }
 
-    @Before
-    public void prepareAuthentication() {
+    @BeforeEach
+    void prepareAuthentication() {
         when(authenticationFactory.createHttp(run, "one")).thenReturn(response -> response.header("Auth", "Awesome"));
     }
 
     @Test
-    public void testNotifyWithoutMatchingV2Location() throws InterruptedException, IOException {
+    void testNotifyWithoutMatchingV2Location() throws InterruptedException, IOException {
         CountDownLatch cdl = new CountDownLatch(1);
 
         ScmMigratedV1Notifier notifier = createV1Notifier();
@@ -66,7 +66,7 @@ public class ScmMigratedV1NotifierTest {
     }
 
     @Test
-    public void testNotify() throws InterruptedException, IOException {
+    void testNotify() throws InterruptedException, IOException {
         CountDownLatch cdl = new CountDownLatch(1);
 
         ScmMigratedV1Notifier notifier = createV1Notifier();

@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import hudson.scm.SubversionSCM;
 import jenkins.scm.api.SCMHead;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ScmManagerSvnSourceTest {
+class ScmManagerSvnSourceTest {
 
     @Test
-    public void shouldReturnSubversionSCM() {
+    void shouldReturnSubversionSCM() {
         ScmManagerSvnSource source = new ScmManagerSvnSource(
                 "42", "https://hitchhiker.com/scm", "https://hitchhiker.com/scm/repo/spaceships/hog", "cred42");
 
