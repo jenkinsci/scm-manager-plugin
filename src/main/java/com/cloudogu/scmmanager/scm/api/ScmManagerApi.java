@@ -302,7 +302,6 @@ public class ScmManagerApi {
     }
 
     private static class NamespaceCollection {
-        @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
         private EmbeddedNamespaces _embedded;
 
         public EmbeddedNamespaces get_embedded() {
@@ -320,7 +319,6 @@ public class ScmManagerApi {
     }
 
     private static class RepositoryCollection {
-        @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
         private EmbeddedRepositories _embedded;
 
         public EmbeddedRepositories get_embedded() {
@@ -338,7 +336,6 @@ public class ScmManagerApi {
     }
 
     private static class BranchCollection {
-        @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
         private EmbeddedBranches _embedded;
 
         public EmbeddedBranches get_embedded() {
@@ -356,7 +353,6 @@ public class ScmManagerApi {
     }
 
     private static class TagCollection {
-        @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
         private EmbeddedTags _embedded;
 
         public EmbeddedTags get_embedded() {
@@ -374,7 +370,6 @@ public class ScmManagerApi {
     }
 
     private static class PullRequestCollection {
-        @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
         private EmbeddedPullRequests _embedded;
 
         public EmbeddedPullRequests get_embedded() {
