@@ -13,7 +13,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>scm-manager</artifactId>
-  <version>1.10.1-SNAPSHOT</version>
+  <version>1.11.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>SCM-Manager Plugin</name>
@@ -41,9 +41,14 @@
       <email>sebastian.sdorra@cloudogu.com</email>
     </developer>
     <developer>
-      <id>eheimbuch</id>
-      <name>Eduard Heimbuch</name>
-      <email>eduard.heimbuch@cloudogu.com</email>
+      <id>zerr</id>
+      <name>Thomas Zerr</name>
+      <email>thomas.zerr@cloudogu.com</email>
+    </developer>
+    <developer>
+      <id>pfeuffer</id>
+      <name>René Pfeuffer</name>
+      <email>rene.pfeuffer@cloudogu.com</email>
     </developer>
   </developers>
 
