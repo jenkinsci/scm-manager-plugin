@@ -53,7 +53,9 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
             run.addAction(customProperties);
         }
 
-        customProperties.getProperties().forEach((key, value) -> envs.put(ENV_PREFIX + key, value));
+        customProperties.getProperties().forEach(
+            (key, value) -> envs.put(ENV_PREFIX + cleanupKey(key), value)
+        );
     }
 
     private Map<String, String> fetchProperties(ScmManagerApiData apiData, ItemGroup<?> owner) {
@@ -97,6 +99,10 @@ public class CustomPropertiesEnvContributor extends EnvironmentContributor {
                         prop.get("key").asText(), prop.get("value").asText()));
 
         return properties;
+    }
+
+    private String cleanupKey(String key) {
+        return key.replaceAll("[^\\w]", "_").toUpperCase();
     }
 
     @Getter
