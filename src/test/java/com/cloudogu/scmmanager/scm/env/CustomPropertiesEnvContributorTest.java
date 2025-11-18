@@ -159,13 +159,13 @@ public class CustomPropertiesEnvContributorTest {
     @Test
     public void shouldReplaceNonAlphaNumericCharactersWithUnderscores() {
         Repository repo = new Repository(
-            NAMESPACE,
-            NAME,
-            "git",
-            Embedded.embedded(
-                "customProperties",
-                List.of(new Wrapper(List.of(
-                    Map.of("key", "\\arb-itr:ary@0123.4/56789_", "value", "someValue"))))));
+                NAMESPACE,
+                NAME,
+                "git",
+                Embedded.embedded(
+                        "customProperties",
+                        List.of(new Wrapper(
+                                List.of(Map.of("key", "\\arb-itr:ary@0123.4/56789_", "value", "someValue"))))));
         setupApiCall(CompletableFuture.completedFuture(repo));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
