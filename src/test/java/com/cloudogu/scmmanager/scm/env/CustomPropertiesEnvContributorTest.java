@@ -83,8 +83,8 @@ public class CustomPropertiesEnvContributorTest {
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
-        verify(envVars).put("SCMM_CUSTOM_PROP_lang", "java");
-        verify(envVars).put("SCMM_CUSTOM_PROP_version", "17");
+        verify(envVars).put("SCMM_CUSTOM_PROP_LANG", "java");
+        verify(envVars).put("SCMM_CUSTOM_PROP_VERSION", "17");
         verifyNoMoreInteractions(envVars);
     }
 
@@ -151,8 +151,26 @@ public class CustomPropertiesEnvContributorTest {
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
-        verify(envVars).put("SCMM_CUSTOM_PROP_lang", "java");
-        verify(envVars).put("SCMM_CUSTOM_PROP_version", "17");
+        verify(envVars).put("SCMM_CUSTOM_PROP_LANG", "java");
+        verify(envVars).put("SCMM_CUSTOM_PROP_VERSION", "17");
+        verifyNoMoreInteractions(envVars);
+    }
+
+    @Test
+    public void shouldReplaceNonAlphaNumericCharactersWithUnderscores() {
+        Repository repo = new Repository(
+                NAMESPACE,
+                NAME,
+                "git",
+                Embedded.embedded(
+                        "customProperties",
+                        List.of(new Wrapper(
+                                List.of(Map.of("key", "\\arb-itr:ary@0123.4/56789_", "value", "someValue"))))));
+        setupApiCall(CompletableFuture.completedFuture(repo));
+
+        envContributor.buildEnvironmentFor(run, envVars, listener);
+
+        verify(envVars).put("SCMM_CUSTOM_PROP__ARB_ITR_ARY_0123_4_56789_", "someValue");
         verifyNoMoreInteractions(envVars);
     }
 
