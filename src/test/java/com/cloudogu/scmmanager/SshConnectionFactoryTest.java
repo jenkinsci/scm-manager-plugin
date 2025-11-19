@@ -3,19 +3,19 @@ package com.cloudogu.scmmanager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SshConnectionFactoryTest {
+class SshConnectionFactoryTest {
 
     private final SshConnectionFactory factory = new SshConnectionFactory();
 
     @Test
-    public void shouldCreateSshConnectionWithoutRepository() {
+    void shouldCreateSshConnectionWithoutRepository() {
         shouldCreateSshConnectionWithoutRepository("ssh://scm.hitchhiker.com:2222");
         shouldCreateSshConnectionWithoutRepository("ssh://scm.hitchhiker.com:2222/");
     }
 
-    public void shouldCreateSshConnectionWithoutRepository(String url) {
+    private void shouldCreateSshConnectionWithoutRepository(String url) {
         Optional<SshConnection> optionalSshConnection = factory.create(url);
         assertThat(optionalSshConnection).isPresent();
         SshConnection sshConnection = optionalSshConnection.get();
@@ -34,7 +34,7 @@ public class SshConnectionFactoryTest {
     }
 
     @Test
-    public void shouldCreateSshConnectionWithRepository() {
+    void shouldCreateSshConnectionWithRepository() {
         Optional<SshConnection> optionalSshConnection =
                 factory.create("ssh://scm.hitchhiker.com:2222/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isPresent();
@@ -48,7 +48,7 @@ public class SshConnectionFactoryTest {
     }
 
     @Test
-    public void shouldCreateSshConnectionWithDefaultPort() {
+    void shouldCreateSshConnectionWithDefaultPort() {
         Optional<SshConnection> optionalSshConnection =
                 factory.create("ssh://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isPresent();
@@ -56,7 +56,7 @@ public class SshConnectionFactoryTest {
     }
 
     @Test
-    public void shouldReturnEmptyForNonSshConnections() {
+    void shouldReturnEmptyForNonSshConnections() {
         Optional<SshConnection> optionalSshConnection =
                 factory.create("https://scm.hitchhiker.com/repo/spaceships/heart-of-gold");
         assertThat(optionalSshConnection).isEmpty();

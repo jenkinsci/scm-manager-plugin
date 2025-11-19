@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
@@ -10,19 +9,19 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collections;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.trait.SCMSourceRequest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PullRequestDiscoveryTraitTest {
+@ExtendWith(MockitoExtension.class)
+class PullRequestDiscoveryTraitTest {
 
     @Mock
     private ScmManagerSourceContext context;
 
     @Test
-    public void shouldDecorateContextWithFilter() {
+    void shouldDecorateContextWithFilter() {
         PullRequestDiscoveryTrait trait = new PullRequestDiscoveryTrait(true);
         trait.decorateContext(context);
 
@@ -31,7 +30,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldNotDecorateContextWithFilter() {
+    void shouldNotDecorateContextWithFilter() {
         PullRequestDiscoveryTrait trait = new PullRequestDiscoveryTrait(false);
         trait.decorateContext(context);
 
@@ -40,7 +39,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldNotExcludeNonScmManagerRequest() {
+    void shouldNotExcludeNonScmManagerRequest() {
         SCMSourceRequest request = mock(SCMSourceRequest.class);
         SCMHead head = ScmTestData.branch("main");
 
@@ -48,7 +47,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldNotExcludeNonScmManagerHeads() {
+    void shouldNotExcludeNonScmManagerHeads() {
         SCMSourceRequest request = mock(ScmManagerSourceRequest.class);
         SCMHead head = mock(SCMHead.class);
 
@@ -56,7 +55,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldNotExcludeTags() {
+    void shouldNotExcludeTags() {
         SCMSourceRequest request = mock(ScmManagerSourceRequest.class);
         ScmManagerHead tag = ScmTestData.tag("1.0.0");
 
@@ -64,7 +63,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldNotExcludePullRequests() {
+    void shouldNotExcludePullRequests() {
         SCMSourceRequest request = mock(ScmManagerSourceRequest.class);
         ScmManagerHead source = ScmTestData.branch("feature/awesome");
         ScmManagerHead target = ScmTestData.branch("develop");
@@ -74,7 +73,7 @@ public class PullRequestDiscoveryTraitTest {
     }
 
     @Test
-    public void shouldExcludeBranchWithOpenPR() {
+    void shouldExcludeBranchWithOpenPR() {
         ScmManagerSourceRequest request = mock(ScmManagerSourceRequest.class);
         ScmManagerHead source = ScmTestData.branch("feature/awesome");
         ScmManagerHead target = ScmTestData.branch("develop");

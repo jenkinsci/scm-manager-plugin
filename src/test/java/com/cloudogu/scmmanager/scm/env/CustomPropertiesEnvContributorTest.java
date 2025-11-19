@@ -22,14 +22,14 @@ import java.util.concurrent.CompletableFuture;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CustomPropertiesEnvContributorTest {
+@ExtendWith(MockitoExtension.class)
+class CustomPropertiesEnvContributorTest {
 
     private static final String SERVER_URL = "http://localhost:8080";
     private static final String CREDENTIALS_ID = "CREDS_ID";
@@ -59,8 +59,8 @@ public class CustomPropertiesEnvContributorTest {
 
     private CustomPropertiesEnvContributor envContributor;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void beforeEach() {
         lenient().when(job.getParent()).thenReturn(owner);
         lenient().when(run.getParent()).thenReturn(job);
         lenient().when(listener.getLogger()).thenReturn(System.out);
@@ -76,7 +76,7 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldInjectCustomPropertiesFromCachedAction() {
+    void shouldInjectCustomPropertiesFromCachedAction() {
         when(run.getAction(CustomPropertiesEnvContributor.CustomPropertiesAction.class))
                 .thenReturn(new CustomPropertiesEnvContributor.CustomPropertiesAction(
                         Map.of("lang", "java", "version", "17")));
@@ -89,14 +89,14 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldNotInjectBecauseApiDataIsMissing() {
+    void shouldNotInjectBecauseApiDataIsMissing() {
         envContributor.buildEnvironmentFor(run, envVars, listener);
 
         verifyNoInteractions(envVars);
     }
 
     @Test
-    public void shouldNotInjectBecauseFetchFailed() {
+    void shouldNotInjectBecauseFetchFailed() {
         setupApiCall(CompletableFuture.failedFuture(new RuntimeException()));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
@@ -106,7 +106,7 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldNotInjectBecauseCustomPropertiesAreNotEmbedded() {
+    void shouldNotInjectBecauseCustomPropertiesAreNotEmbedded() {
         setupApiCall(CompletableFuture.completedFuture(new Repository(NAMESPACE, NAME, "git")));
 
         envContributor.buildEnvironmentFor(run, envVars, listener);
@@ -116,7 +116,7 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldNotInjectBecauseCustomPropertiesAreEmpty() {
+    void shouldNotInjectBecauseCustomPropertiesAreEmpty() {
         Repository repo = new Repository(NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of()));
         setupApiCall(CompletableFuture.completedFuture(repo));
         envContributor.buildEnvironmentFor(run, envVars, listener);
@@ -126,7 +126,7 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldNotInjectBecauseNoPropertiesAddedToRepository() {
+    void shouldNotInjectBecauseNoPropertiesAddedToRepository() {
         Repository repo = new Repository(
                 NAMESPACE, NAME, "git", Embedded.embedded("customProperties", List.of(new Wrapper(List.of()))));
         setupApiCall(CompletableFuture.completedFuture(repo));
@@ -138,7 +138,7 @@ public class CustomPropertiesEnvContributorTest {
     }
 
     @Test
-    public void shouldInjectFromFetchedRepository() {
+    void shouldInjectFromFetchedRepository() {
         Repository repo = new Repository(
                 NAMESPACE,
                 NAME,

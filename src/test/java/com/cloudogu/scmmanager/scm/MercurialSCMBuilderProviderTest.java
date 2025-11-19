@@ -10,24 +10,30 @@ import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class MercurialSCMBuilderProviderTest {
+@WithJenkins
+class MercurialSCMBuilderProviderTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void shouldReturnMercurialSCMBuilderProvider() {
+    void shouldReturnMercurialSCMBuilderProvider() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
         assertThat(provider).isInstanceOf(MercurialSCMBuilderProvider.class);
         assertThat(provider.getType()).isEqualTo("hg");
     }
 
     @Test
-    public void shouldSupportCategories() {
+    void shouldSupportCategories() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
         assertThat(provider.isSupported(TagSCMHeadCategory.DEFAULT)).isFalse();
         assertThat(provider.isSupported(ChangeRequestSCMHeadCategory.DEFAULT)).isFalse();
@@ -35,14 +41,14 @@ public class MercurialSCMBuilderProviderTest {
     }
 
     @Test
-    public void shouldCreateSCMBuilder() {
+    void shouldCreateSCMBuilder() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
         SCMBuilder<?, ?> builder = provider.create(context("hg"));
         assertThat(builder).isInstanceOf(ScmManagerHgSCMBuilder.class);
     }
 
     @Test
-    public void shouldFilterBrowserTrait() {
+    void shouldFilterBrowserTrait() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
         boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl()).stream()
                 .map(SCMSourceTraitDescriptor::getClass)
@@ -51,7 +57,7 @@ public class MercurialSCMBuilderProviderTest {
     }
 
     @Test
-    public void shouldContainCleanTrait() {
+    void shouldContainCleanTrait() {
         SCMBuilderProvider provider = SCMBuilderProvider.byType("hg");
         boolean contains = provider.getTraitDescriptors(new ScmManagerSource.DescriptorImpl()).stream()
                 .map(SCMSourceTraitDescriptor::getClass)

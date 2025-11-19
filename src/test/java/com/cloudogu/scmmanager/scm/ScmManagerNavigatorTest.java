@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cloudogu.scmmanager.scm.api.Repository;
@@ -18,24 +19,23 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceObserver;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerNavigatorTest {
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class ScmManagerNavigatorTest {
 
     private static final String SERVER_URL = "https://hitchhiker.com";
     private static final String NAMESPACE = "spaceships";
-    private static final String CRENDETIALS = "zaphod";
-
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private static final String CREDENTIALS = "zaphod";
 
     @Mock
     private ScmManagerApiFactory apiFactory;
@@ -46,8 +46,15 @@ public class ScmManagerNavigatorTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private SCMSourceObserver observer;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
-    public void shouldObserveGitRepositories() throws IOException, InterruptedException {
+    void shouldObserveGitRepositories() throws IOException, InterruptedException {
         mockApiResponse(repository("git", "heart-of-gold"));
 
         ScmManagerNavigator navigator = navigator("git");
@@ -57,7 +64,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldObserveRepositoriesForAllNamespaces() throws IOException, InterruptedException {
+    void shouldObserveRepositoriesForAllNamespaces() throws IOException, InterruptedException {
         mockApiResponse(repository("git", "heart-of-gold"));
 
         ScmManagerNavigator navigator = navigatorForCustomNamespace(ScmManagerNavigator.ALL_NAMESPACES_LABEL, "git");
@@ -67,7 +74,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldObserveMercurialRepositories() throws IOException, InterruptedException {
+    void shouldObserveMercurialRepositories() throws IOException, InterruptedException {
         mockApiResponse(repository("hg", "firefly"));
 
         ScmManagerNavigator navigator = navigator("mercurial");
@@ -77,7 +84,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldNotObserveNonSupportedRepositories() throws IOException, InterruptedException {
+    void shouldNotObserveNonSupportedRepositories() throws IOException, InterruptedException {
         mockApiResponse(repository("git", "heart-of-gold"), repository("hg", "firefly"));
 
         ScmManagerNavigator navigator = navigator("subversion");
@@ -87,7 +94,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldNotObserveSubversionWithoutTrait() throws IOException, InterruptedException {
+    void shouldNotObserveSubversionWithoutTrait() throws IOException, InterruptedException {
         mockApiResponse(repository("svn", "elysium"));
 
         ScmManagerNavigator navigator = navigator("subversion");
@@ -97,7 +104,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldObserveSubversion() throws IOException, InterruptedException {
+    void shouldObserveSubversion() throws IOException, InterruptedException {
         mockApiResponse(repository("svn", "elysium"));
 
         ScmManagerNavigator navigator = navigator("subversion");
@@ -108,7 +115,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldCreateSvnSourceAndPassIncludesAndExcludes() throws IOException, InterruptedException {
+    void shouldCreateSvnSourceAndPassIncludesAndExcludes() throws IOException, InterruptedException {
         mockApiResponse(repository("svn", "elysium"));
 
         SCMSourceObserver.ProjectObserver projectObserver = mock(SCMSourceObserver.ProjectObserver.class);
@@ -130,7 +137,7 @@ public class ScmManagerNavigatorTest {
     }
 
     @Test
-    public void shouldCreateSource() throws IOException, InterruptedException {
+    void shouldCreateSource() throws IOException, InterruptedException {
         mockApiResponse(repository("git", "heart-of-gold"));
 
         SCMSourceObserver.ProjectObserver projectObserver = mock(SCMSourceObserver.ProjectObserver.class);
@@ -146,16 +153,14 @@ public class ScmManagerNavigatorTest {
         assertThat(source).isInstanceOf(ScmManagerSource.class);
     }
 
-    @Test(expected = IOException.class)
-    public void shouldThrowIOExceptionOnError() throws IOException, InterruptedException, ExecutionException {
+    @Test
+    void shouldThrowIOExceptionOnError() throws Exception {
         mockApiResponse(repository("git", "heart-of-gold"));
-
         CompletableFuture<List<Repository>> repositoryRequest = mock(CompletableFuture.class);
         when(api.getRepositories(NAMESPACE)).thenReturn(repositoryRequest);
         when(repositoryRequest.get()).thenThrow(new ExecutionException("test", null));
-
         ScmManagerNavigator navigator = navigator("git");
-        navigator.visitSources(observer);
+        assertThrows(IOException.class, () -> navigator.visitSources(observer));
     }
 
     @NonNull
@@ -166,7 +171,7 @@ public class ScmManagerNavigatorTest {
     @NonNull
     private ScmManagerNavigator navigatorForCustomNamespace(String namespace, String... installedPlugins) {
         return new ScmManagerNavigator(
-                "scm", SERVER_URL, namespace, CRENDETIALS, dependencyChecker(installedPlugins), apiFactory);
+                "scm", SERVER_URL, namespace, CREDENTIALS, dependencyChecker(installedPlugins), apiFactory);
     }
 
     private Predicate<String> dependencyChecker(String... plugins) {
@@ -184,7 +189,7 @@ public class ScmManagerNavigatorTest {
     }
 
     private void mockApiResponse(Repository... repositories) {
-        when(apiFactory.create(observer.getContext(), SERVER_URL, CRENDETIALS)).thenReturn(api);
+        when(apiFactory.create(observer.getContext(), SERVER_URL, CREDENTIALS)).thenReturn(api);
         when(observer.getIncludes()).thenReturn(null);
         lenient()
                 .when(api.getRepositories(NAMESPACE))

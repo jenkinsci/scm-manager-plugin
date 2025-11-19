@@ -1,8 +1,8 @@
 package com.cloudogu.scmmanager.info;
 
 import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
@@ -13,14 +13,17 @@ import hudson.scm.SubversionSCM;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SvnScmInformationResolverTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class SvnScmInformationResolverTest {
 
     @Mock
     private SubversionSCM svn;
@@ -31,7 +34,7 @@ public class SvnScmInformationResolverTest {
     private final SvnScmInformationResolver resolver = new SvnScmInformationResolver();
 
     @Test
-    public void testResolveWithWrongSCM() {
+    void testResolveWithWrongSCM() {
         GitSCM git = Mockito.mock(GitSCM.class);
 
         Collection<JobInformation> information = resolver.resolve(run, git);
@@ -39,13 +42,13 @@ public class SvnScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithoutLocations() {
+    void testResolveWithoutLocations() {
         Collection<JobInformation> information = resolver.resolve(run, svn);
         assertTrue(information.isEmpty());
     }
 
     @Test
-    public void testResolveWithEmptyLocations() {
+    void testResolveWithEmptyLocations() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
         when(svn.getLocations()).thenReturn(new SubversionSCM.ModuleLocation[0]);
 
@@ -54,7 +57,7 @@ public class SvnScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithOneLocation() {
+    void testResolveWithOneLocation() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
         applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
         applyRevisions(42);
@@ -62,12 +65,12 @@ public class SvnScmInformationResolverTest {
         Collection<JobInformation> information = resolver.resolve(run, svn);
         assertEquals(1, information.size());
 
-        Assertions.info(
+        JobInformationAssertions.info(
                 information.iterator().next(), "svn", "42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
     }
 
     @Test
-    public void testResolveOneWithoutRevision() {
+    void testResolveOneWithoutRevision() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
         applyLocations(location("https://scm.scm-manager.org/repo/ns/one", "scm-one"));
 
@@ -76,7 +79,7 @@ public class SvnScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveMultipleWithTooFewRevision() {
+    void testResolveMultipleWithTooFewRevision() {
         mockSource(
                 run,
                 "https://scm.scm-manager.org/repo/ns/one",
@@ -93,7 +96,7 @@ public class SvnScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveMultipleWithoutSourceOwner() {
+    void testResolveMultipleWithoutSourceOwner() {
         applyLocations(
                 location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
                 location("https://scm.scm-manager.org/repo/ns/two", "scm-two"));
@@ -104,7 +107,7 @@ public class SvnScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithMultipleLocations() {
+    void testResolveWithMultipleLocations() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one", "https://scm.scm-manager.org:443/repo/ns/two");
         applyLocations(
                 location("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
@@ -115,8 +118,10 @@ public class SvnScmInformationResolverTest {
         assertEquals(2, information.size());
 
         Iterator<JobInformation> iterator = information.iterator();
-        Assertions.info(iterator.next(), "svn", "42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
-        Assertions.info(iterator.next(), "svn", "21", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
+        JobInformationAssertions.info(
+                iterator.next(), "svn", "42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
+        JobInformationAssertions.info(
+                iterator.next(), "svn", "21", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
     }
 
     @SuppressWarnings("unchecked")

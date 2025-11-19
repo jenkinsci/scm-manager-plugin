@@ -1,7 +1,7 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,24 +11,24 @@ import hudson.model.Result;
 import hudson.model.Run;
 import java.util.SortedMap;
 import net.sf.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BuildStatusFactoryTest {
+@ExtendWith(MockitoExtension.class)
+class BuildStatusFactoryTest {
 
     private static final String URL = "https://oss.cloudogu.com/jenkins";
 
     @Mock
     private Run run;
 
-    private BuildStatusFactory buildStatusFactory = new BuildStatusFactory();
+    private final BuildStatusFactory buildStatusFactory = new BuildStatusFactory();
 
-    @Before
-    public void prepareRun() {
+    @BeforeEach
+    void beforeEach() {
         ItemGroup group = mock(ItemGroup.class);
         when(group.getFullName()).thenReturn("jenkins");
         when(group.getFullDisplayName()).thenReturn("Jenkins");
@@ -38,43 +38,43 @@ public class BuildStatusFactoryTest {
     }
 
     @Test
-    public void testPending() {
+    void testPending() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, null);
         assertStatus(buildStatus, BuildStatus.StatusType.PENDING);
     }
 
     @Test
-    public void testSuccess() {
+    void testSuccess() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.SUCCESS);
         assertStatus(buildStatus, BuildStatus.StatusType.SUCCESS);
     }
 
     @Test
-    public void testFailure() {
+    void testFailure() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.FAILURE);
         assertStatus(buildStatus, BuildStatus.StatusType.FAILURE);
     }
 
     @Test
-    public void testAborted() {
+    void testAborted() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.ABORTED);
         assertStatus(buildStatus, BuildStatus.StatusType.ABORTED);
     }
 
     @Test
-    public void testUnstable() {
+    void testUnstable() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.UNSTABLE);
         assertStatus(buildStatus, BuildStatus.StatusType.UNSTABLE);
     }
 
     @Test
-    public void testUnknownStatus() {
+    void testUnknownStatus() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.NOT_BUILT);
         assertNull(buildStatus);
     }
 
     @Test
-    public void testMarshaling() {
+    void testMarshaling() {
         BuildStatus buildStatus = buildStatusFactory.create(URL, run, Result.UNSTABLE);
         JSONObject jsonObject = JSONObject.fromObject(buildStatus);
         assertEquals("jenkins/scm-manager-plugin", jsonObject.getString("name"));

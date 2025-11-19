@@ -1,8 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsScope;
@@ -12,62 +10,67 @@ import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import java.io.IOException;
-import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class HttpAuthenticationFactoryTest {
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class HttpAuthenticationFactoryTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private final AuthenticationFactory authenticationFactory = new AuthenticationFactory();
 
     @Mock
     private Run<?, ?> run;
 
-    private final AuthenticationFactory authenticationFactory = new AuthenticationFactory();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testCreateWithoutCredentialsId() {
+    void testCreateWithoutCredentialsId() {
         HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, null);
         assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
     }
 
     @Test
-    public void testCreateWithEmptyCredentialsId() {
+    void testCreateWithEmptyCredentialsId() {
         HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "");
         assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
     }
 
     @Test
-    public void testCreateWithNonExistingCredentials() {
+    void testCreateWithNonExistingCredentials() {
         HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-two");
         assertSame(AuthenticationFactory.NOOP_HTTP_AUTHENTICATION, httpAuthentication);
     }
 
-    @Test(expected = CredentialsUnavailableException.class)
-    public void testCredentialsUnavailableExceptionIfMissingCredentials() {
-        authenticationFactory.createSSH(run, "");
+    @Test
+    void testCredentialsUnavailableExceptionIfMissingCredentials() {
+        assertThrows(CredentialsUnavailableException.class, () -> authenticationFactory.createSSH(run, ""));
     }
 
     @Test
-    public void testCreateSSHAuthentication() throws IOException, Descriptor.FormException {
+    void testCreateSSHAuthentication() throws IOException, Descriptor.FormException {
         addCredential("scmadmin", "scmadmin", "scmadmin");
         SSHAuthentication authentication = authenticationFactory.createSSH(run, "scmadmin");
-        assertSame(authentication.getClass(), SSHAuthentication.class);
+        assertSame(SSHAuthentication.class, authentication.getClass());
     }
 
     // TODO Replace with lombok
     @Test
-    public void testCreate() throws IOException, Descriptor.FormException {
+    void testCreate() throws IOException, Descriptor.FormException {
         addCredential("scm-one", "trillian", "secret");
 
         HttpAuthentication httpAuthentication = authenticationFactory.createHttp(run, "scm-one");
-        assertThat(httpAuthentication, CoreMatchers.instanceOf(BasicHttpAuthentication.class));
+        assertInstanceOf(BasicHttpAuthentication.class, httpAuthentication);
 
         BasicHttpAuthentication basic = (BasicHttpAuthentication) httpAuthentication;
         assertEquals("trillian", basic.getUsername());

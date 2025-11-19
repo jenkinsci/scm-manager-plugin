@@ -1,18 +1,14 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
 
 public class PullRequest extends HalRepresentation implements ScmManagerObservable {
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String id;
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String source;
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String target;
 
     private CloneInformation cloneInformation;

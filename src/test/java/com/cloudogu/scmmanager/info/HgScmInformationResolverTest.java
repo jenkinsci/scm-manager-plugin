@@ -1,8 +1,8 @@
 package com.cloudogu.scmmanager.info;
 
 import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -13,14 +13,17 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.mercurial.MercurialSCM;
 import java.util.Collection;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class HgScmInformationResolverTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class HgScmInformationResolverTest {
 
     @Mock
     private MercurialSCM hg;
@@ -31,7 +34,7 @@ public class HgScmInformationResolverTest {
     private final HgScmInformationResolver resolver = new HgScmInformationResolver();
 
     @Test
-    public void testResolveWithWrongSCM() {
+    void testResolveWithWrongSCM() {
         GitSCM git = Mockito.mock(GitSCM.class);
 
         Collection<JobInformation> information = resolver.resolve(run, git);
@@ -39,7 +42,7 @@ public class HgScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithoutSource() {
+    void testResolveWithoutSource() {
         applyRevision("abc42");
 
         Collection<JobInformation> information = resolver.resolve(run, hg);
@@ -47,7 +50,7 @@ public class HgScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithoutRevision() {
+    void testResolveWithoutRevision() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
 
         Collection<JobInformation> information = resolver.resolve(run, hg);
@@ -55,7 +58,7 @@ public class HgScmInformationResolverTest {
     }
 
     @Test
-    public void testResolve() {
+    void testResolve() {
         mockSource(run, "https://scm.scm-manager.org:443/repo/ns/one");
         doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
         applyRevision("42abc");
@@ -63,19 +66,19 @@ public class HgScmInformationResolverTest {
 
         Collection<JobInformation> information = resolver.resolve(run, hg);
         assertEquals(1, information.size());
-        Assertions.info(
+        JobInformationAssertions.info(
                 information.iterator().next(), "hg", "42abc", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
     }
 
     @Test
-    public void testResolveWithoutSourceOwner() {
+    void testResolveWithoutSourceOwner() {
         doReturn("https://scm.scm-manager.org/repo/ns/one").when(hg).getSource();
         applyRevision("42abc");
         when(hg.getCredentialsId()).thenReturn("scm-one");
 
         Collection<JobInformation> information = resolver.resolve(run, hg);
         assertEquals(1, information.size());
-        Assertions.info(
+        JobInformationAssertions.info(
                 information.iterator().next(), "hg", "42abc", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
     }
 

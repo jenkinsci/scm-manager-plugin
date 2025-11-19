@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm.jobdsl;
 
 import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.cloudogu.scmmanager.scm.PullRequestDiscoveryTrait;
 import com.cloudogu.scmmanager.scm.ScmManagerBranchDiscoveryTrait;
@@ -9,17 +10,23 @@ import com.cloudogu.scmmanager.scm.ScmManagerNavigator;
 import com.cloudogu.scmmanager.scm.ScmManagerSvnNavigatorTrait;
 import com.cloudogu.scmmanager.scm.TagDiscoveryTrait;
 import javaposse.jobdsl.dsl.DslScriptException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class NavigatorExtensionTest {
+@WithJenkins
+class NavigatorExtensionTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void shouldCreateNavigator() {
+    void shouldCreateNavigator() {
         NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
             ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;
             context.serverUrl("https://scm.hitchhiker.com/scm");
@@ -37,7 +44,7 @@ public class NavigatorExtensionTest {
     }
 
     @Test
-    public void shouldDisableDefaultTraits() {
+    void shouldDisableDefaultTraits() {
         NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
             ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;
             context.serverUrl("https://scm.hitchhiker.com/scm");
@@ -55,19 +62,16 @@ public class NavigatorExtensionTest {
     }
 
     @Test
-    public void shouldConfigureIncludesAndExcludesOfSubversionTrait() {
+    void shouldConfigureIncludesAndExcludesOfSubversionTrait() {
         NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
-            if (ctx instanceof ScmManagerNavigatorContext) {
-                ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;
+            if (ctx instanceof ScmManagerNavigatorContext context) {
                 context.serverUrl("https://scm.hitchhiker.com/scm");
                 context.credentialsId("secret");
                 context.namespace("spaceships");
                 context.discoverBranches(false);
                 context.discoverPullRequest(false);
                 context.discoverSvn(() -> {});
-            } else if (ctx instanceof ScmManagerNavigatorContext.SubversionContext) {
-                ScmManagerNavigatorContext.SubversionContext context =
-                        (ScmManagerNavigatorContext.SubversionContext) ctx;
+            } else if (ctx instanceof ScmManagerNavigatorContext.SubversionContext context) {
                 context.includes("tags");
                 context.excludes("tags/0.*");
             }
@@ -80,14 +84,13 @@ public class NavigatorExtensionTest {
         assertThat(trait.getExcludes()).isEqualTo("tags/0.*");
     }
 
-    @Test(expected = DslScriptException.class)
-    public void shouldFailWithoutNamespace() {
+    @Test
+    void shouldFailWithoutNamespace() {
         NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
             ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;
             context.serverUrl("https://scm.hitchhiker.com/scm");
             context.credentialsId("secret");
         });
-
-        extension.scmManagerNamespace(null);
+        assertThrows(DslScriptException.class, () -> extension.scmManagerNamespace(null));
     }
 }

@@ -5,6 +5,7 @@ import static com.cloudogu.scmmanager.scm.ScmTestData.revision;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.cloudogu.scmmanager.scm.api.Branch;
@@ -40,15 +41,18 @@ import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
 import jenkins.scm.impl.UncategorizedSCMHeadCategory;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ScmManagerSourceTest {
 
     public static final CloneInformation CLONE_INFORMATION = new CloneInformation("git", "https://hitchhiker.com/scm");
@@ -83,8 +87,8 @@ public class ScmManagerSourceTest {
 
     private ScmManagerSource source;
 
-    @Before
-    public void initMocks() throws IOException, InterruptedException {
+    @BeforeEach
+    void beforeEach() throws IOException, InterruptedException {
         when(apiFactory.create(scmSourceOwner, "http://hithchiker.com/scm", "dent"))
                 .thenReturn(api);
         when(api.getBaseUrl()).thenReturn("https://hitchhiker.com/scm");
@@ -103,7 +107,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldUseConfiguredValues() throws IOException, InterruptedException {
+    void shouldUseConfiguredValues() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
 
         source.retrieve(criteria, observer, null, listener);
@@ -112,7 +116,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserverBranches() throws IOException, InterruptedException {
+    void shouldObserverBranches() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getBranches(REPOSITORY)).thenReturn(completedFuture(asList(new Branch("feature/hog", "42"))));
         when(request.isFetchBranches()).thenReturn(true);
@@ -127,7 +131,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserverPullRequests() throws IOException, InterruptedException {
+    void shouldObserverPullRequests() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest())));
         when(request.isFetchPullRequests()).thenReturn(true);
@@ -138,7 +142,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldProcessTagRequests() throws IOException, InterruptedException {
+    void shouldProcessTagRequests() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getTags(REPOSITORY)).thenReturn(completedFuture(asList(createTag())));
         when(request.isFetchTags()).thenReturn(true);
@@ -149,7 +153,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserveOnlyChangedBranch() throws IOException, InterruptedException {
+    void shouldObserveOnlyChangedBranch() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getBranch(REPOSITORY, "develop")).thenReturn(completedFuture(new Branch("develop", "42")));
         when(request.isFetchBranches()).thenReturn(true);
@@ -163,7 +167,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldDoNothingIfBranchChangesWithoutRequestingThem() throws IOException, InterruptedException {
+    void shouldDoNothingIfBranchChangesWithoutRequestingThem() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(observer.getIncludes())
                 .thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
@@ -184,7 +188,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserveOnlyChangedTag() throws IOException, InterruptedException {
+    void shouldObserveOnlyChangedTag() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getTag(REPOSITORY, "4.2")).thenReturn(completedFuture(createTag()));
         when(observer.getIncludes()).thenReturn(Collections.singleton(new ScmManagerTag(CLONE_INFORMATION, "4.2", 0L)));
@@ -197,7 +201,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldDoNothingIfTagChangesWithoutRequestingThem() throws IOException, InterruptedException {
+    void shouldDoNothingIfTagChangesWithoutRequestingThem() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(observer.getIncludes()).thenReturn(Collections.singleton(new ScmManagerTag(CLONE_INFORMATION, "4.2", 0L)));
 
@@ -212,7 +216,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserveOnlyChangedPullRequest() throws IOException, InterruptedException {
+    void shouldObserveOnlyChangedPullRequest() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getPullRequest(REPOSITORY, "42")).thenReturn(completedFuture(createPullRequest()));
         when(observer.getIncludes())
@@ -234,7 +238,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldDoNothingIfPullRequestChangesWithoutRequestingThem() throws IOException, InterruptedException {
+    void shouldDoNothingIfPullRequestChangesWithoutRequestingThem() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(observer.getIncludes())
                 .thenReturn(Collections.singleton(new ScmManagerPullRequestHead(
@@ -250,7 +254,7 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldObserveAllOnRemove() throws IOException, InterruptedException {
+    void shouldObserveAllOnRemove() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getBranches(REPOSITORY)).thenReturn(completedFuture(asList(new Branch("feature/hog", "42"))));
         when(request.isFetchBranches()).thenReturn(true);
@@ -267,27 +271,27 @@ public class ScmManagerSourceTest {
                 .isEqualTo("42");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionForNonScmManagerHeads() {
-        source.build(new SCMHead("throw-it"));
+    @Test
+    void shouldThrowIllegalArgumentExceptionForNonScmManagerHeads() {
+        assertThrows(IllegalArgumentException.class, () -> source.build(new SCMHead("throw-it")));
     }
 
     @Test
-    public void shouldRetrieveScmManagerRepoLink() {
+    void shouldRetrieveScmManagerRepoLink() {
         List<Action> actions = source.retrieveActions(null, listener());
         assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X");
         assertScmManagerApiData(actions);
     }
 
     @Test
-    public void shouldRetrieveScmManagerHeadLink() {
+    void shouldRetrieveScmManagerHeadLink() {
         List<Action> actions = source.retrieveActions(branch("develop"), null, listener());
         assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X/code/sources/develop");
         assertScmManagerApiData(actions);
     }
 
     @Test
-    public void shouldRetrieveScmManagerRevisionLink() {
+    void shouldRetrieveScmManagerRevisionLink() {
         List<Action> actions = source.retrieveActions(revision(branch("develop"), "abc42"), null, listener());
         assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X/code/sources/abc42");
         assertScmManagerApiData(actions);
@@ -309,19 +313,19 @@ public class ScmManagerSourceTest {
     }
 
     @Test
-    public void shouldSupportTagCategory() {
+    void shouldSupportTagCategory() {
         source.setTraits(Collections.singletonList(new TagDiscoveryTrait()));
         assertThat(source.isCategoryTraitEnabled(TagSCMHeadCategory.DEFAULT));
     }
 
     @Test
-    public void shouldSupportChangeRequestCategory() {
+    void shouldSupportChangeRequestCategory() {
         source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new PullRequestDiscoveryTrait(false)));
         assertThat(source.isCategoryTraitEnabled(ChangeRequestSCMHeadCategory.DEFAULT));
     }
 
     @Test
-    public void shouldSupportBranchCategory() {
+    void shouldSupportBranchCategory() {
         source.setTraits(Lists.newArrayList(new TagDiscoveryTrait(), new BranchDiscoveryTrait()));
         assertThat(source.isCategoryTraitEnabled(UncategorizedSCMHeadCategory.DEFAULT));
     }

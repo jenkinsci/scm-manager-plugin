@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey;
 import com.cloudbees.plugins.credentials.CredentialsScope;
@@ -13,26 +14,32 @@ import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import hudson.model.Descriptor;
 import java.io.IOException;
 import jenkins.scm.api.SCMSourceOwner;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CredentialsLookupTest {
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class CredentialsLookupTest {
 
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+    private final CredentialsLookup credentialsLookup = new CredentialsLookup();
 
     @Mock
     private SCMSourceOwner owner;
 
-    private final CredentialsLookup credentialsLookup = new CredentialsLookup();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void shouldReturnHttpCredentials() throws IOException, Descriptor.FormException {
+    void shouldReturnHttpCredentials() throws IOException, Descriptor.FormException {
         addUsernamePasswordCredentials("tricia", "trillian", "secret");
         StandardUsernamePasswordCredentials credentials =
                 credentialsLookup.http("http://hog", "tricia").lookup(owner);
@@ -40,15 +47,15 @@ public class CredentialsLookupTest {
     }
 
     @Test
-    public void shouldReturnCredentialsFromItemGroup() throws IOException, Descriptor.FormException {
+    void shouldReturnCredentialsFromItemGroup() throws IOException, Descriptor.FormException {
         addUsernamePasswordCredentials("tricia", "trillian", "secret");
         StandardUsernamePasswordCredentials credentials =
-                credentialsLookup.http("http://hog", "tricia").lookup(jenkins.getInstance());
+                credentialsLookup.http("http://hog", "tricia").lookup(j.getInstance());
         assertThat(credentials).isNotNull();
     }
 
     @Test
-    public void shouldReturnSshUsernamePasswordCredentials() throws IOException, Descriptor.FormException {
+    void shouldReturnSshUsernamePasswordCredentials() throws IOException, Descriptor.FormException {
         addUsernamePasswordCredentials("dent", "adent", "secret123");
         StandardUsernameCredentials credentials =
                 credentialsLookup.ssh("ssh://hog", "dent").lookup(owner);
@@ -56,26 +63,32 @@ public class CredentialsLookupTest {
     }
 
     @Test
-    public void shouldReturnSshPrivateKeyCredentials() throws IOException {
+    void shouldReturnSshPrivateKeyCredentials() throws IOException {
         addPrivateKeyCredentials("slarti", "slarti", "private-ssh-key", "");
         StandardUsernameCredentials credentials =
                 credentialsLookup.ssh("ssh://hog", "slarti").lookup(owner);
         assertThat(credentials).isNotNull();
     }
 
-    @Test(expected = CredentialsUnavailableException.class)
-    public void shouldThrowExceptionForNonExistingCredentials() {
-        credentialsLookup.ssh("ssh://hog", "slarti").lookup(owner);
+    @Test
+    void shouldThrowExceptionForNonExistingCredentials() {
+        assertThrows(
+                CredentialsUnavailableException.class,
+                () -> credentialsLookup.ssh("ssh://hog", "slarti").lookup(owner));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionForNonSshUrl() {
-        credentialsLookup.ssh("http://hog", "slarti").lookup(owner);
+    @Test
+    void shouldThrowIllegalArgumentExceptionForNonSshUrl() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> credentialsLookup.ssh("http://hog", "slarti").lookup(owner));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIllegalArgumentExceptionForNonHttpUrl() {
-        credentialsLookup.ssh("http://hog", "slarti").lookup(owner);
+    @Test
+    void shouldThrowIllegalArgumentExceptionForNonHttpUrl() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> credentialsLookup.ssh("http://hog", "slarti").lookup(owner));
     }
 
     private void addPrivateKeyCredentials(String id, String username, String key, String passphrase)

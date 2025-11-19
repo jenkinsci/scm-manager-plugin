@@ -4,19 +4,19 @@ import static org.mockito.Mockito.verify;
 
 import hudson.util.Secret;
 import okhttp3.Request;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BasicHttpAuthenticationTest {
+@ExtendWith(MockitoExtension.class)
+class BasicHttpAuthenticationTest {
 
     @Mock
     private Request.Builder requestBuilder;
 
     @Test
-    public void testAuthenticate() {
+    void testAuthenticate() {
         // we use {} as secret, because we are not able to mock a secret (class is final) and {} can be used to create a
         // secret without the usage of a password store
         Secret secret = Secret.fromString("{}");

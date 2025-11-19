@@ -7,19 +7,18 @@ import static org.mockito.Mockito.when;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import jenkins.scm.api.SCMSourceOwner;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmManagerApiFactoryTest {
-
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class ScmManagerApiFactoryTest {
 
     @Mock
     private SCMSourceOwner owner;
@@ -33,15 +32,22 @@ public class ScmManagerApiFactoryTest {
     @InjectMocks
     private ScmManagerApiFactory apiFactory;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
-    public void shouldCreateAnonymousHttpApi() {
+    void shouldCreateAnonymousHttpApi() {
         ScmManagerApi api = apiFactory.anonymous("https://scm.hitchhiker.com");
         assertThat(api.getProtocol()).isEqualTo("http");
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void shouldCreateHttpApi() {
+    void shouldCreateHttpApi() {
         CredentialsLookup.Lookup<StandardUsernamePasswordCredentials> lookup = mock(CredentialsLookup.Lookup.class);
         when(lookup.lookup(owner)).thenReturn(credentials);
         when(credentialsLookup.http("https://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);
@@ -52,18 +58,18 @@ public class ScmManagerApiFactoryTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void shouldCreateHttpApiFromItemGroup() {
+    void shouldCreateHttpApiFromItemGroup() {
         CredentialsLookup.Lookup<StandardUsernamePasswordCredentials> lookup = mock(CredentialsLookup.Lookup.class);
-        when(lookup.lookup(jenkinsRule.getInstance())).thenReturn(credentials);
+        when(lookup.lookup(j.getInstance())).thenReturn(credentials);
         when(credentialsLookup.http("https://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);
 
-        ScmManagerApi api = apiFactory.create(jenkinsRule.getInstance(), "https://scm.hitchhiker.com", "scm-creds");
+        ScmManagerApi api = apiFactory.create(j.getInstance(), "https://scm.hitchhiker.com", "scm-creds");
         assertThat(api.getProtocol()).isEqualTo("http");
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void shouldCreateSshApi() {
+    void shouldCreateSshApi() {
         CredentialsLookup.Lookup<StandardUsernameCredentials> lookup = mock(CredentialsLookup.Lookup.class);
         when(lookup.lookup(owner)).thenReturn(credentials);
         when(credentialsLookup.ssh("ssh://scm.hitchhiker.com", "scm-creds")).thenReturn(lookup);

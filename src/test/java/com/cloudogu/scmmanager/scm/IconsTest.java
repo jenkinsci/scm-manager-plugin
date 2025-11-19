@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class IconsTest {
+class IconsTest {
 
     @Test
-    public void shouldRegisterIcon() {
+    void shouldRegisterIcon() {
         IconSet iconSet = new IconSet();
         String name = "icon-scm-manager-source";
         Icons.register(iconSet, name);
@@ -17,15 +17,7 @@ public class IconsTest {
         iconAssertions.assertAllSizes();
     }
 
-    private static final class IconAssertions {
-
-        private final IconSet iconSet;
-        private final String name;
-
-        private IconAssertions(IconSet iconSet, String name) {
-            this.iconSet = iconSet;
-            this.name = name;
-        }
+    private record IconAssertions(IconSet iconSet, String name) {
 
         void assertAllSizes() {
             for (Icons.Size size : Icons.Size.values()) {

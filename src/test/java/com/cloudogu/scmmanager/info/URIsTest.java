@@ -3,12 +3,12 @@ package com.cloudogu.scmmanager.info;
 import static com.cloudogu.scmmanager.info.URIs.normalize;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class URIsTest {
+class URIsTest {
 
     @Test
-    public void shouldNotModifyURI() {
+    void shouldNotModifyURI() {
         String[] uris = new String[] {
             "http://hitchhiker.com:8080", "http://hitchhiker.com:8080/path",
             "https://hitchhiker.com:8443", "https://hitchhiker.com:8443/some/path",
@@ -24,7 +24,7 @@ public class URIsTest {
     }
 
     @Test
-    public void shouldAddPort() {
+    void shouldAddPort() {
         assertThat(normalize("http://hitchhiker.com")).isEqualTo("http://hitchhiker.com:80");
         assertThat(normalize("https://hitchhiker.com")).isEqualTo("https://hitchhiker.com:443");
         assertThat(normalize("ssh://hitchhiker.com")).isEqualTo("ssh://hitchhiker.com:22");
@@ -34,19 +34,19 @@ public class URIsTest {
     }
 
     @Test
-    public void shouldRemoveCredentials() {
+    void shouldRemoveCredentials() {
         assertThat(normalize("http://trillian@hitchhiker.com:8080")).isEqualTo("http://hitchhiker.com:8080");
         assertThat(normalize("http://trillian:secret@hitchhiker.com:8080")).isEqualTo("http://hitchhiker.com:8080");
         assertThat(normalize("ssh://trillian@hitchhiker.com/path")).isEqualTo("ssh://hitchhiker.com:22/path");
     }
 
     @Test
-    public void shouldRemoveQueryParameters() {
+    void shouldRemoveQueryParameters() {
         assertThat(normalize("http://hitchhiker.com:8080/path?a=b")).isEqualTo("http://hitchhiker.com:8080/path");
     }
 
     @Test
-    public void shouldRemoveHashParameters() {
+    void shouldRemoveHashParameters() {
         assertThat(normalize("http://hitchhiker.com:8080/path#abc")).isEqualTo("http://hitchhiker.com:8080/path");
     }
 }

@@ -1,8 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.cloudogu.scmmanager.info.JobInformation;
@@ -12,19 +10,18 @@ import hudson.model.Run;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class NotificationServiceTest {
-
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class NotificationServiceTest {
 
     @Mock
     private BuildStatusFactory buildStatusFactory;
@@ -35,9 +32,16 @@ public class NotificationServiceTest {
     @InjectMocks
     private NotificationService notificationService;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
-    public void testNotify() {
-        String rootUrl = jenkins.jenkins.getRootUrl();
+    void testNotify() {
+        String rootUrl = j.jenkins.getRootUrl();
 
         BuildStatus status = BuildStatus.success(
                 "scm-manager-plugin", "scm-manager-plugin", "http://localhost:8080/jenkins/job/scm-manager-plugin/42");
@@ -60,7 +64,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testNotifyWithoutInformation() {
+    void testNotifyWithoutInformation() {
         mockJobInformation();
         notificationService.notify(run, Result.SUCCESS);
 
@@ -68,7 +72,7 @@ public class NotificationServiceTest {
     }
 
     @Test
-    public void testNotifyWithoutBuildStatus() {
+    void testNotifyWithoutBuildStatus() {
         JobInformation information =
                 new JobInformation("git", "sample://scm.scm-manager/repo/ns/core", "abc42", "scm-core", false);
         mockJobInformation(information);
@@ -95,7 +99,7 @@ public class NotificationServiceTest {
     @Extension
     public static class SampleNotifierProvider implements NotifierProvider {
 
-        private CapturingNotifier notifier = new CapturingNotifier();
+        private final CapturingNotifier notifier = new CapturingNotifier();
 
         @Override
         public Optional<? extends Notifier> get(Run<?, ?> run, JobInformation information) {
