@@ -1,10 +1,10 @@
 package com.cloudogu.scmmanager.info;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-final class Assertions {
+final class JobInformationAssertions {
 
-    private Assertions() {}
+    private JobInformationAssertions() {}
 
     static void info(JobInformation info, String type, String rev, String url, String credentials) {
         assertEquals(type, info.getType());

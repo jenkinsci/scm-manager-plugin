@@ -2,15 +2,15 @@ package com.cloudogu.scmmanager.scm;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ServerIdentificationTest {
+@ExtendWith(MockitoExtension.class)
+class ServerIdentificationTest {
 
     @Test
-    public void shouldNotThrowNullPointerExceptionIfServerUrlIsNull() {
+    void shouldNotThrowNullPointerExceptionIfServerUrlIsNull() {
         ServerIdentification serverIdentification = new ServerIdentification(null, null);
 
         boolean match = serverIdentification.matches(null);

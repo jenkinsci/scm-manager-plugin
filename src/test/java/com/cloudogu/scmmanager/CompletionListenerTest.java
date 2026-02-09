@@ -5,13 +5,13 @@ import static org.mockito.Mockito.when;
 
 import hudson.model.Result;
 import hudson.model.Run;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CompletionListenerTest {
+@ExtendWith(MockitoExtension.class)
+class CompletionListenerTest {
 
     @Mock
     private NotificationService notificationService;
@@ -20,7 +20,7 @@ public class CompletionListenerTest {
     private Run<?, ?> run;
 
     @Test
-    public void testNotificationServiceIsCalled() {
+    void testNotificationServiceIsCalled() {
         CompletionListener listener = new CompletionListener();
         listener.setNotificationService(notificationService);
 

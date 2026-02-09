@@ -2,6 +2,7 @@ package com.cloudogu.scmmanager.scm.jobdsl;
 
 import static com.cloudogu.scmmanager.scm.jobdsl.Asserts.assertContainsOnlyInstancesOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -16,27 +17,32 @@ import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import javaposse.jobdsl.dsl.DslScriptException;
 import jenkins.branch.BranchSource;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BranchSourcesExtensionTest {
-
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+@ExtendWith(MockitoExtension.class)
+@WithJenkins
+class BranchSourcesExtensionTest {
 
     @Mock
     private ScmManagerApiFactory apiFactory;
 
+    private JenkinsRule j;
+
+    @BeforeEach
+    void beforeEach(JenkinsRule rule) {
+        j = rule;
+    }
+
     @Test
-    public void shouldCreateSourceWithoutRepositoryFetch() throws ExecutionException, InterruptedException {
+    void shouldCreateSourceWithoutRepositoryFetch() throws Exception {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;
             context.id("42");
@@ -59,7 +65,7 @@ public class BranchSourcesExtensionTest {
     }
 
     @Test
-    public void shouldDisableDefaultTraits() throws ExecutionException, InterruptedException {
+    void shouldDisableDefaultTraits() throws Exception {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;
             context.id("42");
@@ -75,19 +81,19 @@ public class BranchSourcesExtensionTest {
         assertContainsOnlyInstancesOf(source.getTraits(), TagDiscoveryTrait.class);
     }
 
-    @Test(expected = DslScriptException.class)
-    public void shouldFailIfIdIsRequiredFieldIsMissing() throws ExecutionException, InterruptedException {
+    @Test
+    void shouldFailIfIdIsRequiredFieldIsMissing() {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;
             context.credentialsId("secret");
             context.repository("hitchhiker/hog/git");
             context.serverUrl("https://scm.hitchhiker.com");
         });
-        extension.scmManager(null);
+        assertThrows(DslScriptException.class, () -> extension.scmManager(null));
     }
 
     @Test
-    public void shouldCreateSourceAndFetchTypeFromApi() throws ExecutionException, InterruptedException {
+    void shouldCreateSourceAndFetchTypeFromApi() throws Exception {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;
             context.id("42");
@@ -99,7 +105,7 @@ public class BranchSourcesExtensionTest {
         ScmManagerApi api = mock(ScmManagerApi.class);
         Repository repository = mock(Repository.class);
         when(repository.getType()).thenReturn("git");
-        when(apiFactory.create(jenkinsRule.getInstance(), "https://scm.hitchhiker.com", "secret"))
+        when(apiFactory.create(j.getInstance(), "https://scm.hitchhiker.com", "secret"))
                 .thenReturn(api);
         when(api.getRepository("hitchhiker", "hog")).thenReturn(CompletableFuture.completedFuture(repository));
 
@@ -110,7 +116,7 @@ public class BranchSourcesExtensionTest {
     }
 
     @Test
-    public void shouldSetIncludesAndExcludes() {
+    void shouldSetIncludesAndExcludes() {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerSvnBranchSourceContext context = (ScmManagerSvnBranchSourceContext) ctx;
             context.id("42");
@@ -127,7 +133,7 @@ public class BranchSourcesExtensionTest {
     }
 
     @Test
-    public void shouldCreateScmManagerSvnSource() {
+    void shouldCreateScmManagerSvnSource() {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerSvnBranchSourceContext context = (ScmManagerSvnBranchSourceContext) ctx;
             context.id("42");

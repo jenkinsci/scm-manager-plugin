@@ -1,6 +1,6 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,23 +9,23 @@ import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.Session;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmV2SshNotifierTest {
-
-    @Mock
-    Connection connection;
+@ExtendWith(MockitoExtension.class)
+class ScmV2SshNotifierTest {
 
     @Mock
-    SSHAuthentication authentication;
+    private Connection connection;
+
+    @Mock
+    private SSHAuthentication authentication;
 
     @Test
-    public void testNotify() throws IOException {
+    void testNotify() throws IOException {
         Session sessionMock = Mockito.mock(Session.class);
         when(connection.openSession()).thenReturn(sessionMock);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -42,7 +42,7 @@ public class ScmV2SshNotifierTest {
     }
 
     @Test
-    public void shouldSetTypeToJenkinsIfNoTypeAvailable() throws IOException {
+    void shouldSetTypeToJenkinsIfNoTypeAvailable() throws IOException {
         Session sessionMock = Mockito.mock(Session.class);
         when(connection.openSession()).thenReturn(sessionMock);
         ByteArrayOutputStream out = new ByteArrayOutputStream();

@@ -6,15 +6,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import jenkins.scm.api.SCMFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ScmManagerApiTest extends ApiClientTestBase {
+class ScmManagerApiTest extends ApiClientTestBase {
 
     @Test
-    public void shouldLoadAllNamespaces() throws InterruptedException, ExecutionException {
+    void shouldLoadAllNamespaces() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         List<Namespace> namespaces = api.getNamespaces().get();
@@ -24,7 +23,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadAllRepositories() throws InterruptedException, ExecutionException {
+    void shouldLoadAllRepositories() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         List<Repository> repositories = api.getRepositories().get();
@@ -35,7 +34,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadAllRepositoriesForSingleNamespace() throws InterruptedException, ExecutionException {
+    void shouldLoadAllRepositoriesForSingleNamespace() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Namespace namespace = new Namespace(
@@ -51,7 +50,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadAllRepositoriesForSingleNamespaceAsString() throws InterruptedException, ExecutionException {
+    void shouldLoadAllRepositoriesForSingleNamespaceAsString() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         List<Repository> repositories = api.getRepositories("hitchhiker").get();
@@ -62,7 +61,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleRepository() throws InterruptedException, ExecutionException {
+    void shouldLoadSingleRepository() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository =
@@ -72,7 +71,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadBranches() throws InterruptedException, ExecutionException {
+    void shouldLoadBranches() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -95,7 +94,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadTagsWithChangesetsIfDateMissing() throws InterruptedException, ExecutionException {
+    void shouldLoadTagsWithChangesetsIfDateMissing() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -117,7 +116,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadTagsWithoutChangesetsWhenTagHasDate() throws InterruptedException, ExecutionException {
+    void shouldLoadTagsWithoutChangesetsWhenTagHasDate() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -139,7 +138,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleTag() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleTag() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -156,7 +155,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleBranch() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleBranch() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -173,7 +172,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleBranchWithSlashInName() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleBranchWithSlashInName() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -190,7 +189,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadPullRequests() throws ExecutionException, InterruptedException {
+    void shouldLoadPullRequests() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -211,7 +210,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSinglePullRequest() throws ExecutionException, InterruptedException {
+    void shouldLoadSinglePullRequest() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -229,7 +228,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleChangeset() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleChangeset() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -247,7 +246,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleFile() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleFile() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -265,7 +264,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleNonExistingFile() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleNonExistingFile() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);
@@ -283,7 +282,7 @@ public class ScmManagerApiTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldLoadSingleDirectory() throws ExecutionException, InterruptedException {
+    void shouldLoadSingleDirectory() throws Exception {
         ScmManagerApi api = new ScmManagerApi(apiClient());
 
         Repository repository = Mockito.mock(Repository.class);

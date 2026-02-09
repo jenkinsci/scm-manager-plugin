@@ -2,13 +2,12 @@ package com.cloudogu.scmmanager.scm.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.ExecutionException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class HttpApiClientTest extends ApiClientTestBase {
+class HttpApiClientTest extends ApiClientTestBase {
 
     @Test
-    public void shouldReturnMockedData() throws InterruptedException, ExecutionException {
+    void shouldReturnMockedData() throws Exception {
         ApiClient api = apiClient();
 
         SomeDataClass data =
@@ -20,7 +19,7 @@ public class HttpApiClientTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldMapData() throws InterruptedException, ExecutionException {
+    void shouldMapData() throws Exception {
         ApiClient api = apiClient();
 
         String message = api.get("/some/thing", "application/json", SomeDataClass.class)
@@ -32,7 +31,7 @@ public class HttpApiClientTest extends ApiClientTestBase {
     }
 
     //  @Test
-    //  public void shouldFetchMismatchedInputException() throws InterruptedException, ExecutionException {
+    //  public void shouldFetchMismatchedInputException() throws Exception {
     //    ApiClient api = apiClient();
     //
     //    SomeOtherClass data = api.get("/some/thing", "application/json", SomeOtherClass.class)
@@ -64,7 +63,7 @@ public class HttpApiClientTest extends ApiClientTestBase {
     //  }
 
     @Test
-    public void shouldTrimServerUrl() {
+    void shouldTrimServerUrl() {
         String fixedUrl =
                 HttpApiClient.fixServerUrl("  http://hitchhiker.com/scm\t").apply("/api");
 
@@ -72,7 +71,7 @@ public class HttpApiClientTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldRemoveTrailingSlashFromServerUrl() {
+    void shouldRemoveTrailingSlashFromServerUrl() {
         String fixedUrl =
                 HttpApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("/api");
 
@@ -80,7 +79,7 @@ public class HttpApiClientTest extends ApiClientTestBase {
     }
 
     @Test
-    public void shouldNotChangeAbsoluteUrl() {
+    void shouldNotChangeAbsoluteUrl() {
         String fixedUrl =
                 HttpApiClient.fixServerUrl("http://hitchhiker.com/scm/").apply("http://vogon.vo/destroy");
 

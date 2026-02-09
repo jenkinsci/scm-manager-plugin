@@ -1,16 +1,13 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Date;
 import java.util.Objects;
 
 public class Tag extends HalRepresentation implements ScmManagerObservable {
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String name;
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     private String revision;
 
     private Date date;

@@ -5,24 +5,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import hudson.plugins.mercurial.browser.HgBrowser;
 import hudson.plugins.mercurial.browser.ScmManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ScmManagerHgSCMBuilderTest {
+class ScmManagerHgSCMBuilderTest {
 
     @Test
-    public void shouldReturnNullIfBrowserDoesNotExists() {
+    void shouldReturnNullIfBrowserDoesNotExists() {
         HgBrowser browser = findAndCreateBrowser("UnknownBrowser", "https://hitchhiker.com");
         assertThat(browser).isNull();
     }
 
     @Test
-    public void shouldReturnForInvalidBrowser() {
+    void shouldReturnForInvalidBrowser() {
         HgBrowser browser = findAndCreateBrowser("java.lang.Integer", "https://hitchhiker.com");
         assertThat(browser).isNull();
     }
 
     @Test
-    public void shouldReturnScmManagerBrowser() {
+    void shouldReturnScmManagerBrowser() {
         HgBrowser browser = findAndCreateBrowser("https://hitchhiker.com");
         assertThat(browser).isInstanceOf(ScmManager.class);
     }

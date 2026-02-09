@@ -1,8 +1,8 @@
 package com.cloudogu.scmmanager.info;
 
 import static com.cloudogu.scmmanager.info.SourceUtilTestHelper.mockSource;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -15,13 +15,16 @@ import hudson.plugins.mercurial.MercurialSCM;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
-public class GitScmInformationResolverTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class GitScmInformationResolverTest {
 
     @Mock
     private GitSCM git;
@@ -32,20 +35,20 @@ public class GitScmInformationResolverTest {
     private final GitScmInformationResolver resolver = new GitScmInformationResolver();
 
     @Test
-    public void testResolveNonGitSCM() {
+    void testResolveNonGitSCM() {
         MercurialSCM scm = mock(MercurialSCM.class);
         Collection<JobInformation> information = resolver.resolve(run, scm);
         assertTrue(information.isEmpty());
     }
 
     @Test
-    public void testResolveWithoutBuildData() {
+    void testResolveWithoutBuildData() {
         Collection<JobInformation> information = resolver.resolve(run, git);
         assertTrue(information.isEmpty());
     }
 
     @Test
-    public void testResolveWithoutRevision() {
+    void testResolveWithoutRevision() {
         BuildData buildData = mock(BuildData.class);
         when(git.getBuildData(run)).thenReturn(buildData);
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
@@ -55,7 +58,7 @@ public class GitScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithoutSha1() {
+    void testResolveWithoutSha1() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one");
         BuildData buildData = mock(BuildData.class);
         Revision revision = mock(Revision.class);
@@ -67,7 +70,7 @@ public class GitScmInformationResolverTest {
     }
 
     @Test
-    public void testResolveWithoutUserRepositoryData() {
+    void testResolveWithoutUserRepositoryData() {
         applyRevision("abc42");
 
         Collection<JobInformation> information = resolver.resolve(run, git);
@@ -75,7 +78,7 @@ public class GitScmInformationResolverTest {
     }
 
     @Test
-    public void testResolve() {
+    void testResolve() {
         mockSource(run, "https://scm.scm-manager.org/repo/ns/one", "https://scm.scm-manager.org/repo/ns/two");
         applyRevision("abc42");
         applyUrcs(
@@ -86,12 +89,13 @@ public class GitScmInformationResolverTest {
         assertEquals(2, information.size());
 
         Iterator<JobInformation> it = information.iterator();
-        Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
-        Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org:443/repo/ns/two", "scm-two");
+        JobInformationAssertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
+        JobInformationAssertions.info(
+                it.next(), "git", "abc42", "https://scm.scm-manager.org:443/repo/ns/two", "scm-two");
     }
 
     @Test
-    public void testResolveWithoutSourceOwner() {
+    void testResolveWithoutSourceOwner() {
         applyRevision("abc42");
         applyUrcs(
                 urc("https://scm.scm-manager.org/repo/ns/one", "scm-one"),
@@ -101,8 +105,8 @@ public class GitScmInformationResolverTest {
         assertEquals(2, information.size());
 
         Iterator<JobInformation> it = information.iterator();
-        Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
-        Assertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
+        JobInformationAssertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/one", "scm-one");
+        JobInformationAssertions.info(it.next(), "git", "abc42", "https://scm.scm-manager.org/repo/ns/two", "scm-two");
     }
 
     private UserRemoteConfig urc(String url, String credentialsId) {

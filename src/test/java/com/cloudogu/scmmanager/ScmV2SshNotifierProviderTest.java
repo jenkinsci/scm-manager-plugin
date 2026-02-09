@@ -1,20 +1,20 @@
 package com.cloudogu.scmmanager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
 
 import com.cloudogu.scmmanager.info.JobInformation;
 import hudson.model.Run;
 import java.util.Optional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ScmV2SshNotifierProviderTest {
+@ExtendWith(MockitoExtension.class)
+class ScmV2SshNotifierProviderTest {
 
     @InjectMocks
     private ScmV2SshNotifierProvider provider;
@@ -26,14 +26,14 @@ public class ScmV2SshNotifierProviderTest {
     private Run<?, ?> run;
 
     @Test
-    public void testGetWithoutMatchingNotifier() {
+    void testGetWithoutMatchingNotifier() {
         JobInformation information = createInformation("sample://one");
         Optional<ScmV2SshNotifier> notifier = provider.get(run, information);
         assertFalse(notifier.isPresent());
     }
 
     @Test
-    public void testCreateNotifier() {
+    void testCreateNotifier() {
         applyAuthentication(new SSHAuthentication(null));
         JobInformation information = createInformation("ssh://scm@scm-manager.org:8889/repo/ns/one");
         ScmV2SshNotifier notifier = provider.get(run, information).get();
@@ -41,8 +41,8 @@ public class ScmV2SshNotifierProviderTest {
         NamespaceAndName repository = notifier.getConnection().mustGetRepository();
         assertEquals("ns", repository.getNamespace());
         assertEquals("one", repository.getName());
-        assertEquals(notifier.getConnection().getConnection().getHostname(), "scm-manager.org");
-        assertEquals(notifier.getConnection().getConnection().getPort(), 8889);
+        assertEquals("scm-manager.org", notifier.getConnection().getConnection().getHostname());
+        assertEquals(8889, notifier.getConnection().getConnection().getPort());
     }
 
     private JobInformation createInformation(String s) {
