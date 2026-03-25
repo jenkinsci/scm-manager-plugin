@@ -69,7 +69,7 @@
     <jenkins.version>${jenkins.baseline}.2</jenkins.version>
 
     <!-- Testing scope -->
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <mockito.version>5.19.0</mockito.version>
     <mockwebserver.version>4.12.0</mockwebserver.version>
 
