@@ -45,13 +45,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     public FormValidation doCheckCredentialsId(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-        ConnectionConfiguration.checkPermission(context);
-        return validateCredentialsId(context, serverUrl, value);
-    }
-
-    @VisibleForTesting
-    FormValidation validateCredentialsId(SCMSourceOwner context, String serverUrl, String value)
-            throws InterruptedException, ExecutionException {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 

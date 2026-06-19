@@ -189,7 +189,7 @@ class ScmManagerSourceDescriptorTest {
     @Test
     void shouldRejectEmptyCredentials() throws Exception {
         mockCorrectIndex();
-        FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -206,7 +206,7 @@ class ScmManagerSourceDescriptorTest {
 
         SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
         FormValidation formValidation =
-                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+                descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -218,7 +218,7 @@ class ScmManagerSourceDescriptorTest {
         mockCorrectIndex();
 
         FormValidation formValidation =
-                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+                descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
