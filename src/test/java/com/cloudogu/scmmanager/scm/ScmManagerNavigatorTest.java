@@ -1,7 +1,6 @@
 package com.cloudogu.scmmanager.scm;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -11,7 +10,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Item;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,25 +56,23 @@ class ScmManagerNavigatorTest {
     }
 
     @Test
-    void shouldRequireConfigurePermissionToCheckNavigatorServerUrl() {
+    void shouldSkipNavigatorServerUrlCheckWithoutConfigurePermission() throws Exception {
         SCMSourceOwner context = mock(SCMSourceOwner.class);
-        doThrow(new RuntimeException("missing configure")).when(context).checkPermission(Item.CONFIGURE);
         ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
 
-        assertThatThrownBy(() -> descriptor.doCheckServerUrl(context, "http://example.com"))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("missing configure");
+        FormValidation formValidation = descriptor.doCheckServerUrl(context, "http://example.com");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
 
     @Test
-    void shouldRequireConfigurePermissionToCheckNavigatorCredentialsId() {
+    void shouldSkipNavigatorCredentialsIdCheckWithoutConfigurePermission() throws Exception {
         SCMSourceOwner context = mock(SCMSourceOwner.class);
-        doThrow(new RuntimeException("missing configure")).when(context).checkPermission(Item.CONFIGURE);
         ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
 
-        assertThatThrownBy(() -> descriptor.doCheckCredentialsId(context, "http://example.com", "myAuth"))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("missing configure");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(context, "http://example.com", "myAuth");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
     }
 
     @Test

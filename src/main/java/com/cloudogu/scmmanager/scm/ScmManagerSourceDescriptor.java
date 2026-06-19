@@ -36,7 +36,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     @SuppressWarnings("unused") // used By stapler
     public FormValidation doCheckServerUrl(@AncestorInPath SCMSourceOwner context, @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-        ConnectionConfiguration.checkPermission(context);
+        if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         return ConnectionConfiguration.checkServerUrl(apiFactory, value);
     }
 
@@ -54,7 +56,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
             @QueryParameter String value) {
-        ConnectionConfiguration.checkPermission(context);
+        if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
             return FormValidation.ok();
         }
@@ -86,9 +90,10 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @QueryParameter String credentialsId,
             @QueryParameter String value)
             throws InterruptedException, ExecutionException {
-        ConnectionConfiguration.checkPermission(context);
         ComboBoxModel model = new ComboBoxModel();
-        if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
+        if (!ConnectionConfiguration.hasConfigurePermission(context)
+            || Strings.isNullOrEmpty(serverUrl)
+            || Strings.isNullOrEmpty(credentialsId)) {
             if (!Strings.isNullOrEmpty(value)) {
                 model.add(value);
             }

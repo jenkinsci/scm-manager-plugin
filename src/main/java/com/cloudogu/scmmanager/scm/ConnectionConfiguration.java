@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMSourceOwner;
 import lombok.extern.slf4j.Slf4j;
 import org.acegisecurity.Authentication;
@@ -43,17 +42,12 @@ class ConnectionConfiguration {
         """;
     static final String CREDENTIALS_NEEDED = "Credentials needed.";
 
-    static void checkPermission(SCMSourceOwner context) {
-        if (context == null) {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        } else {
-            context.checkPermission(Item.CONFIGURE);
-        }
+    static boolean hasConfigurePermission(SCMSourceOwner context) {
+        return context != null && context.hasPermission(Item.CONFIGURE);
     }
 
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
-        ConnectionConfiguration.checkPermission(context);
-        if (context == null || !context.hasPermission(Item.CONFIGURE)) {
+        if (!hasConfigurePermission(context)) {
             return new StandardUsernameListBoxModel().includeCurrentValue(value);
         }
         Authentication authentication =
@@ -82,7 +76,9 @@ class ConnectionConfiguration {
     static FormValidation validateCredentialsId(
             ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value)
             throws InterruptedException, ExecutionException {
-        ConnectionConfiguration.checkPermission(context);
+        if (!hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         if (checkServerUrl(apiFactory, serverUrl).kind != FormValidation.Kind.OK) {
             return FormValidation.error(SERVER_URL_IS_REQUIRED);
         }

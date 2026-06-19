@@ -308,7 +308,9 @@ public class ScmManagerNavigator extends SCMNavigator {
         @SuppressWarnings("unused") // used By stapler
         public FormValidation doCheckServerUrl(@AncestorInPath SCMSourceOwner context, @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
-            ConnectionConfiguration.checkPermission(context);
+            if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+                return FormValidation.ok();
+            }
             return ConnectionConfiguration.checkServerUrl(apiFactory, value);
         }
 
@@ -320,7 +322,9 @@ public class ScmManagerNavigator extends SCMNavigator {
                 @QueryParameter String credentialsId,
                 @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
-            ConnectionConfiguration.checkPermission(context);
+            if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+                return createEmptyNamespaceSelect(value);
+            }
             if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
                 return createEmptyNamespaceSelect(value);
             }
