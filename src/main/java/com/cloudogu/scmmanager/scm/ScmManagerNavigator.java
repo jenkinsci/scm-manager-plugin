@@ -48,6 +48,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public class ScmManagerNavigator extends SCMNavigator {
 
@@ -286,27 +287,34 @@ public class ScmManagerNavigator extends SCMNavigator {
             return scmManagerNavigator;
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public ListBoxModel doFillCredentialsIdItems(
                 @AncestorInPath SCMSourceOwner context,
                 @QueryParameter String serverUrl,
                 @QueryParameter String value) {
+            ConnectionConfiguration.checkPermission(context);
             return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public FormValidation doCheckCredentialsId(
                 @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
+            ConnectionConfiguration.checkPermission(context);
             return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
-        public FormValidation doCheckServerUrl(@QueryParameter String value)
+        public FormValidation doCheckServerUrl(@AncestorInPath SCMSourceOwner context, @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
+            ConnectionConfiguration.checkPermission(context);
             return ConnectionConfiguration.checkServerUrl(apiFactory, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public ListBoxModel doFillNamespaceItems(
                 @AncestorInPath SCMSourceOwner context,
@@ -314,6 +322,7 @@ public class ScmManagerNavigator extends SCMNavigator {
                 @QueryParameter String credentialsId,
                 @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
+            ConnectionConfiguration.checkPermission(context);
             if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
                 return createEmptyNamespaceSelect(value);
             }

@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -10,6 +11,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Item;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceObserver;
+import jenkins.scm.api.SCMSourceOwner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +54,28 @@ class ScmManagerNavigatorTest {
     @BeforeEach
     void beforeEach(JenkinsRule rule) {
         j = rule;
+    }
+
+    @Test
+    void shouldRequireConfigurePermissionToCheckNavigatorServerUrl() {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        doThrow(new RuntimeException("missing configure")).when(context).checkPermission(Item.CONFIGURE);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        assertThatThrownBy(() -> descriptor.doCheckServerUrl(context, "http://example.com"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("missing configure");
+    }
+
+    @Test
+    void shouldRequireConfigurePermissionToCheckNavigatorCredentialsId() {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        doThrow(new RuntimeException("missing configure")).when(context).checkPermission(Item.CONFIGURE);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        assertThatThrownBy(() -> descriptor.doCheckCredentialsId(context, "http://example.com", "myAuth"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("missing configure");
     }
 
     @Test

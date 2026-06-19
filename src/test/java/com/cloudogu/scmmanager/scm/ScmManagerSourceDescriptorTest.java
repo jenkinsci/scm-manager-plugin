@@ -5,7 +5,12 @@ import static de.otto.edison.hal.Link.linkBuilder;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
@@ -76,8 +81,30 @@ class ScmManagerSourceDescriptorTest {
     }
 
     @Test
+    void shouldRequireConfigurePermissionToCheckServerUrl() {
+        doThrow(new RuntimeException("missing configure")).when(scmSourceOwner).checkPermission(Item.CONFIGURE);
+
+        assertThatThrownBy(() -> descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("missing configure");
+
+        verify(apiFactory, never()).anonymous(anyString());
+    }
+
+    @Test
+    void shouldRequireConfigurePermissionToCheckCredentialsId() {
+        doThrow(new RuntimeException("missing configure")).when(scmSourceOwner).checkPermission(Item.CONFIGURE);
+
+        assertThatThrownBy(() -> descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("missing configure");
+
+        verify(apiFactory, never()).anonymous(anyString());
+    }
+
+    @Test
     void shouldRejectEmptyServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -86,7 +113,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectBlankServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("  \t");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "  \t");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -95,7 +122,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectNotWellFormedServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -104,7 +131,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectServerUrlWithoutHttp() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("file://some/where");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "file://some/where");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -116,7 +143,7 @@ class ScmManagerSourceDescriptorTest {
         HalRepresentation index = new HalRepresentation(
                 linkingTo().single(link("any", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index);
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -129,7 +156,7 @@ class ScmManagerSourceDescriptorTest {
         ScmManagerApiTestMocks.mockError(
                 new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
 
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -141,7 +168,7 @@ class ScmManagerSourceDescriptorTest {
     void shouldRejectServerUrlThatCouldNotBeFound() throws Exception {
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.index()));
 
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -152,7 +179,7 @@ class ScmManagerSourceDescriptorTest {
     @Test
     void shouldAcceptServerUrl() throws Exception {
         mockCorrectIndex();
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
