@@ -52,6 +52,7 @@ class ConnectionConfiguration {
     }
 
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
+        ConnectionConfiguration.checkPermission(context);
         if (context == null || !context.hasPermission(Item.CONFIGURE)) {
             return new StandardUsernameListBoxModel().includeCurrentValue(value);
         }
@@ -81,6 +82,7 @@ class ConnectionConfiguration {
     static FormValidation validateCredentialsId(
             ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value)
             throws InterruptedException, ExecutionException {
+        ConnectionConfiguration.checkPermission(context);
         if (checkServerUrl(apiFactory, serverUrl).kind != FormValidation.Kind.OK) {
             return FormValidation.error(SERVER_URL_IS_REQUIRED);
         }

@@ -82,7 +82,6 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     @SuppressWarnings("unused") // used By stapler
     public ListBoxModel doFillCredentialsIdItems(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value) {
-        ConnectionConfiguration.checkPermission(context);
         return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
     }
 

@@ -293,7 +293,6 @@ public class ScmManagerNavigator extends SCMNavigator {
                 @AncestorInPath SCMSourceOwner context,
                 @QueryParameter String serverUrl,
                 @QueryParameter String value) {
-            ConnectionConfiguration.checkPermission(context);
             return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
         }
 
@@ -302,7 +301,6 @@ public class ScmManagerNavigator extends SCMNavigator {
         public FormValidation doCheckCredentialsId(
                 @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
-            ConnectionConfiguration.checkPermission(context);
             return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
         }
 
