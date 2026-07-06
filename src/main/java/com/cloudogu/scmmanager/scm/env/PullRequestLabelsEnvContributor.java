@@ -42,21 +42,13 @@ public class PullRequestLabelsEnvContributor extends EnvironmentContributor {
     }
 
     private ScmManagerPullRequestHead getPullRequestHead(Run run) {
-        Object parent = run.getParent();
-        if (!(parent instanceof Job)) {
-            return null;
-        }
-
-        BranchJobProperty branchJobProperty = ((Job<?, ?>) parent).getProperty(BranchJobProperty.class);
+        Job<?, ?> parent = run.getParent();
+        BranchJobProperty branchJobProperty = parent.getProperty(BranchJobProperty.class);
         if (branchJobProperty == null) {
             return null;
         }
 
         Branch branch = branchJobProperty.getBranch();
-        if (branch == null) {
-            return null;
-        }
-
         SCMHead head = branch.getHead();
         if (head instanceof ScmManagerPullRequestHead) {
             return (ScmManagerPullRequestHead) head;
