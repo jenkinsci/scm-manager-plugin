@@ -22,8 +22,7 @@ class DescriptorEndpointSecurityTest {
     private static final String LOW_PRIVILEGE_USER = "lowpriv";
     private static final String NAVIGATOR_DESCRIPTOR =
             "descriptorByName/com.cloudogu.scmmanager.scm.ScmManagerNavigator";
-    private static final String SOURCE_DESCRIPTOR =
-            "descriptorByName/com.cloudogu.scmmanager.scm.ScmManagerSource";
+    private static final String SOURCE_DESCRIPTOR = "descriptorByName/com.cloudogu.scmmanager.scm.ScmManagerSource";
 
     private JenkinsRule j;
 
