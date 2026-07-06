@@ -102,6 +102,33 @@ Das "Custom Properties" Plugin unterstützt auch, dass mehrere Werte für eine E
 Hierbei werden die Werte mittels Tab bzw. einem `\t` separiert.
 Die Werte einer Eigenschaft werden in der jeweiligen Umgebungsvariable ebenfalls per Tab separiert gesetzt.
 
+#### Pull-Request-Labels
+
+Bei Pull-Request-Builds werden Labels des SCM-Manager Pull Requests als Umgebungsvariablen gesetzt.
+`SCMM_PR_LABELS` enthält alle Labels als JSON-Array und erhält damit die exakten Werte und die Reihenfolge aus dem SCM-Manager.
+Für einfachen Zugriff werden zusätzlich `SCMM_PR_LABEL_COUNT` und durchnummerierte Variablen `SCMM_PR_LABEL_1`, `SCMM_PR_LABEL_2` usw. gesetzt.
+
+Beispiel:
+
+```groovy
+pipeline {
+  agent any
+
+  stages {
+    stage('Labels') {
+      steps {
+        script {
+          def labels = new groovy.json.JsonSlurperClassic().parseText(env.SCMM_PR_LABELS ?: '[]')
+          if (labels.contains('backend')) {
+            echo 'Backend-Label ist gesetzt'
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 ### Organization Folders &ndash; Namespaces
 Sollen für alle Repositorys eines **kompletten Namespaces** im SCM-Manager Jobs erzeugt werden, kann ein **Organization Folder**-Job mit einem SCM-Manager-Namespace als Quelle genutzt werden. 
 Dieser prüft alle Repositorys in einem gegebenen Namespace und erzeugt entsprechende Multibranch-Pipelines, wenn im Wurzelverzeichnis des Repositorys eine `Jenkinsfile` gefunden wurde. 
