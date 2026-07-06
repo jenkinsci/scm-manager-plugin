@@ -1,6 +1,8 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import de.otto.edison.hal.HalRepresentation;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class PullRequest extends HalRepresentation implements ScmManagerObservable {
@@ -10,6 +12,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
     private String source;
 
     private String target;
+
+    private List<String> labels = Collections.emptyList();
 
     private CloneInformation cloneInformation;
 
@@ -53,6 +57,13 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return target;
     }
 
+    public List<String> getLabels() {
+        if (labels == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(labels);
+    }
+
     @Override
     public ScmManagerPullRequestHead head() {
         if (head == null) {
@@ -60,7 +71,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                     cloneInformation,
                     id,
                     new ScmManagerHead(cloneInformation, target),
-                    new ScmManagerHead(cloneInformation, source));
+                    new ScmManagerHead(cloneInformation, source),
+                    getLabels());
         }
         return head;
     }
@@ -79,6 +91,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return Objects.equals(id, that.id)
                 && Objects.equals(source, that.source)
                 && Objects.equals(target, that.target)
+                && Objects.equals(getLabels(), that.getLabels())
                 && Objects.equals(cloneInformation, that.cloneInformation)
                 && Objects.equals(sourceBranch, that.sourceBranch)
                 && Objects.equals(targetBranch, that.targetBranch)
@@ -87,6 +100,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, source, target, cloneInformation, sourceBranch, targetBranch, head);
+        return Objects.hash(
+                super.hashCode(), id, source, target, getLabels(), cloneInformation, sourceBranch, targetBranch, head);
     }
 }

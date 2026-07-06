@@ -113,6 +113,33 @@ It starts with the prefix `SCMM_CUSTOM_PROP_` and will end with the key of the c
 For example the custom property with the key `lang`, will be injected as the environment variable `SCMM_CUSTOM_PROP_lang`.
 The value of the environment variable, will be the value of the custom property.
 
+#### Pull Request Labels
+
+For pull request builds, SCM-Manager pull request labels are injected as environment variables.
+`SCMM_PR_LABELS` contains all labels as a JSON array, preserving the exact label values and order from SCM-Manager.
+For simple access, the plugin also injects `SCMM_PR_LABEL_COUNT` and numbered variables `SCMM_PR_LABEL_1`, `SCMM_PR_LABEL_2`, and so on.
+
+Example:
+
+```groovy
+pipeline {
+  agent any
+
+  stages {
+    stage('Labels') {
+      steps {
+        script {
+          def labels = new groovy.json.JsonSlurperClassic().parseText(env.SCMM_PR_LABELS ?: '[]')
+          if (labels.contains('backend')) {
+            echo 'Backend label is set'
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 ### Organization Folders &ndash; Namespaces
 If you want to have build jobs for every repository in a namespace, you can create "SCM-Manager Namespace" jobs. These
 will scan all repositories in the given namespace and create multibranch pipelines for each repository where a
