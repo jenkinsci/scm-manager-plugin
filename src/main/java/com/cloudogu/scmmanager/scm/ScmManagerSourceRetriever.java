@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.trait.SCMSourceTrait;
@@ -44,7 +45,10 @@ public class ScmManagerSourceRetriever {
             CompletableFuture<? extends ScmManagerObservable> candidate =
                     getSpecificCandidateFromSourceControl(request, head);
             if (candidate != null) {
-                return Collections.singleton(candidate.get());
+                ScmManagerObservable observable = candidate.get();
+                if (observable != null) {
+                    return Collections.singleton(observable);
+                }
             }
         } catch (ExecutionException e) {
             ExecutionExceptions.log(e);
@@ -62,7 +66,11 @@ public class ScmManagerSourceRetriever {
             }
         } else if (head instanceof ScmManagerPullRequestHead) {
             if (request.isFetchPullRequests()) {
-                return api.getPullRequest(repository, ((ScmManagerPullRequestHead) head).getId());
+                CompletableFuture<PullRequest> pullRequest =
+                        api.getPullRequest(repository, ((ScmManagerPullRequestHead) head).getId());
+                if (pullRequest != null) {
+                    return pullRequest.thenApply(this::ignoreDraftPullRequestIfNecessary);
+                }
             }
         } else if (head instanceof ScmManagerHead && request.isFetchBranches()) {
             if (shouldIgnoreBranchBecauseRelatedPullRequestExists(head.getName())) {
@@ -74,14 +82,37 @@ public class ScmManagerSourceRetriever {
         return null;
     }
 
+    private PullRequest ignoreDraftPullRequestIfNecessary(PullRequest pullRequest) {
+        if (shouldExcludeDraftPullRequest(pullRequest)) {
+            return null;
+        }
+        return pullRequest;
+    }
+
     private boolean shouldIgnoreBranchBecauseRelatedPullRequestExists(String branchName) {
-        if (traits.stream()
-                .anyMatch(t -> t instanceof PullRequestDiscoveryTrait
-                        && ((PullRequestDiscoveryTrait) t).isExcludeBranchesWithPRs())) {
+        if (excludeBranchesWithPRs()) {
             CompletableFuture<List<PullRequest>> pullRequests = api.getPullRequests(repository);
-            return pullRequests.join().stream().anyMatch(p -> p.getSource().equals(branchName));
+            return pullRequests.join().stream()
+                    .filter(pullRequest -> !shouldExcludeDraftPullRequest(pullRequest))
+                    .anyMatch(p -> p.getSource().equals(branchName));
         }
         return false;
+    }
+
+    private boolean excludeBranchesWithPRs() {
+        return traits.stream()
+                .anyMatch(t -> t instanceof PullRequestDiscoveryTrait
+                        && ((PullRequestDiscoveryTrait) t).isExcludeBranchesWithPRs());
+    }
+
+    private boolean shouldExcludeDraftPullRequest(PullRequest pullRequest) {
+        return pullRequest != null && excludeDraftPullRequests() && pullRequest.isDraft();
+    }
+
+    private boolean excludeDraftPullRequests() {
+        return traits.stream()
+                .anyMatch(t -> t instanceof PullRequestDiscoveryTrait
+                        && ((PullRequestDiscoveryTrait) t).isExcludeDraftPullRequests());
     }
 
     public Iterable<ScmManagerObservable> getAllCandidatesFromSourceControl(ScmManagerSourceRequest request)
@@ -94,7 +125,7 @@ public class ScmManagerSourceRetriever {
                     ? api.getTags(repository)
                     : CompletableFuture.completedFuture(Collections.emptyList());
             CompletableFuture<List<PullRequest>> pullRequestFuture = request.isFetchPullRequests()
-                    ? api.getPullRequests(repository)
+                    ? api.getPullRequests(repository).thenApply(this::filterDraftPullRequests)
                     : CompletableFuture.completedFuture(Collections.emptyList());
 
             CompletableFuture.allOf(branchesFuture, tagsFuture, pullRequestFuture)
@@ -111,6 +142,15 @@ public class ScmManagerSourceRetriever {
             ExecutionExceptions.log(e);
             throw new UncheckedIOException(new IOException("failed to load repository"));
         }
+    }
+
+    private List<PullRequest> filterDraftPullRequests(List<PullRequest> pullRequests) {
+        if (!excludeDraftPullRequests()) {
+            return pullRequests;
+        }
+        return pullRequests.stream()
+                .filter(pullRequest -> !pullRequest.isDraft())
+                .collect(Collectors.toList());
     }
 
     public ScmManagerApiProbe probe(@NonNull SCMHead head, @CheckForNull SCMRevision revision) {

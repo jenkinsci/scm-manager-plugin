@@ -44,6 +44,27 @@ class NavigatorExtensionTest {
     }
 
     @Test
+    void shouldConfigureDraftPullRequestExclusion() {
+        NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
+            ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;
+            context.serverUrl("https://scm.hitchhiker.com/scm");
+            context.credentialsId("secret");
+            context.namespace("spaceships");
+            context.discoverSvn(false);
+            context.excludeDraftPullRequests(true);
+        });
+
+        ScmManagerNavigator scmNavigator = extension.scmManagerNamespace(null);
+
+        PullRequestDiscoveryTrait trait = scmNavigator.getTraits().stream()
+                .filter(PullRequestDiscoveryTrait.class::isInstance)
+                .map(PullRequestDiscoveryTrait.class::cast)
+                .findFirst()
+                .orElseThrow();
+        assertThat(trait.isExcludeDraftPullRequests()).isTrue();
+    }
+
+    @Test
     void shouldDisableDefaultTraits() {
         NavigatorExtension extension = new NavigatorExtension((runnable, ctx) -> {
             ScmManagerNavigatorContext context = (ScmManagerNavigatorContext) ctx;

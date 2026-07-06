@@ -11,6 +11,7 @@ public class ScmManagerBranchSourceContext extends BranchSourceContext {
 
     private boolean discoverBranches = true;
     private boolean discoverPullRequest = true;
+    private boolean excludeDraftPullRequests = false;
     private boolean discoverTags = false;
 
     public void discoverBranches(boolean discoverBranches) {
@@ -19,6 +20,10 @@ public class ScmManagerBranchSourceContext extends BranchSourceContext {
 
     public void discoverPullRequest(boolean discoverPullRequest) {
         this.discoverPullRequest = discoverPullRequest;
+    }
+
+    public void excludeDraftPullRequests(boolean excludeDraftPullRequests) {
+        this.excludeDraftPullRequests = excludeDraftPullRequests;
     }
 
     public void discoverTags(boolean discoverTags) {
@@ -31,7 +36,7 @@ public class ScmManagerBranchSourceContext extends BranchSourceContext {
             traits.add(new ScmManagerBranchDiscoveryTrait());
         }
         if (discoverPullRequest) {
-            traits.add(new PullRequestDiscoveryTrait());
+            traits.add(new PullRequestDiscoveryTrait(false, excludeDraftPullRequests));
         }
         if (discoverTags) {
             traits.add(new TagDiscoveryTrait());

@@ -18,6 +18,7 @@ public class ScmManagerNavigatorContext extends ScmManagerContext {
 
     private boolean discoverBranches = true;
     private boolean discoverPullRequest = true;
+    private boolean excludeDraftPullRequests = false;
     private boolean discoverTags = false;
     private boolean discoverSvn = Subversion.isSupported();
 
@@ -46,6 +47,10 @@ public class ScmManagerNavigatorContext extends ScmManagerContext {
         this.discoverPullRequest = discoverPullRequest;
     }
 
+    public void excludeDraftPullRequests(boolean excludeDraftPullRequests) {
+        this.excludeDraftPullRequests = excludeDraftPullRequests;
+    }
+
     public void discoverTags(boolean discoverTags) {
         this.discoverTags = discoverTags;
     }
@@ -65,7 +70,7 @@ public class ScmManagerNavigatorContext extends ScmManagerContext {
             traits.add(new ScmManagerBranchDiscoveryTrait());
         }
         if (discoverPullRequest) {
-            traits.add(new PullRequestDiscoveryTrait());
+            traits.add(new PullRequestDiscoveryTrait(false, excludeDraftPullRequests));
         }
         if (discoverTags) {
             traits.add(new TagDiscoveryTrait());

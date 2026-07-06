@@ -39,6 +39,20 @@ class PullRequestDiscoveryTraitTest {
     }
 
     @Test
+    void shouldKeepDraftPullRequestsByDefault() {
+        PullRequestDiscoveryTrait trait = new PullRequestDiscoveryTrait();
+
+        assertThat(trait.isExcludeDraftPullRequests()).isFalse();
+    }
+
+    @Test
+    void shouldConfigureDraftPullRequestExclusion() {
+        PullRequestDiscoveryTrait trait = new PullRequestDiscoveryTrait(false, true);
+
+        assertThat(trait.isExcludeDraftPullRequests()).isTrue();
+    }
+
+    @Test
     void shouldNotExcludeNonScmManagerRequest() {
         SCMSourceRequest request = mock(SCMSourceRequest.class);
         SCMHead head = ScmTestData.branch("main");

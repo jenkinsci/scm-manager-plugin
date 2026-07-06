@@ -1,0 +1,18 @@
+{
+    "request": {
+        "url": "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell?status=DRAFT",
+        "method": "GET",
+        "headers": {
+            "Accept": {
+                "equalTo": "application/vnd.scmm-pullRequestCollection+json;v=2"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "body": "{\"_links\":{\"self\":{\"href\":\"/scm/api/v2/pull-requests/jenkins-plugin/hello-shell\"}},\"_embedded\":{\"pullRequests\":[{\"id\":\"2\",\"source\":\"develop\",\"target\":\"master\",\"title\":\"develop => master\",\"status\":\"DRAFT\",\"_links\":{\"sourceBranch\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/develop\"},\"targetBranch\":{\"href\":\"/scm/api/v2/repositories/jenkins-plugin/hello-shell/branches/master\"}}}]}}",
+        "headers": {
+            "Content-Type": "application/vnd.scmm-pullRequest+json;v=2"
+        }
+    }
+}

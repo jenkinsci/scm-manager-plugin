@@ -4,4 +4,7 @@
     <f:entry title="${%excludeBranchesWithPRs}">
         <f:checkbox field="excludeBranchesWithPRs"/>
     </f:entry>
+    <f:entry title="${%excludeDraftPullRequests}">
+        <f:checkbox field="excludeDraftPullRequests"/>
+    </f:entry>
 </j:jelly>
