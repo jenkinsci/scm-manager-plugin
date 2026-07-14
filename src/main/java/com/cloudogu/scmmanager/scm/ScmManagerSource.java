@@ -4,6 +4,7 @@ import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
 import com.cloudogu.scmmanager.scm.api.ScmManagerHead;
 import com.cloudogu.scmmanager.scm.api.ScmManagerObservable;
+import com.cloudogu.scmmanager.scm.api.ScmManagerPullRequestHead;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -34,6 +35,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceEvent;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
@@ -222,9 +224,16 @@ public class ScmManagerSource extends SCMSource {
     @NonNull
     @Override
     protected List<Action> retrieveActions(@NonNull SCMHead head, SCMHeadEvent event, @NonNull TaskListener listener) {
-        return List.of(
+        List<Action> actions = new ArrayList<>(List.of(
                 new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)),
-                new ScmManagerApiData(serverUrl, credentialsId, namespace, name));
+                new ScmManagerApiData(serverUrl, credentialsId, namespace, name)));
+        if (head instanceof ScmManagerPullRequestHead) {
+            ScmManagerPullRequestHead pullRequestHead = (ScmManagerPullRequestHead) head;
+            String title = Util.fixEmptyAndTrim(pullRequestHead.getTitle());
+            String displayName = title == null ? head.getName() : head.getName() + ": " + title;
+            actions.add(new ObjectMetadataAction(displayName, null, null));
+        }
+        return actions;
     }
 
     @NonNull

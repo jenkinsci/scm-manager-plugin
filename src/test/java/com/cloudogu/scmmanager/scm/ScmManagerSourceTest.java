@@ -36,6 +36,7 @@ import jenkins.scm.api.SCMHeadObserver;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceOwner;
+import jenkins.scm.api.metadata.ObjectMetadataAction;
 import jenkins.scm.api.trait.SCMSourceRequest;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.TagSCMHeadCategory;
@@ -288,6 +289,23 @@ public class ScmManagerSourceTest {
         List<Action> actions = source.retrieveActions(branch("develop"), null, listener());
         assertScmManagerLink(actions, "https://hitchhiker.com/scm/repo/space/X/code/sources/develop");
         assertScmManagerApiData(actions);
+        assertThat(actions).noneMatch(ObjectMetadataAction.class::isInstance);
+    }
+
+    @Test
+    void shouldRetrievePullRequestDisplayName() {
+        ScmManagerPullRequestHead pullRequestHead = pullRequestHead("Improve the answer");
+
+        List<Action> actions = source.retrieveActions(pullRequestHead, null, listener());
+
+        assertObjectDisplayName(actions, "PR-42: Improve the answer");
+        assertThat(pullRequestHead.getName()).isEqualTo("PR-42");
+    }
+
+    @Test
+    void shouldFallBackToPullRequestNameForMissingTitle() {
+        assertObjectDisplayName(source.retrieveActions(pullRequestHead(null), null, listener()), "PR-42");
+        assertObjectDisplayName(source.retrieveActions(pullRequestHead("  "), null, listener()), "PR-42");
     }
 
     @Test
@@ -305,6 +323,23 @@ public class ScmManagerSourceTest {
         assertThat(actions)
                 .contains(new ScmManagerApiData(
                         source.getServerUrl(), source.getCredentialsId(), source.getNamespace(), source.getName()));
+    }
+
+    private void assertObjectDisplayName(List<Action> actions, String expectedDisplayName) {
+        assertThat(actions)
+                .filteredOn(ObjectMetadataAction.class::isInstance)
+                .singleElement()
+                .extracting(action -> ((ObjectMetadataAction) action).getObjectDisplayName())
+                .isEqualTo(expectedDisplayName);
+    }
+
+    private ScmManagerPullRequestHead pullRequestHead(String title) {
+        return new ScmManagerPullRequestHead(
+                CLONE_INFORMATION,
+                "42",
+                new ScmManagerHead(CLONE_INFORMATION, "main"),
+                new ScmManagerHead(CLONE_INFORMATION, "develop"),
+                title);
     }
 
     @NonNull

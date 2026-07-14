@@ -207,6 +207,9 @@ class ScmManagerApiTest extends ApiClientTestBase {
         assertThat(pullRequest.getId()).isEqualTo("1");
         assertThat(pullRequest.getSource()).isEqualTo("develop");
         assertThat(pullRequest.getTarget()).isEqualTo("master");
+        assertThat(pullRequest.getTitle()).isEqualTo("develop => master");
+        assertThat(pullRequest.head().getTitle()).isEqualTo("develop => master");
+        assertThat(pullRequest.head().getName()).isEqualTo("PR-1");
     }
 
     @Test
@@ -225,6 +228,7 @@ class ScmManagerApiTest extends ApiClientTestBase {
         assertThat(pullRequest.getId()).isEqualTo("1");
         assertThat(pullRequest.getSource()).isEqualTo("develop");
         assertThat(pullRequest.getTarget()).isEqualTo("master");
+        assertThat(pullRequest.getTitle()).isEqualTo("develop => master");
     }
 
     @Test
