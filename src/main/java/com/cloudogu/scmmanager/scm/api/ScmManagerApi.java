@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import jenkins.scm.api.SCMFile;
@@ -152,22 +153,54 @@ public class ScmManagerApi {
     public CompletableFuture<List<PullRequest>> getPullRequests(Repository repository) {
         Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
         if (pullRequestLink.isPresent()) {
-            return client.get(
-                            pullRequestLink.get().getHref() + "?status=OPEN",
-                            "application/vnd.scmm-pullRequestCollection+json;v=2",
-                            PullRequestCollection.class)
-                    .thenApply(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
-                            .map(preparePullRequest(repository))
-                            .filter(cf -> !cf.isCompletedExceptionally())
-                            .collect(Collectors.toList()))
-                    .thenCompose(completableFutures -> CompletableFuture.allOf(
-                                    completableFutures.toArray(new CompletableFuture[0]))
-                            .thenApply(future -> completableFutures.stream()
-                                    .filter(cf -> !cf.isCompletedExceptionally())
-                                    .map(CompletableFuture::join)
-                                    .collect(Collectors.toList())));
+            String href = pullRequestLink.get().getHref();
+            CompletableFuture<List<PullRequest>> openPullRequests =
+                    getPullRequests(repository, href, "OPEN").exceptionally(this::emptyListOnNotFound);
+            CompletableFuture<List<PullRequest>> draftPullRequests =
+                    getPullRequests(repository, href, "DRAFT").exceptionally(this::emptyListOnNotFound);
+
+            return CompletableFuture.allOf(openPullRequests, draftPullRequests).thenApply(v -> {
+                List<PullRequest> pullRequests = new java.util.ArrayList<>();
+                pullRequests.addAll(openPullRequests.join());
+                pullRequests.addAll(draftPullRequests.join());
+                return pullRequests;
+            });
         }
         return CompletableFuture.completedFuture(Collections.emptyList());
+    }
+
+    private List<PullRequest> emptyListOnNotFound(Throwable throwable) {
+        Throwable cause = unwrapCompletionException(throwable);
+        if (cause instanceof IllegalReturnStatusException
+                && ((IllegalReturnStatusException) cause).getStatusCode() == 404) {
+            return Collections.emptyList();
+        }
+        throw new CompletionException(cause);
+    }
+
+    private Throwable unwrapCompletionException(Throwable throwable) {
+        if (throwable instanceof CompletionException && throwable.getCause() != null) {
+            return throwable.getCause();
+        }
+        return throwable;
+    }
+
+    private CompletableFuture<List<PullRequest>> getPullRequests(
+            Repository repository, String pullRequestLink, String status) {
+        return client.get(
+                        pullRequestLink + "?status=" + status,
+                        "application/vnd.scmm-pullRequestCollection+json;v=2",
+                        PullRequestCollection.class)
+                .thenApply(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
+                        .map(preparePullRequest(repository))
+                        .filter(cf -> !cf.isCompletedExceptionally())
+                        .collect(Collectors.toList()))
+                .thenCompose(completableFutures -> CompletableFuture.allOf(
+                                completableFutures.toArray(new CompletableFuture[0]))
+                        .thenApply(future -> completableFutures.stream()
+                                .filter(cf -> !cf.isCompletedExceptionally())
+                                .map(CompletableFuture::join)
+                                .collect(Collectors.toList())));
     }
 
     private Function<PullRequest, CompletableFuture<PullRequest>> preparePullRequest(Repository repository) {

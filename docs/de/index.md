@@ -55,13 +55,15 @@ multibranchPipelineJob('heart-of-gold') {
       repository('spaceships/heart-of-gold')
       discoverBranches(true)
       discoverPullRequest(true)
+      excludeDraftPullRequests(false)
       discoverTags(false)
     }
   }
 }
 ```
 
-Die Parameter `discoverBranches`, `discoverPullRequest` und `discoverTags` sind optional und bilden ab, welche Typen gebaut werden sollen.
+Die Parameter `discoverBranches`, `discoverPullRequest`, `excludeDraftPullRequests` und `discoverTags` sind optional und bilden ab, welche Typen gebaut werden sollen.
+Wenn `excludeDraftPullRequests` auf `true` gesetzt ist, werden SCM-Manager-Pull-Requests mit dem Status `DRAFT` nicht gebaut.
 Das Beispiel zeigt die Standardwerte.
 
 Die Syntax für ein Subversion-Repository zeigt folgendes Beispiel:
@@ -142,6 +144,7 @@ organizationFolder("spaceships") {
       namespace("spaceships")
       discoverBranches(true)
       discoverPullRequest(true)
+      excludeDraftPullRequests(false)
       discoverTags(false)
       discoverSvn {
         includes("trunk,branches/*,tags/*,sandbox/*")
@@ -153,7 +156,8 @@ organizationFolder("spaceships") {
 // scan namespace directly after creation
 queue("spaceships")
 ```
-Die `discover*`-Parameter sind optional und das Beispiel zeigt die Standardwerte.
+Die `discover*`-Parameter und `excludeDraftPullRequests` sind optional und das Beispiel zeigt die Standardwerte.
+Wenn `excludeDraftPullRequests` auf `true` gesetzt ist, werden SCM-Manager-Pull-Requests mit dem Status `DRAFT` nicht gebaut.
 Um Subversion-Builds zu deaktivieren, kann der `discoverSvn`-Methode ein `false` übergeben werden: `discoverSvn(false)`.
 Um alle Namespaces zu bauen, kann der Pseudo-Namespace `--all--` verwendet werden.
 

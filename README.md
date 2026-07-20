@@ -77,14 +77,16 @@ multibranchPipelineJob('heart-of-gold') {
       repository('spaceships/heart-of-gold')
       discoverBranches(true)
       discoverPullRequest(true)
+      excludeDraftPullRequests(false)
       discoverTags(false)
     }
   }
 }
 ```
 
-The parameters `discoverBranches`, `discoverPullRequest` and `discoverTags` are optional 
-and describe which heads of the repository are build.
+The parameters `discoverBranches`, `discoverPullRequest`, `excludeDraftPullRequests` and `discoverTags` are optional
+and describe which heads of the repository are built.
+When `excludeDraftPullRequests` is `true`, SCM-Manager pull requests with status `DRAFT` are not built.
 The example shows the default values.
 
 Have a look at the following example for a Subversion repository:
@@ -153,6 +155,7 @@ organizationFolder("spaceships") {
       namespace("spaceships")
       discoverBranches(true)
       discoverPullRequest(true)
+      excludeDraftPullRequests(false)
       discoverTags(false)
       discoverSvn {
         includes("trunk,branches/*,tags/*,sandbox/*")
@@ -165,7 +168,8 @@ organizationFolder("spaceships") {
 queue("spaceships")
 ```
 
-The `discover*` parameters are optional, the example above shows the default values. 
+The `discover*` parameters and `excludeDraftPullRequests` are optional, the example above shows the default values.
+When `excludeDraftPullRequests` is `true`, SCM-Manager pull requests with status `DRAFT` are not built.
 To disable subversion builds, a `false` can be passed to the `discoverSvn` method e.g.: `discoverSvn(false)`.
 To build all namespaces of the SCM-Manager instance, the pseudo namespace `--all--` can be used.
 

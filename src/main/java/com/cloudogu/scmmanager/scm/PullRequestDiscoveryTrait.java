@@ -17,14 +17,22 @@ import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.impl.ChangeRequestSCMHeadCategory;
 import jenkins.scm.impl.trait.Discovery;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 public class PullRequestDiscoveryTrait extends SCMSourceTrait {
 
     private final boolean excludeBranchesWithPRs;
 
+    private boolean excludeDraftPullRequests;
+
     @DataBoundConstructor
     public PullRequestDiscoveryTrait(boolean excludeBranchesWithPRs) {
         this.excludeBranchesWithPRs = excludeBranchesWithPRs;
+    }
+
+    public PullRequestDiscoveryTrait(boolean excludeBranchesWithPRs, boolean excludeDraftPullRequests) {
+        this(excludeBranchesWithPRs);
+        this.excludeDraftPullRequests = excludeDraftPullRequests;
     }
 
     /**
@@ -36,6 +44,15 @@ public class PullRequestDiscoveryTrait extends SCMSourceTrait {
 
     public boolean isExcludeBranchesWithPRs() {
         return excludeBranchesWithPRs;
+    }
+
+    public boolean isExcludeDraftPullRequests() {
+        return excludeDraftPullRequests;
+    }
+
+    @DataBoundSetter
+    public void setExcludeDraftPullRequests(boolean excludeDraftPullRequests) {
+        this.excludeDraftPullRequests = excludeDraftPullRequests;
     }
 
     @Override

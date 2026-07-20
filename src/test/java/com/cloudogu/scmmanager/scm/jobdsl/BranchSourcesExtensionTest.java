@@ -65,6 +65,27 @@ class BranchSourcesExtensionTest {
     }
 
     @Test
+    void shouldConfigureDraftPullRequestExclusion() throws Exception {
+        BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
+            ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;
+            context.id("42");
+            context.credentialsId("secret");
+            context.repository("hitchhiker/hog/git");
+            context.serverUrl("https://scm.hitchhiker.com");
+            context.excludeDraftPullRequests(true);
+        });
+        BranchSource branchSource = extension.scmManager(null);
+        ScmManagerSource source = (ScmManagerSource) branchSource.getSource();
+
+        PullRequestDiscoveryTrait trait = source.getTraits().stream()
+                .filter(PullRequestDiscoveryTrait.class::isInstance)
+                .map(PullRequestDiscoveryTrait.class::cast)
+                .findFirst()
+                .orElseThrow();
+        assertThat(trait.isExcludeDraftPullRequests()).isTrue();
+    }
+
+    @Test
     void shouldDisableDefaultTraits() throws Exception {
         BranchSourcesExtension extension = new BranchSourcesExtension(apiFactory, (runnable, ctx) -> {
             ScmManagerBranchSourceContext context = (ScmManagerBranchSourceContext) ctx;

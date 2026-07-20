@@ -142,6 +142,30 @@ public class ScmManagerSourceTest {
     }
 
     @Test
+    void shouldObserveDraftPullRequestsWithoutExclusion() throws IOException, InterruptedException {
+        source.setTraits(Collections.singletonList(new PullRequestDiscoveryTrait(false, false)));
+        when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+        when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest("DRAFT"))));
+        when(request.isFetchPullRequests()).thenReturn(true);
+
+        source.handleRequest(observer, null, request);
+
+        assertThat(head.getValue().getName()).isEqualTo("PR-42");
+    }
+
+    @Test
+    void shouldIgnoreDraftPullRequestsWithExclusion() throws IOException, InterruptedException {
+        source.setTraits(Collections.singletonList(new PullRequestDiscoveryTrait(false, true)));
+        when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+        when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest("DRAFT"))));
+        when(request.isFetchPullRequests()).thenReturn(true);
+
+        source.handleRequest(observer, null, request);
+
+        verifyThatNothingIsProcessed();
+    }
+
+    @Test
     void shouldProcessTagRequests() throws IOException, InterruptedException {
         when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
         when(api.getTags(REPOSITORY)).thenReturn(completedFuture(asList(createTag())));
@@ -164,6 +188,37 @@ public class ScmManagerSourceTest {
 
         assertThat(head.getValue().getName()).isEqualTo("develop");
         verify(api, never()).getBranches(REPOSITORY);
+    }
+
+    @Test
+    void shouldIgnoreChangedBranchWithOpenPullRequest() throws IOException, InterruptedException {
+        source.setTraits(Collections.singletonList(new PullRequestDiscoveryTrait(true, false)));
+        when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+        when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest("OPEN"))));
+        when(request.isFetchBranches()).thenReturn(true);
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
+
+        source.handleRequest(observer, null, request);
+
+        verifyThatNothingIsProcessed();
+        verify(api, never()).getBranch(REPOSITORY, "develop");
+    }
+
+    @Test
+    void shouldObserveChangedBranchWithDraftPullRequestWhenDraftsAreExcluded()
+            throws IOException, InterruptedException {
+        source.setTraits(Collections.singletonList(new PullRequestDiscoveryTrait(true, true)));
+        when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+        when(api.getPullRequests(REPOSITORY)).thenReturn(completedFuture(asList(createPullRequest("DRAFT"))));
+        when(api.getBranch(REPOSITORY, "develop")).thenReturn(completedFuture(new Branch("develop", "42")));
+        when(request.isFetchBranches()).thenReturn(true);
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerHead(CLONE_INFORMATION, "develop")));
+
+        source.handleRequest(observer, null, request);
+
+        assertThat(head.getValue().getName()).isEqualTo("develop");
     }
 
     @Test
@@ -233,8 +288,31 @@ public class ScmManagerSourceTest {
         verify(api, never()).getPullRequests(REPOSITORY);
     }
 
+    @Test
+    void shouldIgnoreChangedDraftPullRequestWithExclusion() throws IOException, InterruptedException {
+        source.setTraits(Collections.singletonList(new PullRequestDiscoveryTrait(false, true)));
+        when(api.getRepository("space", "X")).thenReturn(completedFuture(REPOSITORY));
+        when(api.getPullRequest(REPOSITORY, "42")).thenReturn(completedFuture(createPullRequest("DRAFT")));
+        when(observer.getIncludes())
+                .thenReturn(Collections.singleton(new ScmManagerPullRequestHead(
+                        CLONE_INFORMATION,
+                        "42",
+                        new ScmManagerHead(CLONE_INFORMATION, "main"),
+                        new ScmManagerHead(CLONE_INFORMATION, "develop"))));
+        when(request.isFetchPullRequests()).thenReturn(true);
+
+        source.handleRequest(observer, null, request);
+
+        verifyThatNothingIsProcessed();
+        verify(api, never()).getPullRequests(REPOSITORY);
+    }
+
     private PullRequest createPullRequest() {
-        return new PullRequest("42", new Branch("main", "21"), new Branch("develop", "42"), CLONE_INFORMATION);
+        return createPullRequest("OPEN");
+    }
+
+    private PullRequest createPullRequest(String status) {
+        return new PullRequest("42", new Branch("main", "21"), new Branch("develop", "42"), CLONE_INFORMATION, status);
     }
 
     @Test

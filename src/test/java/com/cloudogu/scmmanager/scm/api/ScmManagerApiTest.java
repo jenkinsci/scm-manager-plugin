@@ -201,12 +201,34 @@ class ScmManagerApiTest extends ApiClientTestBase {
         when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
 
         List<PullRequest> pullRequests = api.getPullRequests(repository).get();
-        assertThat(pullRequests).hasSize(1);
+        assertThat(pullRequests).hasSize(2);
+        assertThat(pullRequests).extracting(PullRequest::getId).containsExactly("1", "2");
+        assertThat(pullRequests).extracting(PullRequest::getStatus).containsExactly("OPEN", "DRAFT");
+        assertThat(pullRequests).extracting(PullRequest::isDraft).containsExactly(false, true);
 
         PullRequest pullRequest = pullRequests.get(0);
         assertThat(pullRequest.getId()).isEqualTo("1");
         assertThat(pullRequest.getSource()).isEqualTo("develop");
         assertThat(pullRequest.getTarget()).isEqualTo("master");
+    }
+
+    @Test
+    void shouldIgnoreMissingDraftPullRequestStatusFilter() throws Exception {
+        ScmManagerApi api = new ScmManagerApi(apiClient());
+
+        Repository repository = Mockito.mock(Repository.class);
+        when(repository.getLinks())
+                .thenReturn(linkingTo()
+                        .single(link("pullRequest", "/scm/api/v2/pull-requests/jenkins-plugin/old-review"))
+                        .build());
+        CloneInformation cloneInformation = new CloneInformation("git", "http://hitchhiker.com/");
+        when(repository.getCloneInformation("http")).thenReturn(cloneInformation);
+
+        List<PullRequest> pullRequests = api.getPullRequests(repository).get();
+
+        assertThat(pullRequests).hasSize(1);
+        assertThat(pullRequests).extracting(PullRequest::getId).containsExactly("1");
+        assertThat(pullRequests).extracting(PullRequest::getStatus).containsExactly("OPEN");
     }
 
     @Test
@@ -225,6 +247,8 @@ class ScmManagerApiTest extends ApiClientTestBase {
         assertThat(pullRequest.getId()).isEqualTo("1");
         assertThat(pullRequest.getSource()).isEqualTo("develop");
         assertThat(pullRequest.getTarget()).isEqualTo("master");
+        assertThat(pullRequest.getStatus()).isEqualTo("OPEN");
+        assertThat(pullRequest.isDraft()).isFalse();
     }
 
     @Test

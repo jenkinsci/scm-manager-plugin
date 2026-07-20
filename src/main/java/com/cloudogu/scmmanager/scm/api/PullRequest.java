@@ -11,6 +11,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     private String target;
 
+    private String status;
+
     private CloneInformation cloneInformation;
 
     private Branch sourceBranch;
@@ -21,12 +23,18 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
     PullRequest() {}
 
     public PullRequest(String id, Branch targetBranch, Branch sourceBranch, CloneInformation cloneInformation) {
+        this(id, targetBranch, sourceBranch, cloneInformation, "OPEN");
+    }
+
+    public PullRequest(
+            String id, Branch targetBranch, Branch sourceBranch, CloneInformation cloneInformation, String status) {
         this.id = id;
         this.targetBranch = targetBranch;
         this.target = targetBranch.getName();
         this.sourceBranch = sourceBranch;
         this.source = sourceBranch.getName();
         this.cloneInformation = cloneInformation;
+        this.status = status;
     }
 
     void setCloneInformation(CloneInformation cloneInformation) {
@@ -51,6 +59,14 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     public String getTarget() {
         return target;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public boolean isDraft() {
+        return "DRAFT".equals(status);
     }
 
     @Override
@@ -79,6 +95,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return Objects.equals(id, that.id)
                 && Objects.equals(source, that.source)
                 && Objects.equals(target, that.target)
+                && Objects.equals(status, that.status)
                 && Objects.equals(cloneInformation, that.cloneInformation)
                 && Objects.equals(sourceBranch, that.sourceBranch)
                 && Objects.equals(targetBranch, that.targetBranch)
@@ -87,6 +104,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, source, target, cloneInformation, sourceBranch, targetBranch, head);
+        return Objects.hash(
+                super.hashCode(), id, source, target, status, cloneInformation, sourceBranch, targetBranch, head);
     }
 }
