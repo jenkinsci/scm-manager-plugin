@@ -154,9 +154,11 @@ public class ScmManagerApi {
         Optional<Link> pullRequestLink = repository.getLinks().getLinkBy("pullRequest");
         if (pullRequestLink.isPresent()) {
             String href = pullRequestLink.get().getHref();
-            CompletableFuture<List<PullRequest>> openPullRequests = getPullRequests(repository, href, "OPEN");
+            CompletableFuture<List<PullRequest>> openPullRequests =
+                getPullRequests(repository, href, "OPEN").exceptionally(this::emptyListOnNotFound);
             CompletableFuture<List<PullRequest>> draftPullRequests =
-                    getPullRequests(repository, href, "DRAFT").exceptionally(this::emptyListOnNotFound);
+                getPullRequests(repository, href, "DRAFT").exceptionally(this::emptyListOnNotFound);
+
             return CompletableFuture.allOf(openPullRequests, draftPullRequests).thenApply(v -> {
                 List<PullRequest> pullRequests = new java.util.ArrayList<>();
                 pullRequests.addAll(openPullRequests.join());
