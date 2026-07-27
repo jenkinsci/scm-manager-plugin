@@ -207,8 +207,7 @@ class ScmManagerSourceDescriptorTest {
 
         SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
         when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
-        FormValidation formValidation =
-                descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -220,8 +219,7 @@ class ScmManagerSourceDescriptorTest {
         when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         mockCorrectIndex();
 
-        FormValidation formValidation =
-                descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);

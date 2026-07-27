@@ -92,8 +92,8 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             throws InterruptedException, ExecutionException {
         ComboBoxModel model = new ComboBoxModel();
         if (!ConnectionConfiguration.hasConfigurePermission(context)
-            || Strings.isNullOrEmpty(serverUrl)
-            || Strings.isNullOrEmpty(credentialsId)) {
+                || Strings.isNullOrEmpty(serverUrl)
+                || Strings.isNullOrEmpty(credentialsId)) {
             if (!Strings.isNullOrEmpty(value)) {
                 model.add(value);
             }
