@@ -95,6 +95,24 @@ class ScmManagerSourceDescriptorTest {
     }
 
     @Test
+    void shouldSkipRepositoryCheckWithoutConfigurePermission() {
+        FormValidation formValidation =
+                descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "some/repo");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+        verify(apiFactory, never()).create(any(Item.class), anyString(), anyString());
+    }
+
+    @Test
+    void shouldSkipRepositoryFillWithoutConfigurePermission() throws Exception {
+        ComboBoxModel model =
+                descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "some/value");
+
+        assertThat(model.stream()).containsExactly("some/value");
+        verify(apiFactory, never()).create(any(Item.class), anyString(), anyString());
+    }
+
+    @Test
     void shouldRejectEmptyServerUrl() throws Exception {
         when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "");

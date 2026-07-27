@@ -9,6 +9,7 @@ import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -258,6 +259,11 @@ public class ScmManagerNavigator extends SCMNavigator {
 
         public DescriptorImpl() {
             this.apiFactory = new ScmManagerApiFactory();
+        }
+
+        @VisibleForTesting
+        DescriptorImpl(ScmManagerApiFactory apiFactory) {
+            this.apiFactory = apiFactory;
         }
 
         @NonNull
