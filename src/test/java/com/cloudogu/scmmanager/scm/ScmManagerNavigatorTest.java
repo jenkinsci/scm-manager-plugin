@@ -7,9 +7,13 @@ import static org.mockito.Mockito.*;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Item;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceObserver;
+import jenkins.scm.api.SCMSourceOwner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +56,93 @@ class ScmManagerNavigatorTest {
     @BeforeEach
     void beforeEach(JenkinsRule rule) {
         j = rule;
+    }
+
+    @Test
+    void shouldSkipNavigatorServerUrlCheckWithoutConfigurePermission() throws Exception {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        FormValidation formValidation = descriptor.doCheckServerUrl(context, "http://example.com");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
+
+    @Test
+    void shouldSkipNavigatorCredentialsIdCheckWithoutConfigurePermission() throws Exception {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        FormValidation formValidation = descriptor.doCheckCredentialsId(context, "http://example.com", "myAuth");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
+
+    @Test
+    void shouldTreatNullContextAsMissingPermission() throws Exception {
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        FormValidation formValidation = descriptor.doCheckServerUrl(null, "http://example.com");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
+
+    @Test
+    void shouldCheckNavigatorServerUrlWithConfigurePermission() throws Exception {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        when(context.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        when(apiFactory.anonymous("http://example.com")).thenReturn(api);
+        HalRepresentation index = new HalRepresentation(Links.linkingTo()
+                .single(Link.link("login", "http://example.com/"))
+                .build());
+        ScmManagerApiTestMocks.mockResult(when(api.index()), index);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl(apiFactory);
+
+        FormValidation formValidation = descriptor.doCheckServerUrl(context, "http://example.com");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+    }
+
+    @Test
+    void shouldSkipNavigatorCredentialsFillWithoutConfigurePermission() {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        ListBoxModel model = descriptor.doFillCredentialsIdItems(context, "http://example.com", "current");
+
+        assertThat(model.stream().map(option -> option.value)).containsExactly("current");
+    }
+
+    @Test
+    void shouldFillNavigatorCredentialsWithConfigurePermission() {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        when(context.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        ListBoxModel model = descriptor.doFillCredentialsIdItems(context, "http://example.com", "");
+
+        assertThat(model).isNotNull();
+    }
+
+    @Test
+    void shouldSkipNavigatorNamespaceFillWithoutConfigurePermission() throws Exception {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        ListBoxModel model = descriptor.doFillNamespaceItems(context, "http://example.com", "myAuth", "current");
+
+        assertThat(model.stream().map(option -> option.value)).contains("current");
+    }
+
+    @Test
+    void shouldFillNavigatorNamespacesWithConfigurePermission() throws Exception {
+        SCMSourceOwner context = mock(SCMSourceOwner.class);
+        when(context.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        ScmManagerNavigator.DescriptorImpl descriptor = new ScmManagerNavigator.DescriptorImpl();
+
+        ListBoxModel model = descriptor.doFillNamespaceItems(context, "", "", "current");
+
+        assertThat(model.stream().map(option -> option.value)).contains("current");
     }
 
     @Test

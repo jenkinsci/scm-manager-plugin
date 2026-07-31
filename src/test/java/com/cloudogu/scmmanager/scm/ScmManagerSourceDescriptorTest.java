@@ -6,6 +6,9 @@ import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.cloudogu.scmmanager.scm.api.IllegalReturnStatusException;
@@ -76,8 +79,43 @@ class ScmManagerSourceDescriptorTest {
     }
 
     @Test
+    void shouldSkipServerUrlCheckWithoutConfigurePermission() throws Exception {
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+        verify(apiFactory, never()).anonymous(anyString());
+    }
+
+    @Test
+    void shouldSkipCredentialsCheckWithoutConfigurePermission() throws Exception {
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+        verify(apiFactory, never()).anonymous(anyString());
+    }
+
+    @Test
+    void shouldSkipRepositoryCheckWithoutConfigurePermission() {
+        FormValidation formValidation =
+                descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", "some/repo");
+
+        assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
+        verify(apiFactory, never()).create(any(Item.class), anyString(), anyString());
+    }
+
+    @Test
+    void shouldSkipRepositoryFillWithoutConfigurePermission() throws Exception {
+        ComboBoxModel model =
+                descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", "some/value");
+
+        assertThat(model.stream()).containsExactly("some/value");
+        verify(apiFactory, never()).create(any(Item.class), anyString(), anyString());
+    }
+
+    @Test
     void shouldRejectEmptyServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("");
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -86,7 +124,8 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectBlankServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("  \t");
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "  \t");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -95,7 +134,8 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectNotWellFormedServerUrl() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://");
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -104,7 +144,8 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectServerUrlWithoutHttp() throws Exception {
-        FormValidation formValidation = descriptor.doCheckServerUrl("file://some/where");
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "file://some/where");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -113,10 +154,11 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectServerUrlWithoutLoginLink() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         HalRepresentation index = new HalRepresentation(
                 linkingTo().single(link("any", "http://example.com/")).build());
         ScmManagerApiTestMocks.mockResult(when(api.index()), index);
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -126,10 +168,11 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldHandleRedirectResponseForIndexRequest() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         ScmManagerApiTestMocks.mockError(
                 new CompletionException(new IllegalReturnStatusException(302)), when(api.index()));
 
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -139,9 +182,10 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectServerUrlThatCouldNotBeFound() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.index()));
 
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -151,8 +195,9 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldAcceptServerUrl() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         mockCorrectIndex();
-        FormValidation formValidation = descriptor.doCheckServerUrl("http://example.com");
+        FormValidation formValidation = descriptor.doCheckServerUrl(scmSourceOwner, "http://example.com");
 
         assertThat(requestedUrl.getValue()).isEqualTo("http://example.com");
         assertThat(formValidation).isNotNull();
@@ -161,8 +206,9 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectEmptyCredentials() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         mockCorrectIndex();
-        FormValidation formValidation = descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -178,8 +224,8 @@ class ScmManagerSourceDescriptorTest {
         ScmManagerApiTestMocks.mockResult(when(api.index()), index, indexWithLogIn);
 
         SCMSourceOwner scmSourceOwner = Mockito.mock(SCMSourceOwner.class);
-        FormValidation formValidation =
-                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.OK);
@@ -188,10 +234,10 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldRejectWrongCredentials() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         mockCorrectIndex();
 
-        FormValidation formValidation =
-                descriptor.validateCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
+        FormValidation formValidation = descriptor.doCheckCredentialsId(scmSourceOwner, "http://example.com", "myAuth");
 
         assertThat(formValidation).isNotNull();
         assertThat(formValidation.kind).isEqualTo(FormValidation.Kind.ERROR);
@@ -200,6 +246,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldNotLoadRepositoriesWhenServerUrlIsEmpty() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "", "myAuth", null);
 
         assertThat(model.stream()).isEmpty();
@@ -207,6 +254,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldNotLoadRepositoriesWhenCredentialsAreEmpty() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "", null);
 
         assertThat(model.stream()).isEmpty();
@@ -214,6 +262,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldValidateRepositoryOkWithoutAnyPrecedingResult() {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         FormValidation formValidation =
                 descriptor.doCheckRepository(scmSourceOwner, "http://example.com", "myAuth", null);
 
@@ -222,6 +271,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldValidateRepositoryOkWithEmptyString() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();
@@ -237,6 +287,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldValidateRepositoryErrorWhenRepositoryDoesntExist() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();
@@ -256,6 +307,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldReturnEmptyListOnError() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         ScmManagerApiTestMocks.mockError(new RuntimeException("not found"), when(api.getRepositories()));
 
         ComboBoxModel model = descriptor.doFillRepositoryItems(scmSourceOwner, "http://example.com", "myAuth", null);
@@ -265,6 +317,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldReturnRepositories() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         when(repositoryPredicate.test(any())).thenReturn(true);
         ScmManagerApiTestMocks.mockResult(when(api.getRepositories()), asList(createSpaceX(), createDragon()));
 
@@ -275,6 +328,7 @@ class ScmManagerSourceDescriptorTest {
 
     @Test
     void shouldReturnFilteredRepositories() throws Exception {
+        when(scmSourceOwner.hasPermission(Item.CONFIGURE)).thenReturn(true);
         Repository spaceX = createSpaceX();
         Repository dragon = createDragon();
         Repository hog = createHoG();

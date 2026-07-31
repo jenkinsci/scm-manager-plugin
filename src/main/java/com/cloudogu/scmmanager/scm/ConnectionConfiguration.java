@@ -42,8 +42,12 @@ class ConnectionConfiguration {
         """;
     static final String CREDENTIALS_NEEDED = "Credentials needed.";
 
+    static boolean hasConfigurePermission(SCMSourceOwner context) {
+        return context != null && context.hasPermission(Item.CONFIGURE);
+    }
+
     static ListBoxModel fillCredentialsIdItems(SCMSourceOwner context, String serverUrl, String value) {
-        if (context == null || !context.hasPermission(Item.CONFIGURE)) {
+        if (!hasConfigurePermission(context)) {
             return new StandardUsernameListBoxModel().includeCurrentValue(value);
         }
         Authentication authentication =
@@ -72,6 +76,9 @@ class ConnectionConfiguration {
     static FormValidation validateCredentialsId(
             ScmManagerApiFactory apiFactory, SCMSourceOwner context, String serverUrl, String value)
             throws InterruptedException, ExecutionException {
+        if (!hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         if (checkServerUrl(apiFactory, serverUrl).kind != FormValidation.Kind.OK) {
             return FormValidation.error(SERVER_URL_IS_REQUIRED);
         }

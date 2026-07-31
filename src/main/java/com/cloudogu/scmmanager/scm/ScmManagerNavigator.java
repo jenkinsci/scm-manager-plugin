@@ -9,6 +9,7 @@ import com.cloudogu.scmmanager.scm.api.Namespace;
 import com.cloudogu.scmmanager.scm.api.Repository;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApi;
 import com.cloudogu.scmmanager.scm.api.ScmManagerApiFactory;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -48,6 +49,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public class ScmManagerNavigator extends SCMNavigator {
 
@@ -259,6 +261,11 @@ public class ScmManagerNavigator extends SCMNavigator {
             this.apiFactory = new ScmManagerApiFactory();
         }
 
+        @VisibleForTesting
+        DescriptorImpl(ScmManagerApiFactory apiFactory) {
+            this.apiFactory = apiFactory;
+        }
+
         @NonNull
         @Override
         public String getDisplayName() {
@@ -286,6 +293,7 @@ public class ScmManagerNavigator extends SCMNavigator {
             return scmManagerNavigator;
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public ListBoxModel doFillCredentialsIdItems(
                 @AncestorInPath SCMSourceOwner context,
@@ -294,6 +302,7 @@ public class ScmManagerNavigator extends SCMNavigator {
             return ConnectionConfiguration.fillCredentialsIdItems(context, serverUrl, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public FormValidation doCheckCredentialsId(
                 @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
@@ -301,12 +310,17 @@ public class ScmManagerNavigator extends SCMNavigator {
             return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
-        public FormValidation doCheckServerUrl(@QueryParameter String value)
+        public FormValidation doCheckServerUrl(@AncestorInPath SCMSourceOwner context, @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
+            if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+                return FormValidation.ok();
+            }
             return ConnectionConfiguration.checkServerUrl(apiFactory, value);
         }
 
+        @RequirePOST
         @SuppressWarnings("unused") // used By stapler
         public ListBoxModel doFillNamespaceItems(
                 @AncestorInPath SCMSourceOwner context,
@@ -314,6 +328,9 @@ public class ScmManagerNavigator extends SCMNavigator {
                 @QueryParameter String credentialsId,
                 @QueryParameter String value)
                 throws InterruptedException, ExecutionException {
+            if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+                return createEmptyNamespaceSelect(value);
+            }
             if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
                 return createEmptyNamespaceSelect(value);
             }

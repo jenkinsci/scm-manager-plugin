@@ -32,33 +32,33 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
         this.repositoryPredicate = repositoryPredicate;
     }
 
+    @RequirePOST
     @SuppressWarnings("unused") // used By stapler
-    public FormValidation doCheckServerUrl(@QueryParameter String value)
+    public FormValidation doCheckServerUrl(@AncestorInPath SCMSourceOwner context, @QueryParameter String value)
             throws InterruptedException, ExecutionException {
+        if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         return ConnectionConfiguration.checkServerUrl(apiFactory, value);
     }
 
+    @RequirePOST
     @SuppressWarnings("unused") // used By stapler
     public FormValidation doCheckCredentialsId(
-            @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
-            throws InterruptedException, ExecutionException {
-        return validateCredentialsId(context, serverUrl, value);
-    }
-
-    @VisibleForTesting
-    FormValidation validateCredentialsId(
             @AncestorInPath SCMSourceOwner context, @QueryParameter String serverUrl, @QueryParameter String value)
             throws InterruptedException, ExecutionException {
         return ConnectionConfiguration.validateCredentialsId(apiFactory, context, serverUrl, value);
     }
 
     @RequirePOST
-    @SuppressWarnings("lgtm[jenkins/no-permission-check]")
     public FormValidation doCheckRepository(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
             @QueryParameter String credentialsId,
             @QueryParameter String value) {
+        if (!ConnectionConfiguration.hasConfigurePermission(context)) {
+            return FormValidation.ok();
+        }
         if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId) || Strings.isNullOrEmpty(value)) {
             return FormValidation.ok();
         }
@@ -83,11 +83,7 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
     }
 
     @RequirePOST
-    @SuppressWarnings({
-        "unused",
-        "lgtm[jenkins/no-permission-check]",
-        "lgtm[jenkins/credentials-fill-without-permission-check]"
-    }) // used By stapler
+    @SuppressWarnings("unused") // used By stapler
     public ComboBoxModel doFillRepositoryItems(
             @AncestorInPath SCMSourceOwner context,
             @QueryParameter String serverUrl,
@@ -95,7 +91,9 @@ public class ScmManagerSourceDescriptor extends SCMSourceDescriptor {
             @QueryParameter String value)
             throws InterruptedException, ExecutionException {
         ComboBoxModel model = new ComboBoxModel();
-        if (Strings.isNullOrEmpty(serverUrl) || Strings.isNullOrEmpty(credentialsId)) {
+        if (!ConnectionConfiguration.hasConfigurePermission(context)
+                || Strings.isNullOrEmpty(serverUrl)
+                || Strings.isNullOrEmpty(credentialsId)) {
             if (!Strings.isNullOrEmpty(value)) {
                 model.add(value);
             }
