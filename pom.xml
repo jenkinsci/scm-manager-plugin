@@ -204,14 +204,6 @@
         <artifactId>ionicons-api</artifactId>
         <!-- version provided by BOM -->
       </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <!-- version provided by BOM -->
-        <scope>test</scope>
-      </dependency>
-
     </dependencies>
   </dependencyManagement>
 
