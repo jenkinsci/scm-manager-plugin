@@ -10,6 +10,10 @@ https://github.com/jenkinsci/scm-manager-plugin/releases. -->
 
 ## Unreleased
 
+### Added
+
+- Labels from pull requests can be read as environment variables in builds ([#78](https://github.com/jenkinsci/scm-manager-plugin/pull/78))
+
 ### Changed
 
 - The builds of pull requests now show the title of the pull request instead of just the ID ([#83](https://github.com/jenkinsci/scm-manager-plugin/pull/83))
