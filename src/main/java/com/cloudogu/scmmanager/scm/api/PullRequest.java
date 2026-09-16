@@ -80,7 +80,6 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return Collections.unmodifiableList(labels);
     }
 
-
     @Override
     public ScmManagerPullRequestHead head() {
         if (head == null) {
@@ -119,6 +118,15 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
     @Override
     public int hashCode() {
         return Objects.hash(
-                super.hashCode(), id, source, target, status, getLabels(), cloneInformation, sourceBranch, targetBranch, head);
+                super.hashCode(),
+                id,
+                source,
+                target,
+                status,
+                getLabels(),
+                cloneInformation,
+                sourceBranch,
+                targetBranch,
+                head);
     }
 }
