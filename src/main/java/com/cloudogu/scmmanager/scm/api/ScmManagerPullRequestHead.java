@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Optional;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
@@ -14,17 +15,28 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
 
     private final ScmManagerHead target;
     private final ScmManagerHead source;
+    private final String title;
 
     public ScmManagerPullRequestHead(
             @NonNull CloneInformation cloneInformation,
             @NonNull String id,
             @NonNull ScmManagerHead target,
             ScmManagerHead source) {
+        this(cloneInformation, id, target, source, null);
+    }
+
+    public ScmManagerPullRequestHead(
+            @NonNull CloneInformation cloneInformation,
+            @NonNull String id,
+            @NonNull ScmManagerHead target,
+            ScmManagerHead source,
+            String title) {
         // ?? why PullRequest/...
         super(cloneInformation, "PR-" + id);
         this.id = id;
         this.target = target;
         this.source = source;
+        this.title = title;
     }
 
     @NonNull
@@ -41,6 +53,10 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
 
     public ScmManagerHead getSource() {
         return source;
+    }
+
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
     }
 
     @NonNull

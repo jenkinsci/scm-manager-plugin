@@ -13,6 +13,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     private String status;
 
+    private String title;
+
     private CloneInformation cloneInformation;
 
     private Branch sourceBranch;
@@ -65,6 +67,10 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return status;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public boolean isDraft() {
         return "DRAFT".equals(status);
     }
@@ -76,7 +82,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                     cloneInformation,
                     id,
                     new ScmManagerHead(cloneInformation, target),
-                    new ScmManagerHead(cloneInformation, source));
+                    new ScmManagerHead(cloneInformation, source),
+                    title);
         }
         return head;
     }
@@ -96,6 +103,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                 && Objects.equals(source, that.source)
                 && Objects.equals(target, that.target)
                 && Objects.equals(status, that.status)
+                && Objects.equals(title, that.title)
                 && Objects.equals(cloneInformation, that.cloneInformation)
                 && Objects.equals(sourceBranch, that.sourceBranch)
                 && Objects.equals(targetBranch, that.targetBranch)
@@ -105,6 +113,15 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
     @Override
     public int hashCode() {
         return Objects.hash(
-                super.hashCode(), id, source, target, status, cloneInformation, sourceBranch, targetBranch, head);
+                super.hashCode(),
+                id,
+                source,
+                target,
+                status,
+                title,
+                cloneInformation,
+                sourceBranch,
+                targetBranch,
+                head);
     }
 }
