@@ -5,6 +5,7 @@ import static de.otto.edison.hal.Links.linkingTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import jenkins.scm.api.SCMFile;
 import org.junit.jupiter.api.Test;
@@ -210,9 +211,13 @@ class ScmManagerApiTest extends ApiClientTestBase {
         assertThat(pullRequest.getId()).isEqualTo("1");
         assertThat(pullRequest.getSource()).isEqualTo("develop");
         assertThat(pullRequest.getTarget()).isEqualTo("master");
+
         assertThat(pullRequest.getTitle()).isEqualTo("develop => master");
         assertThat(pullRequest.head().getTitle()).hasValue("develop => master");
         assertThat(pullRequest.head().getName()).isEqualTo("PR-1");
+
+        assertThat(pullRequest.getLabels()).containsExactly("backend", "needs-review");
+        assertThat(pullRequest.head().getLabels()).containsExactly("backend", "needs-review");
     }
 
     @Test
@@ -253,6 +258,16 @@ class ScmManagerApiTest extends ApiClientTestBase {
         assertThat(pullRequest.getStatus()).isEqualTo("OPEN");
         assertThat(pullRequest.getTitle()).isEqualTo("develop => master");
         assertThat(pullRequest.isDraft()).isFalse();
+        assertThat(pullRequest.getLabels()).containsExactly("backend", "needs-review");
+        assertThat(pullRequest.head().getLabels()).containsExactly("backend", "needs-review");
+    }
+
+    @Test
+    void shouldUseEmptyLabelListWhenLabelsAreMissing() throws Exception {
+        PullRequest pullRequest = new ObjectMapper()
+                .readValue("{\"id\":\"1\",\"source\":\"develop\",\"target\":\"master\"}", PullRequest.class);
+
+        assertThat(pullRequest.getLabels()).isEmpty();
     }
 
     @Test
