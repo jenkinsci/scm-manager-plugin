@@ -10,6 +10,10 @@ https://github.com/jenkinsci/scm-manager-plugin/releases. -->
 
 ## Unreleased
 
+### Changed
+
+- The builds of pull requests now show the title of the pull request instead of just the ID ([#83](https://github.com/jenkinsci/scm-manager-plugin/pull/83))
+
 ### Fixed
 
 - Handling of SVN repositories in organization folders ([JENKINS-76041](https://issues.jenkins.io/browse/JENKINS-76041), [#80](https://github.com/jenkinsci/scm-manager-plugin/pull/80))
