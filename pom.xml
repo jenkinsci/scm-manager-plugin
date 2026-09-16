@@ -80,7 +80,7 @@
     <cloudbees-folder.version>6.975.v4161e479479f</cloudbees-folder.version>
     <edison.version>2.1.1</edison.version>
     <edison-joda.version>2.10.2</edison-joda.version>
-    <jackson.version>2.17.0</jackson.version>
+    <jackson.version>2.18.9</jackson.version>
     <lombok.version>1.18.36</lombok.version>
     <matrix.version>840.v812f627cb_578</matrix.version>
     <mercurial.version>1260.vdfb_723cdcc81</mercurial.version>
