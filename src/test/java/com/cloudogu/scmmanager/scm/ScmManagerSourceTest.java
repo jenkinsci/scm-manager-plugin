@@ -376,7 +376,7 @@ public class ScmManagerSourceTest {
 
         List<Action> actions = source.retrieveActions(pullRequestHead, null, listener());
 
-        assertObjectDisplayName(actions, "PR-42: Improve the answer");
+        assertObjectDisplayName(actions, "Improve the answer");
         assertThat(pullRequestHead.getName()).isEqualTo("PR-42");
     }
 
