@@ -56,6 +56,7 @@ public class ScmManagerSource extends SCMSource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
     private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
+    private static final int MAX_TITLE_LENGTH = 50;
 
     static {
         Icons.register("icon-scm-manager-link");
@@ -230,7 +231,7 @@ public class ScmManagerSource extends SCMSource {
         if (head instanceof ScmManagerPullRequestHead) {
             ScmManagerPullRequestHead pullRequestHead = (ScmManagerPullRequestHead) head;
             String title = Util.fixEmptyAndTrim(pullRequestHead.getTitle());
-            String displayName = title == null ? head.getName() : head.getName() + ": " + title;
+            String displayName = title == null ? head.getName() : title;
             actions.add(new ObjectMetadataAction(displayName, null, null));
         }
         return actions;
