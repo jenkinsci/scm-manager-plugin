@@ -149,6 +149,7 @@ class PullRequestLabelsEnvContributorTest {
                 "42",
                 new ScmManagerHead(CLONE_INFORMATION, "main"),
                 new ScmManagerHead(CLONE_INFORMATION, "feature"),
+                "Pull-Request Title",
                 labels);
     }
 
