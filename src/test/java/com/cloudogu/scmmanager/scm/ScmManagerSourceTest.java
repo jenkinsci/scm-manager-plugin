@@ -418,8 +418,7 @@ public class ScmManagerSourceTest {
                 new ScmManagerHead(CLONE_INFORMATION, "main"),
                 new ScmManagerHead(CLONE_INFORMATION, "develop"),
                 title,
-                Collections.emptyList()
-            );
+                Collections.emptyList());
     }
 
     @NonNull

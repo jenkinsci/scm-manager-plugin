@@ -95,8 +95,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                     new ScmManagerHead(cloneInformation, target),
                     new ScmManagerHead(cloneInformation, source),
                     title,
-                    getLabels()
-            );
+                    getLabels());
         }
         return head;
     }

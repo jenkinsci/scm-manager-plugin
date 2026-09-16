@@ -1,10 +1,10 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
