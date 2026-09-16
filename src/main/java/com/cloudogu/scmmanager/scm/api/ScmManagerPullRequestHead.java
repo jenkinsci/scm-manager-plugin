@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Optional;
 import jenkins.scm.api.SCMHeadOrigin;
 import jenkins.scm.api.mixin.ChangeRequestCheckoutStrategy;
 import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
@@ -54,8 +55,8 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
         return source;
     }
 
-    public String getTitle() {
-        return title;
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
     }
 
     @NonNull
