@@ -4,8 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import java.util.Objects;
 
 public class Namespace extends HalRepresentation implements Serializable {
     private String namespace;
@@ -34,17 +33,11 @@ public class Namespace extends HalRepresentation implements Serializable {
 
         Namespace namespace1 = (Namespace) o;
 
-        return new EqualsBuilder()
-                .appendSuper(super.equals(o))
-                .append(namespace, namespace1.namespace)
-                .isEquals();
+        return super.equals(o) && Objects.equals(namespace, namespace1.namespace);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .appendSuper(super.hashCode())
-                .append(namespace)
-                .toHashCode();
+        return Objects.hash(super.hashCode(), namespace);
     }
 }

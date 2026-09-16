@@ -232,7 +232,8 @@ public class ScmManagerNavigator extends SCMNavigator {
         }
 
         private SCMSource createSvnSource(String projectName, String id) {
-            return new ScmManagerSvnSourceBuilder(projectName, serverUrl, repository.mustGetUrl("http"), credentialsId)
+            String svnRepoId = repository.getNamespace() + "/" + repository.getName();
+            return new ScmManagerSvnSourceBuilder(projectName, serverUrl, svnRepoId, credentialsId)
                     .withId(id)
                     .withRequest(request)
                     .withIncludes(request.getSvnIncludes())

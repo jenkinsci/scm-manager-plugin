@@ -1,6 +1,7 @@
 package com.cloudogu.scmmanager.scm.api;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
 
     private final ScmManagerHead target;
     private final ScmManagerHead source;
+    private final String title;
     private final List<String> labels;
 
     public ScmManagerPullRequestHead(
@@ -24,7 +26,7 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
             @NonNull String id,
             @NonNull ScmManagerHead target,
             ScmManagerHead source) {
-        this(cloneInformation, id, target, source, Collections.emptyList());
+        this(cloneInformation, id, target, source, null, Collections.emptyList());
     }
 
     public ScmManagerPullRequestHead(
@@ -32,12 +34,14 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
             @NonNull String id,
             @NonNull ScmManagerHead target,
             ScmManagerHead source,
+            String title,
             List<String> labels) {
         // ?? why PullRequest/...
         super(cloneInformation, "PR-" + id);
         this.id = id;
         this.target = target;
         this.source = source;
+        this.title = title;
         this.labels = labels == null ? Collections.emptyList() : new ArrayList<>(labels);
     }
 
@@ -62,6 +66,10 @@ public class ScmManagerPullRequestHead extends ScmManagerHead implements ChangeR
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(labels);
+    }
+
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
     }
 
     @NonNull

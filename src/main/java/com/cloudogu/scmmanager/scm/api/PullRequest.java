@@ -17,6 +17,8 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
 
     private List<String> labels = Collections.emptyList();
 
+    private String title;
+
     private CloneInformation cloneInformation;
 
     private Branch sourceBranch;
@@ -69,6 +71,10 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
         return status;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public boolean isDraft() {
         return "DRAFT".equals(status);
     }
@@ -88,7 +94,9 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                     id,
                     new ScmManagerHead(cloneInformation, target),
                     new ScmManagerHead(cloneInformation, source),
-                    getLabels());
+                    title,
+                    getLabels()
+            );
         }
         return head;
     }
@@ -108,6 +116,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                 && Objects.equals(source, that.source)
                 && Objects.equals(target, that.target)
                 && Objects.equals(status, that.status)
+                && Objects.equals(title, that.title)
                 && Objects.equals(getLabels(), that.getLabels())
                 && Objects.equals(cloneInformation, that.cloneInformation)
                 && Objects.equals(sourceBranch, that.sourceBranch)
@@ -123,6 +132,7 @@ public class PullRequest extends HalRepresentation implements ScmManagerObservab
                 source,
                 target,
                 status,
+                title,
                 getLabels(),
                 cloneInformation,
                 sourceBranch,
