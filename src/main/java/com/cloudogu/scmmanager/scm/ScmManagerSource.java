@@ -56,7 +56,6 @@ public class ScmManagerSource extends SCMSource {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScmManagerSource.class);
     private static final String ICON_SCM_MANAGER_LINK = "icon-scm-manager-link";
-    private static final int MAX_TITLE_LENGTH = 50;
 
     static {
         Icons.register("icon-scm-manager-link");
