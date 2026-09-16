@@ -228,8 +228,7 @@ public class ScmManagerSource extends SCMSource {
         List<Action> actions = new ArrayList<>(List.of(
                 new ScmManagerLink(ICON_SCM_MANAGER_LINK, getLinkBuilder().create(head)),
                 new ScmManagerApiData(serverUrl, credentialsId, namespace, name)));
-        if (head instanceof ScmManagerPullRequestHead) {
-            ScmManagerPullRequestHead pullRequestHead = (ScmManagerPullRequestHead) head;
+        if (head instanceof ScmManagerPullRequestHead pullRequestHead) {
             String title = Util.fixEmptyAndTrim(pullRequestHead.getTitle());
             String displayName = title == null ? head.getName() : title;
             actions.add(new ObjectMetadataAction(displayName, null, null));
