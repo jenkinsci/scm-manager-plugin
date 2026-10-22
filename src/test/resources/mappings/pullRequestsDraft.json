@@ -1,6 +1,6 @@
 {
     "request": {
-        "url": "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell?status=DRAFT",
+        "url": "/scm/api/v2/pull-requests/jenkins-plugin/hello-shell?status=DRAFT&pageSize=30",
         "method": "GET",
         "headers": {
             "Accept": {

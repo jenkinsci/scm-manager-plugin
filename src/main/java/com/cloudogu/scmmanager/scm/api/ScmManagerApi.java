@@ -26,6 +26,8 @@ public class ScmManagerApi {
 
     private final ApiClient client;
 
+    private final int MAX_PULL_REQUEST_COUNT = 30;
+
     public ScmManagerApi(ApiClient client) {
         this.client = client;
     }
@@ -188,7 +190,7 @@ public class ScmManagerApi {
     private CompletableFuture<List<PullRequest>> getPullRequests(
             Repository repository, String pullRequestLink, String status) {
         return client.get(
-                        pullRequestLink + "?status=" + status,
+                        String.format("%s?status=%s&pageSize=%d", pullRequestLink, status, MAX_PULL_REQUEST_COUNT),
                         "application/vnd.scmm-pullRequestCollection+json;v=2",
                         PullRequestCollection.class)
                 .thenApply(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
