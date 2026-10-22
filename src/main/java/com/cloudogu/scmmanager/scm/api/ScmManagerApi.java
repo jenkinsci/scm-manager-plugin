@@ -188,7 +188,7 @@ public class ScmManagerApi {
     private CompletableFuture<List<PullRequest>> getPullRequests(
             Repository repository, String pullRequestLink, String status) {
         return client.get(
-                        pullRequestLink + "?status=" + status,
+                        String.format("%s?status=%s&pageSize=30", pullRequestLink, status),
                         "application/vnd.scmm-pullRequestCollection+json;v=2",
                         PullRequestCollection.class)
                 .thenApply(pullRequestCollection -> pullRequestCollection.get_embedded().getPullRequests().stream()
