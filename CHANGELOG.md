@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- Historical entries use the publication dates and notes from
 https://github.com/jenkinsci/scm-manager-plugin/releases. -->
 
+## Unreleased
+
+### Fixed
+
+- Only fetching 10 pull request per repository at most from the SCM-Manager API (now fetching 30 at most)
+
 ## 1.13.0 - 2026-09-16
 
 ### Added
